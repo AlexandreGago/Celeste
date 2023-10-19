@@ -36,6 +36,7 @@ class InputHandler():
             self.serviceDiscovery.getPlayer().move("idle")
 
         keys = self.parsePressedKeys(keys)
+        print(keys)
         if keys:
             for key in keys:
                 if key in InputHandler.p1command:
@@ -57,11 +58,15 @@ class InputHandler():
                 newkeys.append(pygame.K_RIGHT)
             
             #remove opposite directions
-            # if (pygame.K_RIGHT in newkeys) and (pygame.K_LEFT in newkeys):
-            #     newkeys.remove(pygame.K_RIGHT)
-            #     newkeys.remove(pygame.K_LEFT)
-            # if (pygame.K_UP in newkeys )and(pygame.K_DOWN in newkeys):
-            #     newkeys.remove(pygame.K_UP)
-            #     newkeys.remove(pygame.K_DOWN)
+            if (pygame.K_RIGHT in newkeys) and (pygame.K_LEFT in newkeys):
+                newkeys.remove(pygame.K_RIGHT)
+                newkeys.remove(pygame.K_LEFT)
+            if (pygame.K_UP in newkeys )and(pygame.K_DOWN in newkeys):
+                newkeys.remove(pygame.K_UP)
+                newkeys.remove(pygame.K_DOWN)
+            if (pygame.K_DOWN in newkeys):
+                #remvoe every other key
+                newkeys = []
+                newkeys.append(pygame.K_DOWN)
 
         return newkeys

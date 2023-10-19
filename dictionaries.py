@@ -11,14 +11,13 @@ class PlayerStuff:
     sprites = {"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle1",
                 "walkRight1":"walkRight2","walkRight2":"walkRight3","walkRight3":"walkRight4","walkRight4":"walkRight5","walkRight5":"walkRight6","walkRight6":"walkRight7","walkRight7":"walkRight8","walkRight8":"walkRight9","walkRight9":"walkRight10","walkRight10":"walkRight11","walkRight11":"walkRight12","walkRight12":"walkRight1",
                 "walkLeft1":"walkLeft2","walkLeft2":"walkLeft3","walkLeft3":"walkLeft4","walkLeft4":"walkLeft5","walkLeft5":"walkLeft6","walkLeft6":"walkLeft7","walkLeft7":"walkLeft8","walkLeft8":"walkLeft9","walkLeft9":"walkLeft10","walkLeft10":"walkLeft11","walkLeft11":"walkLeft12","walkLeft12":"walkLeft1",
-                "turningLeft1":"turningLeft2","turningLeft2":"turningLeft3","turningLeft3":"turningLeft4","turningLeft4":"turningLeft5","turningLeft5":"turningLeft6","turningLeft6":"turningLeft7","turningLeft7":"turningLeft8","turningLeft8":"walkLeft2",
-                "turningRight1":"turningRight2","turningRight2":"turningRight3","turningRight3":"turningRight4","turningRight4":"turningRight5","turningRight5":"turningRight6","turningRight6":"turningRight7","turningRight7":"turningRight8","turningRight8":"walkRight2",
+                "turningLeft1":"turningLeft2","turningLeft2":"turningLeft3","turningLeft3":"turningLeft4","turningLeft4":"turningLeft5","turningLeft5":"turningLeft6","turningLeft6":"turningLeft7","turningLeft7":"turningLeft8","turningLeft8":"end",
+                "turningRight1":"turningRight2","turningRight2":"turningRight3","turningRight3":"turningRight4","turningRight4":"turningRight5","turningRight5":"turningRight6","turningRight6":"turningRight7","turningRight7":"turningRight8","turningRight8":"end",
                 "crouch1":"crouch2","crouch2":"crouch3","crouch3":"crouch4","crouch4":"crouch1",
                 "jump1":"jump2","jump2":"jump3","jump3":"jump4","jump4":"jump1"
                }
     
     statesInit = {"idle":"idle1","jump":"jump1","walkRight":"walkRight1","walkLeft":"walkLeft1","crouch":"crouch1","turningLeft":"turningLeft1","turningRight":"turningRight1"}
-
     states = ["idle","jump","walkRight","walkLeft","crouch","turningLeft","turningRight"]
 
     statesMovement = {"idle":(0,0),"jump":(0,-1),"walkRight":(1,0),"walkLeft":(-1,0),"crouch":(0,1),"turningLeft":(-1,0),"turningRight":(1,0)}
