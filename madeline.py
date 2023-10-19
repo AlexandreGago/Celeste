@@ -32,7 +32,7 @@ class Player(Actor):
         self.jumpAux = "init"
 
         self.height = 80
-        self.width = 80
+        self.width = 70
 
         self.spriteGroup = pygame.sprite.Group()
         sprite = SpriteClass(self.height,self.width,self.type,self.ServiceLocator,self.spriteID)
@@ -140,16 +140,19 @@ class Player(Actor):
         else:
             print("invalid direction")
 
+    #draws the hair
     def drawHair(self, display):
-        # Hair circle around the head
+        #offset for the orientation of the character
+        offsetDirX = 6 if self.orientation == "right" else -6
         for i in range (len(points)-1,-1,-1):
             if i == 0:
-                points[i][2] = pygame.Vector2(int(self.x + self.width / 2), int(self.y + self.height / 2-10))
+                points[i][2] = pygame.Vector2(int(self.x + self.width / 2+offsetDirX), int(self.y + self.height / 2-16))
                 continue
             if self.orientation == "right":
                 points[i][2] = points[i][0] + points[i-1][2]
             else:
                 points[i][2] =  points[i-1][2]+(points[i][0][0]*-1,points[i][0][1])
+
         for i in range(len(points)):
             if i == 0:
                 continue
