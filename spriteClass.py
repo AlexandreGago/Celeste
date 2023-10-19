@@ -36,8 +36,9 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.PLAYER:
             #update image
             img = pygame.image.load(PlayerStuff.spritesLocation[spriteID])
-            if flip:
-                img = pygame.transform.flip(img,True,False)
-        self.image = img.subsurface((8,16,16,16))
+
+        self.image = img.subsurface((9,19,12,13))
+        if flip:
+            self.image = pygame.transform.flip(self.image,True,False)
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
 

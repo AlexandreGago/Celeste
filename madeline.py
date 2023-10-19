@@ -31,8 +31,8 @@ class Player(Actor):
         self.orientation = "right"
         self.jumpAux = "init"
 
-        self.height = 100
-        self.width = 100
+        self.height = 80
+        self.width = 80
 
         self.spriteGroup = pygame.sprite.Group()
         sprite = SpriteClass(self.height,self.width,self.type,self.ServiceLocator,self.spriteID)
@@ -44,8 +44,8 @@ class Player(Actor):
                 if self.jumpAux == "init":
                     self.jumpAux = "up"
                     self.jumpPower = 100
-                    self.height = 100
-                    self.width = 100
+                    # self.height = 80
+                    # self.width = 80
                     self.ServiceLocator.frameCount = 0
                 if self.jumpAux == "up":
                     self.y -= 10
@@ -56,8 +56,8 @@ class Player(Actor):
                         if self.spriteID == "jump1":
                             self.spriteID = PlayerStuff.sprites[self.spriteID]
                         else:
-                            self.height= 100
-                            self.width = 100
+                            # self.height= 100
+                            # self.width = 100
                             self.spriteID = "jump1"
                     if self.jumpPower == 0:
                         self.jumpAux = "down"

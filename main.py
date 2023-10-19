@@ -46,6 +46,7 @@ while running:
     display.fill((0,0,0))
     madeline.draw(display)    
     map.draw(display)
+    pygame.draw.rect(display,(255,0,0), madeline.spriteGroup.sprites()[0].rect,1)
 
 
     #keep track of current frame
