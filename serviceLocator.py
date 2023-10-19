@@ -4,6 +4,7 @@ class ServiceLocator():
         self.player = None
         self.frameCount = None
         self.map = None
+        self.display = None
     
     def getPlayer(self):
         return self.player
@@ -13,3 +14,6 @@ class ServiceLocator():
     
     def getFrameCount(self):
         return self.frameCount
+
+    def getDisplay(self):
+        return self.display

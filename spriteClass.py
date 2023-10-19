@@ -25,9 +25,12 @@ class SpriteClass(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
 
-    def update(self,x,y,spriteID,flip=None):
+    def update(self,x,y,height,width,spriteID,flip=None):
         self.rect.x = x
         self.rect.y = y
+        self.height = height
+        self.width = width
+
         self.spriteID = spriteID
         # print(self.spriteID)
         if self.type == ActorTypes.PLAYER:
