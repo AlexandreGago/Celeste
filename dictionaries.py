@@ -17,7 +17,14 @@ class PlayerStuff:
         "crouch1":"crouch2","crouch2":"crouch3","crouch3":"crouch4","crouch4":"crouch1",
         "jump1":"jump2","jump2":"jump3","jump3":"jump4","jump4":"jump1"
     }
-    
+    spritesHairOffset = {"idle":{"idle1":(0,5),"idle2":(0,5),"idle3":(0,5),"idle4":(0,5),"idle5":(0,0),"idle6":(0,0),"idle7":(0,0),"idle8":(0,0)},
+                        "walkRight":{"walkRight1":(0,0),"walkRight2":(0,0),"walkRight3":(0,0),"walkRight4":(0,0),"walkRight5":(0,0),"walkRight6":(0,0),"walkRight7":(0,0),"walkRight8":(0,0),"walkRight9":(0,0),"walkRight10":(0,0),"walkRight11":(0,0),"walkRight12":(0,0)},
+                        "walkLeft":{"walkLeft1":(0,0),"walkLeft2":(0,0),"walkLeft3":(0,0),"walkLeft4":(0,0),"walkLeft5":(0,0),"walkLeft6":(0,0),"walkLeft7":(0,0),"walkLeft8":(0,0),"walkLeft9":(0,0),"walkLeft10":(0,0),"walkLeft11":(0,0),"walkLeft12":(0,0)},
+                        "turningLeft":{"turningLeft1":(0,0),"turningLeft2":(0,0),"turningLeft3":(0,0),"turningLeft4":(0,0),"turningLeft5":(0,0),"turningLeft6":(0,0),"turningLeft7":(0,0),"turningLeft8":(0,0)},
+                        "turningRight":{"turningRight1":(0,0),"turningRight2":(0,0),"turningRight3":(0,0),"turningRight4":(0,0),"turningRight5":(0,0),"turningRight6":(0,0),"turningRight7":(0,0),"turningRight8":(0,0)},
+                        "crouch":{"crouch1":(0,0),"crouch2":(0,0),"crouch3":(0,0),"crouch4":(0,0)},
+                        "jump":{"jump1":(0,0),"jump2":(0,0),"jump3":(0,0),"jump4":(0,0)}
+                        }
     states = ["idle","jump","walkRight","walkLeft","crouch","turningLeft","turningRight"]
 
     statesMovement = {"idle":(0,0),"jump":(0,-1),"walkRight":(1,0),"walkLeft":(-1,0),"crouch":(0,1),"turningLeft":(-1,0),"turningRight":(1,0)}
