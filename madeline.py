@@ -4,8 +4,17 @@ from enums import ActorTypes
 from dictionaries import PlayerStuff
 from spriteClass import SpriteClass
 
-Y_GRAVITY = 5
+Y_GRAVITY = 2
 MOVEMENT_X = 5
+
+JUMP_POWER = 100
+JUMP_SPEED = 10
+
+ANIMATION_SPEEDS = {
+    "jump": 10,
+    "turn": 2
+}
+
 points = [
     [pygame.Vector2(0,0),0,pygame.Vector2(0,0),25], #first point is the center of the head
     [pygame.Vector2(-6,4),12,pygame.Vector2(0,0),23],
@@ -18,15 +27,15 @@ points = [
     [pygame.Vector2(-2,2),8,pygame.Vector2(0,0),16],
 ]
 class Player(Actor):
-    def __init__(self,x,y,name,ServiceLocator) -> None:
+    def __init__(self,x,y,name,serviceLocator) -> None:
         super().__init__()
         self.name = name
         self.type = ActorTypes.PLAYER
         self.x = x
         self.y = y
         self.state = PlayerStuff.states[0]
-        self.ServiceLocator = ServiceLocator
-        self.spriteID = PlayerStuff.statesInit[self.state]
+        self.serviceLocator = serviceLocator
+        self.spriteID = f"{self.state}1"
         self.jumpPower = 0
         self.orientation = "right"
         self.jumpAux = "init"
@@ -34,112 +43,97 @@ class Player(Actor):
         self.height = 80
         self.width = 70
 
+        self.animationFrameCounter = 0
+
         self.spriteGroup = pygame.sprite.Group()
-        sprite = SpriteClass(self.height,self.width,self.type,self.ServiceLocator,self.spriteID)
+        sprite = SpriteClass(self.height,self.width,self.type,self.serviceLocator,self.spriteID)
         self.spriteGroup.add(sprite)
     
     def move(self,newState):
-        if newState in PlayerStuff.states:
-            if self.state == "jump":
-                if self.jumpAux == "init":
-                    self.jumpAux = "up"
-                    self.jumpPower = 100
-                    # self.height = 80
-                    # self.width = 80
-                    self.ServiceLocator.frameCount = 0
-                if self.jumpAux == "up":
-                    self.y -= 10
-                    self.x += MOVEMENT_X*PlayerStuff.statesMovement[newState][0]
-                    self.jumpPower -= Y_GRAVITY if self.jumpPower > 0 else 0
-                    #update sprite every 10 frames
-                    if self.ServiceLocator.frameCount % 10 == 0:
-                        if self.spriteID == "jump1":
-                            self.spriteID = PlayerStuff.sprites[self.spriteID]
-                        else:
-                            # self.height= 100
-                            # self.width = 100
-                            self.spriteID = "jump1"
-                    if self.jumpPower == 0:
-                        self.jumpAux = "down"
-                        self.spriteID == PlayerStuff.sprites["jump2"]
 
-                elif self.jumpAux == "down":
-                    self.y += self.jumpPower
-                    self.x += MOVEMENT_X*PlayerStuff.statesMovement[newState][0]
-                    if self.ServiceLocator.frameCount % 10 == 0:
-                        if self.spriteID == "jump2":
-                            self.spriteID = PlayerStuff.sprites[self.spriteID]
-                        else:
-                            self.spriteID = "jump2"
+        if self.state == "jump":
+            #default jump state
+            if self.jumpAux == "init":
+                self.jumpAux = "up"
+                self.jumpPower = JUMP_POWER
+                self.animationFrameCounter = 0
 
-                    #ground
-                    if (self.x//50*50,self.y // 50 * 50) in self.ServiceLocator.map.collision_map:
-                        self.jumpAux = "init"
-                        self.state = newState
-                        self.spriteID = PlayerStuff.statesInit[newState]
-                        self.ServiceLocator.frameCount = 0
+            #move up while reducing the jump power
+            elif self.jumpAux == "up":
+                self.y -= JUMP_SPEED
+                #reduce jump power
+                self.jumpPower -= Y_GRAVITY if self.jumpPower > 0 else 0
+
+                #if jump power is 0, start falling
+                if self.jumpPower == 0:
+                    self.jumpAux = "down"
+                    self.spriteID == PlayerStuff.sprites["jump2"]
+
+    	    #we are falling
+            elif self.jumpAux == "down":
+                #add gravity
+                self.y += Y_GRAVITY
+            
+            #update sprite every x frames
+            if self.animationFrameCounter % ANIMATION_SPEEDS["jump"] == 0:
+                #jump1 -> jump2 ... jump4 -> jump1
+                self.spriteID = PlayerStuff.sprites[self.spriteID]
 
 
-            elif self.state == "turningLeft":
-                #if the newstate is not the walk left, change the state
-                if newState != self.state and newState != "walkLeft":
-                    self.state = newState
-                    self.spriteID = PlayerStuff.statesInit[newState]   
-                    self.ServiceLocator.frameCount = 0
-
-                #if the animation still didnt end, keep playing it
-                elif self.spriteID != "turningLeft8":
-                    if self.ServiceLocator.frameCount % 3 == 0:
-                        self.spriteID = PlayerStuff.sprites[self.spriteID]
-                else: # if the aniamtion ended, change the state to walking
+        #turning left or right
+        elif self.state in ["turningLeft","turningRight"]:
+            #if its not the end of the animation, keep playing it
+            if self.spriteID != "turningLeft8" and self.spriteID != "turningRight8":
+                if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
+                    self.spriteID = PlayerStuff.sprites[self.spriteID]
+            #if its the end of the animation, change the state
+            else:
+                if self.state == "turningLeft":
                     self.state = "walkLeft"
-                    self.spriteID = PlayerStuff.statesInit[self.state]
-                    self.ServiceLocator.frameCount = 0
-
-            elif self.state == "turningRight":
-                if newState != self.state and newState != "walkRight":
-                    self.state = newState
-                    self.spriteID = PlayerStuff.statesInit[newState]
-                    self.ServiceLocator.frameCount = 0
-
-                elif self.spriteID != "turningRight8":
-                    if self.ServiceLocator.frameCount % 3 == 0:
-                        self.spriteID = PlayerStuff.sprites[self.spriteID]
                 else:
                     self.state = "walkRight"
-                    self.spriteID = PlayerStuff.statesInit[self.state]
-                    self.ServiceLocator.frameCount = 0
 
-            elif self.state == "walkRight" or self.state == "walkLeft" or self.state == "crouch" or self.state == "idle":
-                if newState != self.state:
-                    #turn left
-                    if self.orientation == "right" and newState == "walkLeft":
-                        newState = "turningLeft"
-                    elif self.orientation == "left" and newState == "walkRight":
-                        newState = "turningRight"
-                    self.state = newState
-                    self.spriteID = PlayerStuff.statesInit[newState]
-                    self.ServiceLocator.frameCount = 0
+                self.spriteID = f"{self.state}1"
+                self.animationFrameCounter = 0
 
-                else:
-                    if self.ServiceLocator.frameCount % 10 == 0:
-                        self.spriteID = PlayerStuff.sprites[self.spriteID]
+        elif self.state in ["walkRight","walkLeft","crouch","idle"]:
+            if newState != self.state:
+                #turn left
+                if self.orientation == "right" and newState == "walkLeft":
+                    newState = "turningLeft"
+                elif self.orientation == "left" and newState == "walkRight":
+                    newState = "turningRight"
+                self.state = newState
+                self.spriteID = f"{newState}1"
+                self.serviceLocator.frameCount = 0
 
-            self.x += MOVEMENT_X*PlayerStuff.statesMovement[self.state][0]
-            if (self.x//50*50,self.y // 50 * 50) not in self.ServiceLocator.map.collision_map:
-                self.y += Y_GRAVITY
-                
-            #we don't have the mirrored sprites, so we just flip the sprite
-            if self.state == "walkLeft" or self.state == "turningLeft":
-                self.orientation = "left"
-            elif self.state == "turningRight" or self.state == "walkRight":
-                self.orientation = "right"
-            #update sprite
-            self.spriteGroup.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
-            self.drawHair(self.ServiceLocator.getDisplay())
-        else:
-            print("invalid direction")
+            else:
+                if self.animationFrameCounter % 10 == 0:
+                    self.spriteID = PlayerStuff.sprites[self.spriteID]
 
+
+        #         #ground
+        # if (self.x//50*50,self.y // 50 * 50) in self.serviceLocator.map.collision_map:
+
+        #     self.jumpAux = "init"
+        #     self.state = newState
+        #     self.spriteID = f"{newState}1"
+        #     self.serviceLocator.frameCount = 0
+        self.x += MOVEMENT_X*PlayerStuff.statesMovement[newState][0]
+        if (self.x//50*50,self.y // 50 * 50) not in self.serviceLocator.map.collision_map:
+            self.y += Y_GRAVITY
+            
+        #we don't have the mirrored sprites, so we just flip the sprite
+        if self.state == "walkLeft" or self.state == "turningLeft":
+            self.orientation = "left"
+        elif self.state == "turningRight" or self.state == "walkRight":
+            self.orientation = "right"
+        #update sprite
+
+        self.animationFrameCounter += 1
+
+        self.spriteGroup.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
+        self.drawHair(self.serviceLocator.getDisplay())
     #draws the hair
     def drawHair(self, display):
         #offset for the orientation of the character
@@ -169,3 +163,5 @@ class Player(Actor):
     def draw(self,display):
         self.drawHair(display)
         self.spriteGroup.draw(display)
+
+        

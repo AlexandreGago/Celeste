@@ -1,6 +1,6 @@
 import pygame
 from inputHandler import InputHandler
-from serviceLocator import ServiceLocator
+from serviceLocator import serviceLocator
 from madeline import Player
 from map import Map
 
@@ -8,7 +8,7 @@ WIDTH, HEIGHT = 800, 800
 SCALE = 1
 FRAMERATE = 60
 #Sercice discovery
-serviceLocator = ServiceLocator()
+serviceLocator = serviceLocator()
 
 display = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
 serviceLocator.display = display
@@ -55,4 +55,4 @@ while running:
         serviceLocator.frameCount = 0
 
     pygame.display.update()
-    clock.tick(FRAMERATE)
+    clock.tick(60)
