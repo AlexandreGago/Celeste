@@ -19,28 +19,31 @@ class Tile(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
+    
 
 
 class Map:
 
     def __init__(self, level):
         self.level = level
-        self.collision_map = self.load_collision_map(level)
-        self.sprites = self.load_sprites(level)
-        self.spawn = self.load_spawn(level)
+        self.sprites, self.spawn, self.walls = self.load(level)
 
     
-    def load_sprites(self, level):
+    def load(self, level):
         sprites = pygame.sprite.Group()
+        walls = []
+        spawn = None
         for idx,row in enumerate(levels[level]):
             for idy,cell in enumerate(row):
+                if cell == "p":
+                    spawn = (idy*50, idx*50)
                 if cell == "c":
                     image = spritesheet.subsurface(*spritelocations["wall"])
                     #50*16=800
                     image = pygame.transform.scale(image, (50, 50))
-                    sprites.add(Tile(image, idy*50, idx*50))
+                    tile = Tile(image, idy*50, idx*50)
+                    sprites.add(tile)
+                    walls.append(tile)
 
                 if cell == "f":
                     image = spritesheet.subsurface(*spritelocations["flower"])
@@ -51,25 +54,10 @@ class Map:
                     image = pygame.transform.scale(image, (50, 50))
                     sprites.add(Tile(image, idy*50, idx*50))
 
-        return sprites
+        return sprites, spawn, walls
     
-    def load_spawn(self, level):
-        for idx,row in enumerate(levels[level]):
-            for idy,cell in enumerate(row):
-                if cell == "p":
-                    return (idy*50, idx*50)
 
-
-    def load_collision_map(self, level):
-        collision_map = set()
-        for idx,row in enumerate(levels[level]):
-            for idy,cell in enumerate(row):
-                #! -100 is the offset for the player
-                if cell == "c":
-                    collision_map.add((idy*50-50, idx*50-100))
-                if cell == "x":
-                    collision_map.add((idy*50-50, idx*50-100))
-        return collision_map
+    
     def draw(self, screen):
         self.sprites.draw(screen)
 

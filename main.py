@@ -41,11 +41,11 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()    
+    display.fill((0,0,0))
     inputHandler.handleInput(keys)
 
-    display.fill((0,0,0))
-    madeline.draw(display)    
     map.draw(display)
+    madeline.draw(display)    
     # pygame.draw.rect(display,(255,0,0), madeline.spriteGroup.sprites()[0].rect,1)
 
 

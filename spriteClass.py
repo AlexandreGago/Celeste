@@ -42,3 +42,8 @@ class SpriteClass(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image,True,False)
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
+    def draw(self,screen):
+        screen.blit(self.image,self.rect)
+
+        
+

@@ -4,8 +4,12 @@ from enums import ActorTypes
 from dictionaries import PlayerStuff
 from spriteClass import SpriteClass
 
+import time
+
 Y_GRAVITY = 9
 MOVEMENT_X = 9
+
+WIDTH, HEIGHT = 800, 800
 
 JUMP_POWER = 200
 JUMP_SPEED = 2
@@ -46,9 +50,11 @@ class Player(Actor):
 
         self.animationFrameCounter = 0
 
-        self.spriteGroup = pygame.sprite.Group()
         sprite = SpriteClass(self.height,self.width,self.type,self.serviceLocator,self.spriteID)
-        self.spriteGroup.add(sprite)
+        sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="right")
+        # self.spriteGroup = pygame.sprite.Group()
+        # self.spriteGroup.add(sprite)
+        self.sprite = sprite
     
     def move(self,newState):
         if self.state == "jump":
@@ -84,11 +90,6 @@ class Player(Actor):
                     else:
                         self.spriteID = "jump3"
             
-            # #update sprite every x frames
-            # if self.animationFrameCounter % 10 == 0:
-            #     #jump1 -> jump2 ... jump4 -> jump1
-            #     self.spriteID = PlayerStuff.sprites[self.spriteID]
-
 
         #turning left or right
         elif self.state in ["turningLeft","turningRight"]:
@@ -122,22 +123,55 @@ class Player(Actor):
                     self.spriteID = PlayerStuff.sprites[self.spriteID]
 
 
-        #         #ground
-        # if (self.x//50*50,self.y // 50 * 50) in self.serviceLocator.map.collision_map:
 
-        #     self.jumpAux = "init"
-        #     self.state = newState
-        #     self.spriteID = f"{newState}1"
-        #     self.serviceLocator.frameCount = 0
-        self.x += MOVEMENT_X*PlayerStuff.statesMovement[newState][0]
-        if (self.x//50*50,self.y // 50 * 50) not in self.serviceLocator.map.collision_map:
-            self.y += Y_GRAVITY
+
+        #!The sprite rect still has the old position, so we need to update it first
+        self.y += Y_GRAVITY
+        self.sprite.rect.y = self.y
+
+        for tile in self.serviceLocator.map.walls:
+            if self.sprite.rect.colliderect(tile.rect):
+                #ceiling
+                if tile.rect.bottom - self.sprite.rect.top <= Y_GRAVITY:
+                    print("ceiling")
+                    self.y = tile.rect.bottom
+                #ground
+                elif tile.rect.top - self.sprite.rect.bottom >= -1*Y_GRAVITY:
+                    print("ground")
+                    self.y = tile.rect.top - self.height
+                    if self.jumpAux == "down":
+                        self.state = newState
+                        self.jumpAux = "init"
+                        self.spriteID = f"{newState}1"
+                        self.animationFrameCounter = 0
+                #update sprite rect
+                self.sprite.rect.y = self.y
+
+        #dont let the player go out of the screen
+        if self.x + MOVEMENT_X*PlayerStuff.statesMovement[newState][0] < 0:
+            self.x = 0
+        elif self.x + MOVEMENT_X*PlayerStuff.statesMovement[newState][0] > WIDTH - self.width:
+            self.x = WIDTH - self.width
         else:
-            if self.jumpAux == "down":
-                self.state = newState
-                self.jumpAux = "init"
-                self.spriteID = f"{newState}1"
-                self.animationFrameCounter = 0
+            self.x += MOVEMENT_X*PlayerStuff.statesMovement[newState][0]
+
+        #update sprite rect
+        self.sprite.rect.x = self.x
+        #left and right walls
+        for tile in self.serviceLocator.map.walls:
+            if self.sprite.rect.colliderect(tile.rect):
+                #left wall
+                if tile.rect.right - self.sprite.rect.left <= MOVEMENT_X:
+                    print("left wall")
+                    self.x = tile.rect.right
+                #right wall
+                elif tile.rect.left - self.sprite.rect.right >= -1*MOVEMENT_X:
+                    print("right wall")
+                    self.x = tile.rect.left - self.width
+
+    
+              
+
             
         #we don't have the mirrored sprites, so we just flip the sprite
         if self.state == "walkLeft" or self.state == "turningLeft":
@@ -145,10 +179,11 @@ class Player(Actor):
         elif self.state == "turningRight" or self.state == "walkRight":
             self.orientation = "right"
         #update sprite
-        print(self.spriteID)
+        # print(self.spriteID)
         self.animationFrameCounter += 1
-        self.spriteGroup.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
-        self.drawHair(self.serviceLocator.getDisplay())
+        # self.spriteGroup.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
+        self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
+        pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)
 
     #draws the hair
     def drawHair(self, display):
@@ -180,6 +215,7 @@ class Player(Actor):
     
     def draw(self,display):
         self.drawHair(display)
-        self.spriteGroup.draw(display)
+        # self.spriteGroup.draw(display)
+        self.sprite.draw(display)
 
         
