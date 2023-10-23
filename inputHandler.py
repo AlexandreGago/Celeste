@@ -1,29 +1,29 @@
 import pygame
 
-class Up():
-    def move(self, actor):
-        actor.move("jump")
+# class Up():
+#     def move(self, actor):
+#         actor.move((0,-1))
 
-class Down():
-    def move(self, actor):
-        actor.move("crouch")
+# class Down():
+#     def move(self, actor):
+#         actor.move((0,1))
 
-class Left():
-    def move(self, actor):
-        actor.move("walkLeft")
+# class Left():
+#     def move(self, actor):
+#         actor.move((-1,0))
 
-class Right():
-    def move(self, actor):
-        actor.move("walkRight")
-
+# class Right():
+#     def move(self, actor):
+#         actor.move((1,0))
 
 class InputHandler():
 
     p1command = {
-        pygame.K_UP : Up(),
-        pygame.K_DOWN : Down(),
-        pygame.K_LEFT : Left(),
-        pygame.K_RIGHT : Right(),
+        pygame.K_UP : (0,-1),
+        pygame.K_DOWN : (0,1),
+        pygame.K_LEFT : (-1,0),
+        pygame.K_RIGHT : (1,0),
+        
     }
 
     def __init__(self,serviceDiscovery):
@@ -31,17 +31,20 @@ class InputHandler():
         self.serviceDiscovery = serviceDiscovery
 
     def handleInput(self, keys):
-        if keys == None:
-            # print(self.serviceDiscovery.getPlayer().state)
-            self.serviceDiscovery.getPlayer().move("idle")
 
         keys = self.parsePressedKeys(keys)
         if keys:
+            #sum the directions
+            vector = [0,0]
             for key in keys:
-                if key in InputHandler.p1command:
-                    InputHandler.p1command[key].move(self.serviceDiscovery.getPlayer())
+                vector[0] += self.p1command[key][0]
+                vector[1] += self.p1command[key][1]
+            print(vector)
+            self.serviceDiscovery.getPlayer().move(tuple(vector))
+
+            
         else:
-            self.serviceDiscovery.getPlayer().move("idle")
+            self.serviceDiscovery.getPlayer().move((0,0))
 
 
     def parsePressedKeys(self,keys):

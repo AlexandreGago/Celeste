@@ -27,7 +27,6 @@ class PlayerStuff:
                         }
     states = ["idle","jump","walkRight","walkLeft","crouch","turningLeft","turningRight"]
 
-    statesMovement = {"idle":(0,0),"jump":(0,-1),"walkRight":(1,0),"walkLeft":(-1,0),"crouch":(0,1),"turningLeft":(-1,0),"turningRight":(1,0)}
 
     spritesLocation={
         #default idle animation

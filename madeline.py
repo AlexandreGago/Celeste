@@ -18,6 +18,9 @@ ANIMATION_SPEEDS = {
     "jump": 10,
     "turn": 2
 }
+
+
+
 #(offset_x,offset_y),max_dist,(pos_x,pos_y),radius
 points = [
     [pygame.Vector2(0,0),0,pygame.Vector2(0,0),25], #first point is the center of the head
@@ -26,37 +29,79 @@ points = [
     [pygame.Vector2(-4,4),10.5,pygame.Vector2(0,0),21], 
     [pygame.Vector2(-4,2),10,pygame.Vector2(0,0),20],
     [pygame.Vector2(-2,2),9.5,pygame.Vector2(0,0),19],
-    [pygame.Vector2(-2,2),9,pygame.Vector2(0,0),18],
-    [pygame.Vector2(-2,1),9,pygame.Vector2(0,0),17],
-    [pygame.Vector2(-2,1),9,pygame.Vector2(0,0),16],
-    [pygame.Vector2(-2,1),9,pygame.Vector2(0,0),15],
 ]
 class Player(Actor):
     def __init__(self,x,y,name,serviceLocator) -> None:
+        """
+        Player class
+        
+        Args:
+            x (int): spawn x position
+            y (int): spawn y position
+            name (string): name of the player
+            serviceLocator (ServiceLocator): service locator
+
+        Returns:
+            None
+
+        """
+        #call the parent constructor (Actor)
         super().__init__()
+
         self.name = name
-        self.type = ActorTypes.PLAYER
+        self.serviceLocator = serviceLocator
+
+        #set the starting position
         self.x = x
         self.y = y
-        self.state = PlayerStuff.states[0]
-        self.serviceLocator = serviceLocator
-        self.spriteID = f"{self.state}1"
-        self.jumpPower = 0
-        self.orientation = "right"
-        self.jumpAux = "init"
 
+        self.type = ActorTypes.PLAYER
+
+        #set the starting state (idle)
+        self.state = PlayerStuff.states[0]
+        #set the starting sprite (idle1)
+        self.spriteID = f"{self.state}1"
+        
+        #this controls the jump
+        self.jumpPower = 0
+        #this controls the jump state
+        self.jumpAux = "init"
+        #set the starting orientation
+        self.orientation = "right"
+
+        #size of the sprite
         self.height = 80
         self.width = 70
 
+        #auxiliar variable to control the animation
         self.animationFrameCounter = 0
-
+        
+        #create the sprite and update it
         sprite = SpriteClass(self.height,self.width,self.type,self.serviceLocator,self.spriteID)
         sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="right")
-        # self.spriteGroup = pygame.sprite.Group()
-        # self.spriteGroup.add(sprite)
         self.sprite = sprite
-    
-    def move(self,newState):
+        
+
+    def move(self, vector: tuple[int, int]) -> None:
+        """
+        Move the player
+        
+        A
+        """
+        vectorToState = {
+            (0,0): "idle",
+            (0,1): "crouch",
+            (0,-1): "jump",
+            (1,0): "walkRight",
+            (-1,0): "walkLeft",
+            (1,1): "crouch",
+            (1,-1): "jump",
+            (-1,1): "crouch",
+            (-1,-1): "jump",
+        }
+
+
+        newState = vectorToState[vector]
         if self.state == "jump":
             #default jump state
             if self.jumpAux == "init":
@@ -67,7 +112,7 @@ class Player(Actor):
 
             #move up while reducing the jump power
             elif self.jumpAux == "up":
-                self.y -= JUMP_SPEED * Y_GRAVITY
+                self.y -= JUMP_SPEED * Y_GRAVITY 
                 #reduce jump power
                 self.jumpPower -= Y_GRAVITY if self.jumpPower > 0 else 0
                 if self.animationFrameCounter % 10 == 0:
@@ -133,11 +178,11 @@ class Player(Actor):
             if self.sprite.rect.colliderect(tile.rect):
                 #ceiling
                 if tile.rect.bottom - self.sprite.rect.top <= Y_GRAVITY:
-                    print("ceiling")
+                    # print("ceiling")
                     self.y = tile.rect.bottom
                 #ground
                 elif tile.rect.top - self.sprite.rect.bottom >= -1*Y_GRAVITY:
-                    print("ground")
+                    # print("ground")
                     self.y = tile.rect.top - self.height
                     if self.jumpAux == "down":
                         self.state = newState
@@ -148,12 +193,12 @@ class Player(Actor):
                 self.sprite.rect.y = self.y
 
         #dont let the player go out of the screen
-        if self.x + MOVEMENT_X*PlayerStuff.statesMovement[newState][0] < 0:
+        if self.x + MOVEMENT_X*vector[0] < 0:
             self.x = 0
-        elif self.x + MOVEMENT_X*PlayerStuff.statesMovement[newState][0] > WIDTH - self.width:
+        elif self.x + vector[0] > WIDTH - self.width:
             self.x = WIDTH - self.width
         else:
-            self.x += MOVEMENT_X*PlayerStuff.statesMovement[newState][0]
+            self.x += MOVEMENT_X*vector[0]
 
         #update sprite rect
         self.sprite.rect.x = self.x
@@ -162,16 +207,13 @@ class Player(Actor):
             if self.sprite.rect.colliderect(tile.rect):
                 #left wall
                 if tile.rect.right - self.sprite.rect.left <= MOVEMENT_X:
-                    print("left wall")
+                    # print("left wall")
                     self.x = tile.rect.right
                 #right wall
                 elif tile.rect.left - self.sprite.rect.right >= -1*MOVEMENT_X:
-                    print("right wall")
+                    # print("right wall")
                     self.x = tile.rect.left - self.width
-
-    
               
-
             
         #we don't have the mirrored sprites, so we just flip the sprite
         if self.state == "walkLeft" or self.state == "turningLeft":
