@@ -12,6 +12,5 @@ class Actor:
         self.observers.remove(observer)
 
     def notify(self,entity,event):
-        for obs in self.observers:
-            obs.notify(entity,event)
+        raise NotImplementedError()
     

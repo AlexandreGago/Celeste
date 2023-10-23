@@ -5,6 +5,10 @@ class serviceLocator():
         self.frameCount = None
         self.map = None
         self.display = None
+        self.actorList = []
+
+        self.offset = None
+        self.screenshake = None
     
     def getPlayer(self):
         return self.player

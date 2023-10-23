@@ -1,26 +1,45 @@
 {
     "1" :
     [
-        "ccccccccccccc--c",
-        "ccccccc--------c",
-        "cccc-----------c",
-        "ccc----------ccc",
-        "ccc---------cccc",
-        "ccc-----------cc",
-        "ccccc----------c",
-        "cc-------------c",
-        "c--------------c",
-        "c------------ccc",
-        "-------f--------",
-        "-p-----cc-----cc",
-        "---cc--cc-----cc",
-        "ccccc--cc--xxxcc",
-        "cccccxxccxxccccc",
-        "cccccccccccccccc"
-    ]
-    
-    
+        "f3ec56c4g4gch--a",
+        "cf3c4gh--------a",
+        "6cfb----------xa",
+        "4gh---------zbbc",
+        "fij---------mncc",
+        "hkl-----------3c",
+        "cfmmn--q-------a",
+        "ch-------------a",
+        "d---------r----a",
+        "h------------mnc",
+        "-------y------ac",
+        "-p-----1f-----a8",
+        "---1f--3h--oooa7",
+        "2e2cd--1foo2e2cc",
+        "c56cdooac2ecc56c",
+        "c78cc2eccc5cc78c"
+    ],
+    "2" :
+    [
+        "f3ec56c4g4gch--a",
+        "cf3c4gh--------a",
+        "6cfb----------xa",
+        "4gh---------zbbc",
+        "fij---------mncc",
+        "hkl-----------3c",
+        "cfmmn----------a",
+        "ch-------------a",
+        "d--------------a",
+        "h------------mnc",
+        "-------y------ac",
+        "-p-----1f-----a8",
+        "---1f--3h--oooa7",
+        "2e2cd--1foo2e2cc",
+        "c56cdooac2ecc56c",
+        "c78cc2eccc5cc78c"
 
+
+
+    ]
 
 
 }

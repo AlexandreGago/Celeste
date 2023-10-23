@@ -3,8 +3,11 @@ import pygame
 from enums import ActorTypes
 from dictionaries import PlayerStuff
 from spriteClass import SpriteClass
+import utils
+import math
 
 import time
+
 
 Y_GRAVITY = 9
 MOVEMENT_X = 9
@@ -13,10 +16,12 @@ WIDTH, HEIGHT = 800, 800
 
 JUMP_POWER = 200
 JUMP_SPEED = 2
+DASH_SPEED = 15
 
 ANIMATION_SPEEDS = {
     "jump": 10,
-    "turn": 2
+    "turn": 2,
+    "dash" : 1
 }
 
 
@@ -77,32 +82,84 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #create the sprite and update it
-        sprite = SpriteClass(self.height,self.width,self.type,self.serviceLocator,self.spriteID)
+        sprite = SpriteClass(self.height,self.width,self.type,self.spriteID)
         sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="right")
         self.sprite = sprite
+
+        self.dash = 1
+        self.dashFrameCounter = 0
+        self.dashDirection = [0,0]
         
 
-    def move(self, vector: tuple[int, int]) -> None:
+    def move(self, vector: tuple[int, int, int]) -> None:
         """
         Move the player
         
-        A
+        Args:
+            vector (tuple[int, int]): movement vector
+
+        Returns:
+            None
         """
-        vectorToState = {
-            (0,0): "idle",
-            (0,1): "crouch",
-            (0,-1): "jump",
-            (1,0): "walkRight",
-            (-1,0): "walkLeft",
-            (1,1): "crouch",
-            (1,-1): "jump",
-            (-1,1): "crouch",
-            (-1,-1): "jump",
-        }
+        newState = PlayerStuff.vectorToState[(vector[0],vector[1])]
+        #check if we are dashing
+        if vector[2] >= 1 and self.dash >=1 and self.state != "dash":
+            self.serviceLocator.offset = utils.screen_shake(5,10,4)
+            self.dash -= 1
+            self.state = "dash"
+            self.spriteID = f"{self.state}1"
+            self.animationFrameCounter = 0
+            self.dashFrameCounter = 0
+            if vector[0] != 0:
+                self.orientation = "left" if vector[0] < 0 else "right"
+            
+            #vector:(x,space,dash,up)
+
+            #save the dash direction
+            #if we are not moving, dash in the direction we are looking
+            if vector[0]==0 and vector[3]==0:
+                self.dashDirection = [1,0] if self.orientation == "right" else [-1,0]
+            else:
+                self.dashDirection = [vector[0],vector[3]]
 
 
-        newState = vectorToState[vector]
-        if self.state == "jump":
+        #dash state
+        if self.state == "dash":
+            #!FIX CLIPPING IN WALLS
+            #dash x movement
+            # id diagonal, the movement has to lower
+            # if self.dashDirection[0] == 1 and self.dashDirection[1] == 1:
+            #     if self.dashDirection[0] != 0:
+            #         self.x += math.cos(math.sqrt(2)/2)*DASH_SPEED if self.orientation == "right" else -1 *DASH_SPEED
+            #     #looking up dash
+            #     if self.dashDirection[1] == 1:
+            #         self.y -= math.sin(math.sqrt(2)/2)*DASH_SPEED if vector[3] >= 1 else 0
+            
+
+
+            if self.dashDirection[0] != 0:
+                self.x += DASH_SPEED if self.orientation == "right" else -1 *DASH_SPEED
+            #looking up dash
+            if self.dashDirection[1] == 1:
+                self.y -= DASH_SPEED if vector[3] >= 1 else 0
+            
+            #during the dash, we are not affected by gravity
+            self.y -= Y_GRAVITY
+
+            if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
+                self.spriteID = PlayerStuff.sprites[self.spriteID]
+            if self.dashFrameCounter == 10:
+                self.state = newState
+                self.spriteID = f"{newState}1"
+                self.animationFrameCounter = 0
+            self.dashFrameCounter += 1          
+
+            #stop other movements
+            newVector = (0,0,vector[2]-1,vector[3])
+            vector = newVector
+
+
+        elif self.state == "jump":
             #default jump state
             if self.jumpAux == "init":
                 self.jumpAux = "up"
@@ -138,10 +195,17 @@ class Player(Actor):
 
         #turning left or right
         elif self.state in ["turningLeft","turningRight"]:
-            #if its not the end of the animation, keep playing it
-            if self.spriteID != "turningLeft8" and self.spriteID != "turningRight8":
+            if newState == "jump":
+                self.state = "jump"
+                self.jumpAux = "init"
+                self.spriteID = f"{self.state}1"
+                self.animationFrameCounter = 0
+            #if its not the end of the animation and neither a jump , keep playing it 
+            elif self.spriteID != "turningLeft8" and self.spriteID != "turningRight8" :
                 if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
                     self.spriteID = PlayerStuff.sprites[self.spriteID]
+
+
             #if its the end of the animation, change the state
             else:
                 if self.state == "turningLeft":
@@ -177,18 +241,25 @@ class Player(Actor):
         for tile in self.serviceLocator.map.walls:
             if self.sprite.rect.colliderect(tile.rect):
                 #ceiling
-                if tile.rect.bottom - self.sprite.rect.top <= Y_GRAVITY:
+                if tile.rect.bottom - self.sprite.rect.top <= DASH_SPEED:
                     # print("ceiling")
                     self.y = tile.rect.bottom
                 #ground
-                elif tile.rect.top - self.sprite.rect.bottom >= -1*Y_GRAVITY:
+                elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
                     # print("ground")
                     self.y = tile.rect.top - self.height
+                    #reset dash
+                    if self.state != "dash":
+                        self.dash = 1
+
                     if self.jumpAux == "down":
                         self.state = newState
                         self.jumpAux = "init"
                         self.spriteID = f"{newState}1"
                         self.animationFrameCounter = 0
+                        
+                    for obs in self.observers:
+                        obs.notify(self.name,"ground")
                 #update sprite rect
                 self.sprite.rect.y = self.y
 
@@ -206,11 +277,11 @@ class Player(Actor):
         for tile in self.serviceLocator.map.walls:
             if self.sprite.rect.colliderect(tile.rect):
                 #left wall
-                if tile.rect.right - self.sprite.rect.left <= MOVEMENT_X:
+                if tile.rect.right - self.sprite.rect.left <= DASH_SPEED:
                     # print("left wall")
                     self.x = tile.rect.right
                 #right wall
-                elif tile.rect.left - self.sprite.rect.right >= -1*MOVEMENT_X:
+                elif tile.rect.left - self.sprite.rect.right >= -1*DASH_SPEED:
                     # print("right wall")
                     self.x = tile.rect.left - self.width
               
@@ -220,10 +291,25 @@ class Player(Actor):
             self.orientation = "left"
         elif self.state == "turningRight" or self.state == "walkRight":
             self.orientation = "right"
+
+        #check collisions for the rest of the actors
+        for actor in self.serviceLocator.actorList:
+            if actor.type == ActorTypes.DASH_RESET:
+                #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
+                if self.dash == 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                    self.dash = 1
+                    #notify observers
+                    for obs in self.observers:
+                        obs.notify(actor.name,"dashReset")
+
+            if actor.type == ActorTypes.STRAWBERRY:
+                if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
+                    #notify observers
+                    for obs in self.observers:
+                        obs.notify(actor.name,"strawberryCollected")
+
         #update sprite
-        # print(self.spriteID)
         self.animationFrameCounter += 1
-        # self.spriteGroup.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation=="left")
         pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)
 
@@ -251,13 +337,29 @@ class Player(Actor):
                 
         
         for i in range (len(points)):
-
-            pygame.draw.circle(display, (128, 0, 0), points[i][2], points[i][3])
+            if self.dash >=1:
+                pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3])
+            else:
+                pygame.draw.circle(display, (69, 194, 255), points[i][2], points[i][3])
 
     
-    def draw(self,display):
+    def draw(self,display: pygame.display) -> None:
+        """
+        Draw the player	and its hair
+
+        Args:   
+            display (pygame.display): display to draw the player
+        
+        Returns:
+            None
+        """
+        #draw hair first to be behind the player
         self.drawHair(display)
-        # self.spriteGroup.draw(display)
         self.sprite.draw(display)
+
+    def update(self) -> None:
+        pass
+    def notify(self,actor,event):
+        pass
 
         
