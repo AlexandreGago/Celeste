@@ -23,8 +23,8 @@ class InputHandler():
         pygame.K_DOWN : (0,1,0,0),
         pygame.K_LEFT : (-1,0,0,0),
         pygame.K_RIGHT : (1,0,0,0),
-        pygame.K_SPACE : (0,-1,0,0),
-        pygame.K_LSHIFT : (0,0,1,0),
+        pygame.K_c : (0,-1,0,0),
+        pygame.K_x : (0,0,1,0),
         "idle": (0,0,0,0)
     }
 
@@ -66,10 +66,10 @@ class InputHandler():
                 newkeys.append(pygame.K_LEFT)
             if keys[pygame.K_RIGHT]:
                 newkeys.append(pygame.K_RIGHT)
-            if keys[pygame.K_SPACE]:
-                newkeys.append(pygame.K_SPACE)
-            if keys[pygame.K_LSHIFT]:
-                newkeys.append(pygame.K_LSHIFT)
+            if keys[pygame.K_c]:
+                newkeys.append(pygame.K_c)
+            if keys[pygame.K_x]:
+                newkeys.append(pygame.K_x)
             
             #remove opposite directions
             if (pygame.K_RIGHT in newkeys) and (pygame.K_LEFT in newkeys):

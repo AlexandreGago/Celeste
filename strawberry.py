@@ -32,7 +32,6 @@ class Strawberry(Actor):
             if self.animationCounter % 5 == 0:
                 self.spriteID = StawberryStuff.sprites[self.spriteID]
             self.animationCounter += 1
-            print(self.spriteID)
             self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
 
     def draw(self, display):

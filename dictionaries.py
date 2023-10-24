@@ -26,7 +26,7 @@ class PlayerStuff:
                         "turningLeft":{"turningLeft1":(0,0),"turningLeft2":(0,0),"turningLeft3":(0,0),"turningLeft4":(0,0),"turningLeft5":(0,0),"turningLeft6":(0,0),"turningLeft7":(0,0),"turningLeft8":(0,0)},
                         "turningRight":{"turningRight1":(0,0),"turningRight2":(0,0),"turningRight3":(0,0),"turningRight4":(0,0),"turningRight5":(0,0),"turningRight6":(0,0),"turningRight7":(0,0),"turningRight8":(0,0)},
                         "crouch":{"crouch1":(0,0),"crouch2":(0,0),"crouch3":(0,0),"crouch4":(0,0)},
-                        "jump":{"jump1":(5,10),"jump2":(5,10),"jump3":(0,10),"jump4":(-5,10)},
+                        "jump":{"jump1":(5,10),"jump2":(5,10),"jump3":(5,5),"jump4":(0,5)},
                         "dash":{"dash1":(10,0),"dash2":(10,0),"dash3":(10,0),"dash4":(10,0)},
                         }
     
