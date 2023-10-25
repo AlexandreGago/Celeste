@@ -1,8 +1,8 @@
 #this has a class that will load a map from the maps.json and determine the sprites to be drawn
 #it will also determine the collision map for the map
 import pygame.sprite
-from dashResetEntity import DashResetEntity
-from strawberry import Strawberry
+from actors.dashResetEntity import DashResetEntity
+from actors.strawberry import Strawberry
 import json
 import base64
 levels = json.load(open("maps.json"))

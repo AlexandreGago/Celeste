@@ -1,11 +1,10 @@
 import pygame
-from enums import ActorTypes
-from dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff
+from constants.enums import ActorTypes
+from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff
 
 
 class SpriteClass(pygame.sprite.Sprite):
 
-    # img= pygame.image.load("zelda.png")
 
     def __init__(self,height,width,type,spriteID="idle"):
         super().__init__()

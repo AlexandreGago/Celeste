@@ -1,9 +1,10 @@
-from actor import Actor
+from actors.actor import Actor
 import pygame
-from enums import ActorTypes
-from dictionaries import PlayerStuff
+from constants.enums import ActorTypes,PlayerStates
+from constants.dictionaries import PlayerStuff
 from spriteClass import SpriteClass
-import utils
+from states import *
+import utils.utils as utils
 import math
 
 import time
@@ -15,14 +16,17 @@ MOVEMENT_X = 4
 WIDTH, HEIGHT = 800, 800
 
 JUMP_SPEED = 6
-DASH_SPEED = 10
-DASH_DURATION = 15
 COYOTE_COUNTER = 10
 JUMP_RESET = 10
 JUMP_REFRESH_TIMER = 1
-DASH_REFRESH_TIMER = 10
 JUMP_DURATION = 14
 JUMP_SLOW_DURATION = 10
+
+DASH_SPEED = 10
+DASH_DURATION = 15
+DASH_REFRESH_TIMER = 10
+DASH_SLOW_DURATION = 10
+
 
 ANIMATION_SPEEDS = {
     "jump": 10,
@@ -41,6 +45,8 @@ points = [
     [pygame.Vector2(-4,2),10,pygame.Vector2(0,0),11],
     [pygame.Vector2(-2,2),9.5,pygame.Vector2(0,0),10],
 ]
+
+        
 class Player(Actor):
     def __init__(self,x,y,name,serviceLocator) -> None:
         """
@@ -104,8 +110,8 @@ class Player(Actor):
         self.dashDirection = [0,0]
 
 
-        
-
+        return
+    
     def move(self, vector: tuple[int, int, int]) -> None:
         """
         Move the player
@@ -120,9 +126,9 @@ class Player(Actor):
         self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
         if self.wasGrounded:
             self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
-
-        if self.wasGrounded:
             self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
+
+
         #check if we are dashing
         if vector[2] >= 1 and self.dash >=1 and self.state != "dash" and self.dashRefreshTimer <= 0:
             self.serviceLocator.offset = utils.screen_shake(5,15,4)
@@ -152,16 +158,6 @@ class Player(Actor):
 
         #dash state
         if self.state == "dash":
-            #dash x movement
-            # id diagonal, the movement has to lower
-            # if self.dashDirection[0] == 1 and self.dashDirection[1] == 1:
-            #     if self.dashDirection[0] != 0:
-            #         self.x += math.cos(math.sqrt(2)/2)*DASH_SPEED if self.orientation == "right" else -1 *DASH_SPEED
-            #     #looking up dash
-            #     if self.dashDirection[1] == 1:
-            #         self.y -= math.sin(math.sqrt(2)/2)*DASH_SPEED if vector[3] >= 1 else 0
-
-
             if self.dashDirection[0] != 0:
                 self.x += DASH_SPEED if self.orientation == "right" else -1 *DASH_SPEED
             #looking up dash
@@ -342,7 +338,7 @@ class Player(Actor):
             self.orientation = "left"
         elif self.state == "turningRight" or self.state == "walkRight":
             self.orientation = "right"
-
+    
         #check collisions for the rest of the actors
         for actor in self.serviceLocator.actorList:
             if actor.type == ActorTypes.DASH_RESET:

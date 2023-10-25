@@ -1,8 +1,8 @@
 import pygame
-from actor import Actor
-from enums import ActorTypes
+from actors.actor import Actor
+from constants.enums import ActorTypes
 from spriteClass import SpriteClass
-from dictionaries import DashResetEntityStuff
+from constants.dictionaries import DashResetEntityStuff
 
 class DashResetEntity(Actor):
 

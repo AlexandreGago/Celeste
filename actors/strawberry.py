@@ -1,8 +1,8 @@
 import pygame
-from actor import Actor
+from actors.actor import Actor
 from spriteClass import SpriteClass
-from dictionaries import StawberryStuff
-from enums import ActorTypes
+from constants.dictionaries import StawberryStuff
+from constants.enums import ActorTypes
 
 
 

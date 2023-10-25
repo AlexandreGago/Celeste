@@ -1,5 +1,5 @@
 import pygame
-from enums import ActorTypes
+from constants.enums import ActorTypes
 # class Up():
 #     def move(self, actor):
 #         actor.move((0,-1))

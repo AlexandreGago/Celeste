@@ -1,11 +1,12 @@
 import pygame
 from inputHandler import InputHandler
 from serviceLocator import serviceLocator
-from madeline import Player
-from map import Map
-from dashResetEntity import DashResetEntity
-from snowParticle import ParticleManager
-from enums import ActorTypes
+from actors.madeline import Player
+from map.map import Map
+from actors.dashResetEntity import DashResetEntity
+from actors.snowParticle import ParticleManager
+from constants.enums import ActorTypes
+from states import *
 
 from itertools import repeat
 
@@ -55,8 +56,8 @@ for actor in serviceLocator.actorList:
     if actor.type == ActorTypes.STRAWBERRY:
         serviceLocator.player.add_observer(actor)
 
-
-
+states = [Idle(),Walk(),Turning(),Jump(),Dash(),Crouch()]
+transitions = []
 
 
 #!service locator offset and screen shake function
