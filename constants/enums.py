@@ -8,9 +8,20 @@ class ActorTypes(Enum):
     STRAWBERRY = 5
 
 class PlayerStates(Enum):
-    IDLE = 1
-    WALK = 2
-    JUMP = 3
-    CROUCH = 4
-    DASH = 5
-    TURNING = 6
+    IDLE = "idle"
+    WALK = "walk"
+    JUMP = "jump"
+    CROUCH = "crouch"
+    DASH = "dash"
+    TURN = "turn"
+
+class PlayerJumpStates(Enum):
+    INIT = 1
+    UP = 2
+    SLOWUP = 3
+    SLOWDOWN = 4
+    DOWN = 5
+
+class PlayerOrientation(Enum):
+    LEFT = 1
+    RIGHT = 2

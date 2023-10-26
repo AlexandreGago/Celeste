@@ -1,46 +1,36 @@
 import pygame
+from constants.enums import PlayerStates
 
 class PlayerStuff:
-    #idle has 8 sprites
-    #jump has ? sprites ( not done)
-    #walkRight has 12 sprites
-    #walkLeft has 12 sprites
-    #turning has 6 sprites
-    #turning fast has 9 (not done)
-    #crouch has 4 sprites
-    #dash has 4 sprites
     sprites = {
         "idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle1",
-        "walkRight1":"walkRight2","walkRight2":"walkRight3","walkRight3":"walkRight4","walkRight4":"walkRight5","walkRight5":"walkRight6","walkRight6":"walkRight7","walkRight7":"walkRight8","walkRight8":"walkRight9","walkRight9":"walkRight10","walkRight10":"walkRight11","walkRight11":"walkRight12","walkRight12":"walkRight1",
+        "walk1":"walk2","walk2":"walk3","walk3":"walk4","walk4":"walk5","walk5":"walk6","walk6":"walk7","walk7":"walk8","walk8":"walk9","walk9":"walk10","walk10":"walk11","walk11":"walk12","walk12":"walk1",
         "walkLeft1":"walkLeft2","walkLeft2":"walkLeft3","walkLeft3":"walkLeft4","walkLeft4":"walkLeft5","walkLeft5":"walkLeft6","walkLeft6":"walkLeft7","walkLeft7":"walkLeft8","walkLeft8":"walkLeft9","walkLeft9":"walkLeft10","walkLeft10":"walkLeft11","walkLeft11":"walkLeft12","walkLeft12":"walkLeft1",
-        "turningLeft1":"turningLeft2","turningLeft2":"turningLeft3","turningLeft3":"turningLeft4","turningLeft4":"turningLeft5","turningLeft5":"turningLeft6","turningLeft6":"turningLeft7","turningLeft7":"turningLeft8","turningLeft8":"end",
+        "turn1":"turn2","turn2":"turn3","turn3":"turn4","turn4":"turn5","turn5":"turn6","turn6":"turn7","turn7":"turn8","turn8":"end",
         "turningRight1":"turningRight2","turningRight2":"turningRight3","turningRight3":"turningRight4","turningRight4":"turningRight5","turningRight5":"turningRight6","turningRight6":"turningRight7","turningRight7":"turningRight8","turningRight8":"end",
         "crouch1":"crouch2","crouch2":"crouch3","crouch3":"crouch4","crouch4":"crouch1",
         "jump1":"jump2","jump2":"jump3","jump3":"jump4","jump4":"jump1",
         "dash1":"dash2","dash2":"dash3","dash3":"dash4","dash4":"dash1"
     }
 
-    spritesHairOffset = {"idle":{"idle1":(0,5),"idle2":(0,5),"idle3":(0,5),"idle4":(0,5),"idle5":(0,0),"idle6":(0,0),"idle7":(0,0),"idle8":(0,0)},
-                        "walkRight":{"walkRight1":(5,5),"walkRight2":(5,0),"walkRight3":(5,0),"walkRight4":(5,0),"walkRight5":(5,10),"walkRight6":(5,5),"walkRight7":(5,0),"walkRight8":(5,0),"walkRight9":(5,0),"walkRight10":(5,0),"walkRight11":(5,10),"walkRight12":(5,5)},
-                        "walkLeft":{"walkLeft1":(5,5),"walkLeft2":(5,0),"walkLeft3":(5,0),"walkLeft4":(5,0),"walkLeft5":(5,10),"walkLeft6":(5,5),"walkLeft7":(5,0),"walkLeft8":(5,0),"walkLeft9":(5,0),"walkLeft10":(5,0),"walkLeft11":(5,0),"walkLeft12":(5,10)},
-                        "turningLeft":{"turningLeft1":(0,0),"turningLeft2":(0,0),"turningLeft3":(0,0),"turningLeft4":(0,0),"turningLeft5":(0,0),"turningLeft6":(0,0),"turningLeft7":(0,0),"turningLeft8":(0,0)},
-                        "turningRight":{"turningRight1":(0,0),"turningRight2":(0,0),"turningRight3":(0,0),"turningRight4":(0,0),"turningRight5":(0,0),"turningRight6":(0,0),"turningRight7":(0,0),"turningRight8":(0,0)},
-                        "crouch":{"crouch1":(0,0),"crouch2":(0,0),"crouch3":(0,0),"crouch4":(0,0)},
-                        "jump":{"jump1":(5,10),"jump2":(5,10),"jump3":(5,5),"jump4":(0,5)},
-                        "dash":{"dash1":(10,0),"dash2":(10,0),"dash3":(10,0),"dash4":(10,0)},
+    spritesHairOffset = {PlayerStates.IDLE:{"idle1":(0,5),"idle2":(0,5),"idle3":(0,5),"idle4":(0,5),"idle5":(0,0),"idle6":(0,0),"idle7":(0,0),"idle8":(0,0)},
+                        PlayerStates.WALK:{"walk1":(5,5),"walk2":(5,0),"walk3":(5,0),"walk4":(5,0),"walk5":(5,10),"walk6":(5,5),"walk7":(5,0),"walk8":(5,0),"walk9":(5,0),"walk10":(5,0),"walk11":(5,10),"walk12":(5,5)},
+                        PlayerStates.TURN:{"turn1":(0,0),"turn2":(0,0),"turn3":(0,0),"turn4":(0,0),"turn5":(0,0),"turn6":(0,0),"turn7":(0,0),"turn8":(0,0)},
+                        PlayerStates.CROUCH:{"crouch1":(0,0),"crouch2":(0,0),"crouch3":(0,0),"crouch4":(0,0)},
+                        PlayerStates.JUMP:{"jump1":(5,10),"jump2":(5,10),"jump3":(5,5),"jump4":(0,5)},
+                        PlayerStates.DASH:{"dash1":(10,0),"dash2":(10,0),"dash3":(10,0),"dash4":(10,0)},
                         }
     
-    states = ["idle","jump","walkRight","walkLeft","crouch","turningLeft","turningRight"]
     vectorToState = {
-        (0,0): "idle",
-        (0,1): "crouch",
-        (0,-1): "jump",
-        (1,0): "walkRight",
-        (-1,0): "walkLeft",
-        (1,1): "crouch",
-        (1,-1): "jump",
-        (-1,1): "crouch",
-        (-1,-1): "jump",
+        (0,0): PlayerStates.IDLE,
+        (0,1): PlayerStates.CROUCH,
+        (0,-1): PlayerStates.JUMP,
+        (1,0): PlayerStates.WALK,
+        (-1,0): PlayerStates.WALK,
+        (1,1):  PlayerStates.CROUCH,
+        (1,-1): PlayerStates.JUMP,
+        (-1,1): PlayerStates.CROUCH,
+        (-1,-1): PlayerStates.JUMP
     }
 
     spritesLocation={
@@ -55,54 +45,29 @@ class PlayerStuff:
         "idle8": "./CelesteSprites/Atlases/Gameplay/characters/player/idle07.png",
 
         #Walking right
-        "walkRight1": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast00.png",
-        "walkRight2": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast01.png",
-        "walkRight3": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast02.png",
-        "walkRight4": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast03.png",
-        "walkRight5": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast04.png",
-        "walkRight6": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast05.png",
-        "walkRight7": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast06.png",
-        "walkRight8": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast07.png",
-        "walkRight9": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast08.png",
-        "walkRight10": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast09.png",
-        "walkRight11": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast10.png",
-        "walkRight12": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast11.png",
+        "walk1": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast00.png",
+        "walk2": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast01.png",
+        "walk3": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast02.png",
+        "walk4": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast03.png",
+        "walk5": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast04.png",
+        "walk6": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast05.png",
+        "walk7": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast06.png",
+        "walk8": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast07.png",
+        "walk9": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast08.png",
+        "walk10": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast09.png",
+        "walk11": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast10.png",
+        "walk12": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast11.png",
         
-        #walking left
-        "walkLeft1": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast00.png",
-        "walkLeft2": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast01.png",
-        "walkLeft3": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast02.png",
-        "walkLeft4": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast03.png",
-        "walkLeft5": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast04.png",
-        "walkLeft6": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast05.png",
-        "walkLeft7": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast06.png",
-        "walkLeft8": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast07.png",
-        "walkLeft9": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast08.png",
-        "walkLeft10": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast09.png",
-        "walkLeft11": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast10.png",
-        "walkLeft12": "./CelesteSprites/Atlases/Gameplay/characters/player/runFast11.png",
 
         #turning left
-        "turningLeft1": "./CelesteSprites/Atlases/Gameplay/characters/player/flip00.png",
-        "turningLeft2": "./CelesteSprites/Atlases/Gameplay/characters/player/flip01.png",
-        "turningLeft3": "./CelesteSprites/Atlases/Gameplay/characters/player/flip02.png",
-        "turningLeft4": "./CelesteSprites/Atlases/Gameplay/characters/player/flip03.png",
-        "turningLeft5": "./CelesteSprites/Atlases/Gameplay/characters/player/flip04.png",
-        "turningLeft6": "./CelesteSprites/Atlases/Gameplay/characters/player/flip05.png",
-        "turningLeft7": "./CelesteSprites/Atlases/Gameplay/characters/player/flip06.png",
-        "turningLeft8": "./CelesteSprites/Atlases/Gameplay/characters/player/flip07.png",
-
-
-
-        #turning right
-        "turningRight1": "./CelesteSprites/Atlases/Gameplay/characters/player/flip00.png",
-        "turningRight2": "./CelesteSprites/Atlases/Gameplay/characters/player/flip01.png",
-        "turningRight3": "./CelesteSprites/Atlases/Gameplay/characters/player/flip02.png",
-        "turningRight4": "./CelesteSprites/Atlases/Gameplay/characters/player/flip03.png",
-        "turningRight5": "./CelesteSprites/Atlases/Gameplay/characters/player/flip04.png",
-        "turningRight6": "./CelesteSprites/Atlases/Gameplay/characters/player/flip05.png",
-        "turningRight7": "./CelesteSprites/Atlases/Gameplay/characters/player/flip06.png",
-        "turningRight8": "./CelesteSprites/Atlases/Gameplay/characters/player/flip07.png",
+        "turn1": "./CelesteSprites/Atlases/Gameplay/characters/player/flip00.png",
+        "turn2": "./CelesteSprites/Atlases/Gameplay/characters/player/flip01.png",
+        "turn3": "./CelesteSprites/Atlases/Gameplay/characters/player/flip02.png",
+        "turn4": "./CelesteSprites/Atlases/Gameplay/characters/player/flip03.png",
+        "turn5": "./CelesteSprites/Atlases/Gameplay/characters/player/flip04.png",
+        "turn6": "./CelesteSprites/Atlases/Gameplay/characters/player/flip05.png",
+        "turn7": "./CelesteSprites/Atlases/Gameplay/characters/player/flip06.png",
+        "turn8": "./CelesteSprites/Atlases/Gameplay/characters/player/flip07.png",
 
 
         #crouch
