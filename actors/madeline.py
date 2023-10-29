@@ -1,5 +1,6 @@
 from actors.actor import Actor
 import pygame
+import pygame.gfxdraw
 from constants.enums import ActorTypes,PlayerStates,PlayerJumpStates,PlayerOrientation
 from constants.dictionaries import PlayerStuff
 from spriteClass import SpriteClass
@@ -410,6 +411,7 @@ class Player(Actor):
         #draw hair first to be behind the player
         self.drawHair(display)
         self.sprite.draw(display)
+
 
 
     def update(self) -> None:

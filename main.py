@@ -4,7 +4,7 @@ from serviceLocator import serviceLocator
 from actors.madeline import Player
 from map.map import Map
 from actors.dashResetEntity import DashResetEntity
-from actors.snowParticle import ParticleManager
+from actors.particles import ParticleManager
 from constants.enums import ActorTypes
 from states import *
 
@@ -43,10 +43,9 @@ serviceLocator.frameCount = frameCount
 
 
 particlemanager = ParticleManager()
-particlemanager.add_particles(50)
-#dt = delta time
-#time = total time
-dt = 0
+particlemanager.add_particles("snow", 50)
+particlemanager.add_particles("cloud", 15)
+
 time = 0
 
 #add 
@@ -72,19 +71,19 @@ while running:
 
     keys = pygame.key.get_pressed()    
     display.fill((0,0,0))
+    particlemanager.update(time)
 
     #update actors
     inputHandler.handleInput(keys)
 
+    particlemanager.draw("cloud", display)
     #draw actors
     for actor in serviceLocator.actorList:
         actor.draw(display)
     #draw map
     map.draw(display)
 
-    #draw particles
-    particlemanager.update(dt,time)
-    particlemanager.draw(display)
+    particlemanager.draw("snow", display)
     
     # pygame.draw.rect(display,(255,0,0), madeline.spriteGroup.sprites()[0].rect,1)
 
@@ -98,6 +97,5 @@ while running:
     pygame.display.update()
     
     
-    # dt = clock.tick(FRAMERATE)/18
-    dt = clock.tick(FRAMERATE)/20
-    time += dt
+
+    time += clock.tick(FRAMERATE)
