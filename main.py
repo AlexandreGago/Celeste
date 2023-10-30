@@ -50,13 +50,12 @@ time = 0
 
 #add 
 for actor in serviceLocator.actorList:
+    actor.update()
+
     if actor.type == ActorTypes.DASH_RESET:
         serviceLocator.player.add_observer(actor)
     if actor.type == ActorTypes.STRAWBERRY:
         serviceLocator.player.add_observer(actor)
-
-states = [Idle(),Walk(),Turning(),Jump(),Dash(),Crouch()]
-transitions = []
 
 
 #!service locator offset and screen shake function
@@ -64,24 +63,43 @@ serviceLocator.offset = offset
 
 pygame.init()
 running = True
+is_spawned = False
+
+#! MEGA PORCO
+target = madeline.y
+madeline.y=800
+def spawn(player):
+    if madeline.y > target:    
+        madeline.y -= 8
+    else:
+        global is_spawned
+        is_spawned = True
+
+
 while running:
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    
 
     keys = pygame.key.get_pressed()    
     display.fill((0,0,0))
     particlemanager.update(time)
 
     #update actors
-    inputHandler.handleInput(keys)
-
+    if is_spawned:
+        inputHandler.handleInput(keys)
+    else:
+        spawn(madeline)
+        madeline.sprite.update(madeline.x, madeline.y,madeline.height,madeline.width,madeline.spriteID,madeline.orientation==1)
     particlemanager.draw("cloud", display)
+    #draw map
+    map.draw(display)
     #draw actors
     for actor in serviceLocator.actorList:
         actor.draw(display)
-    #draw map
-    map.draw(display)
 
     particlemanager.draw("snow", display)
     
