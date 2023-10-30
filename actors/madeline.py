@@ -24,7 +24,7 @@ JUMP_DURATION = 14
 JUMP_SLOW_DURATION = 10
 
 DASH_SPEED = 10
-DASH_DURATION = 15
+DASH_DURATION = 10
 DASH_SLOW_UP_DURATION = 10
 DASH_SLOW_DOWN_DURATION = 10
 DASH_REFRESH_TIMER = 0
@@ -42,11 +42,11 @@ ANIMATION_SPEEDS = {
 #(offset_x,offset_y),max_dist,(pos_x,pos_y),radius
 points = [
     [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
-    [pygame.Vector2(-6,4),12,pygame.Vector2(0,0),14],
-    [pygame.Vector2(-2,4),11,pygame.Vector2(0,0),13],
-    [pygame.Vector2(-4,4),10.5,pygame.Vector2(0,0),12], 
-    [pygame.Vector2(-4,2),10,pygame.Vector2(0,0),11],
-    [pygame.Vector2(-2,2),9.5,pygame.Vector2(0,0),10],
+    [pygame.Vector2(-6,4),9,pygame.Vector2(0,0),14],
+    [pygame.Vector2(-2,4),8.5,pygame.Vector2(0,0),13],
+    [pygame.Vector2(-4,4),8,pygame.Vector2(0,0),12], 
+    [pygame.Vector2(-4,2),7.5,pygame.Vector2(0,0),11],
+    [pygame.Vector2(-2,2),7,pygame.Vector2(0,0),10],
 ]
 
         
@@ -142,7 +142,7 @@ class Player(Actor):
         elif self.jumpState == PlayerJumpStates.SLOWUP:
             self.y -= Y_GRAVITY + JUMP_SPEED/2
             if self.animationFrameCounter % 10 == 0:
-                if self.spriteID == "jump1":
+                if self.spriteID == "jump1":    
                     self.spriteID = PlayerStuff.sprites[self.spriteID]
                 else:
                     self.spriteID = "jump1"
@@ -175,21 +175,19 @@ class Player(Actor):
     
     
     def dash(self, vector: tuple[int, int, int],newState):
-        print(self.dashState)
-        print(self.dashFrameCounter)
         if self.dashState == "fast":
             if self.dashDirection[0] != 0:
                 self.x += DASH_SPEED if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED
             #looking up dash
             if self.dashDirection[1] == 1:
-                self.y -= DASH_SPEED if vector[3] >= 1 else 0
+                self.y -= DASH_SPEED 
             
             #during the dash, we are not affected by gravity
             self.y -= Y_GRAVITY
 
             if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
                 self.spriteID = PlayerStuff.sprites[self.spriteID]
-            if self.dashFrameCounter == DASH_DURATION:
+            if self.dashFrameCounter >= DASH_DURATION:
                 if self.dashDirection[1] != 1:
                     self.dashState = "slowDown"
                     self.dashFrameCounter+=DASH_SLOW_UP_DURATION
@@ -218,12 +216,13 @@ class Player(Actor):
             if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
                 self.spriteID = PlayerStuff.sprites[self.spriteID]
             if self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION + DASH_SLOW_DOWN_DURATION:
-                print("endDash")
                 self.dashState = "end"
-                self.state = newState
+                newState = PlayerStates.IDLE if newState == PlayerStates.JUMP else newState
+                self.state = newState 
                 self.spriteID = f"{newState.value}1"
                 self.animationFrameCounter = 0
                 self.dashFrameCounter = 0
+
         self.dashFrameCounter += 1
 
 
@@ -242,7 +241,6 @@ class Player(Actor):
             
     def idle(self, vector: tuple[int, int, int],newState):
         if newState != self.state:
-
             self.state = newState
             self.spriteID = f"{newState.value}1"
             self.animationFrameCounter = 0
@@ -296,7 +294,6 @@ class Player(Actor):
             None
         """
         newState = PlayerStuff.vectorToState[(vector[0],vector[1])]
-        
         self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
 
         if self.wasGrounded:
@@ -326,7 +323,7 @@ class Player(Actor):
             else:
                 self.dashDirection = [vector[0],vector[3]]
 
-        elif newState == PlayerStates.JUMP and self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0:
+        elif newState == PlayerStates.JUMP and self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
             self.state = PlayerStates.JUMP
             self.jumpState = PlayerJumpStates.INIT
             self.spriteID = f"{self.state.value}1"
@@ -354,9 +351,8 @@ class Player(Actor):
         elif self.state in [PlayerStates.TURN]:
             self.turn(vector,newState)
 
-        elif self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != "jump":
+        elif self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
             if newState != self.state:
-
                 self.state = newState
                 self.spriteID = f"{newState.value}1"
                 self.animationFrameCounter = 0
@@ -388,6 +384,8 @@ class Player(Actor):
                     #reset dash
                     if self.state != PlayerStates.DASH:
                         self.dashCount = 1
+                        self.dashRefreshTimer = 0
+                        self.dashState = "end"
 
                     if self.jumpState == PlayerJumpStates.DOWN:
                         if newState == PlayerStates.JUMP: # prevents a bug
@@ -417,8 +415,8 @@ class Player(Actor):
             if self.sprite.rect.colliderect(tile.rect):
                 self.serviceLocator.display.fill((255,0,0),tile.rect)
 
-                print("subtraction ",tile.rect.left - self.sprite.rect.right)
-                print("speed ",-1*DASH_SPEED)
+                # print("subtraction ",tile.rect.left - self.sprite.rect.right)
+                # print("speed ",-1*DASH_SPEED)
                 
                 #left wall
                 if tile.rect.right - self.sprite.rect.left <= DASH_SPEED:
@@ -428,7 +426,7 @@ class Player(Actor):
                 elif tile.rect.left - self.sprite.rect.right >= -1*DASH_SPEED:
                     # print("right wall")
                     self.x = tile.rect.left - self.width
-                    print("x rectify",self.x)
+                    # print("x rectify",self.x)
               
     
         #check collisions for the rest of the actors
@@ -437,7 +435,6 @@ class Player(Actor):
                 #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
                 if self.dashCount == 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
                     self.dashCount = 1
-                    self.dashRefreshTimer = 0
                     #notify observers
                     for obs in self.observers:
                         obs.notify(actor.name,"dashReset")
@@ -452,7 +449,7 @@ class Player(Actor):
         #update orientation
         if vector[0] > 0:
             self.orientation = PlayerOrientation.RIGHT 
-        elif vector[0] < 0:
+        elif vector[0] < 0 and self.state != PlayerStates.DASH:
             self.orientation = PlayerOrientation.LEFT
         
         self.animationFrameCounter += 1

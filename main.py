@@ -99,6 +99,7 @@ while running:
     map.draw(display)
     #draw actors
     for actor in serviceLocator.actorList:
+        actor.update()
         actor.draw(display)
 
     particlemanager.draw("snow", display)

@@ -48,11 +48,7 @@ class InputHandler():
             
         else:
             self.serviceDiscovery.getPlayer().move(self.p1command["idle"])
-        
-        #update actors (animations)
-        for actor in self.serviceDiscovery.actorList:
-            if actor.type != ActorTypes.PLAYER:
-                actor.update()
+
 
 
     def parsePressedKeys(self,keys):
