@@ -231,8 +231,6 @@ class Player(Actor):
         if self.spriteID != "turn8" and self.spriteID != "turn" :
             if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
                 self.spriteID = PlayerStuff.sprites[self.spriteID]
-
-
         #if its the end of the animation, change the state
         else:
             self.state = PlayerStates.WALK
@@ -240,48 +238,68 @@ class Player(Actor):
             self.animationFrameCounter = 0
             
     def idle(self, vector: tuple[int, int, int],newState):
-        if newState != self.state:
-            self.state = newState
-            self.spriteID = f"{newState.value}1"
-            self.animationFrameCounter = 0
-
-        else:
-            if self.animationFrameCounter % 10 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+        if self.animationFrameCounter % 10 == 0:
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
 
     def walk(self, vector: tuple[int, int, int],newState):
-        if newState != self.state:
-
-            self.state = newState
-            self.spriteID = f"{newState.value}1"
-            self.animationFrameCounter = 0
-
-        else:
-            if self.animationFrameCounter % 10 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+        if self.animationFrameCounter % 10 == 0:
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
 
     def crouch(self, vector: tuple[int, int, int],newState):
-        if newState != self.state:
-
-            self.state = newState
-            self.spriteID = f"{newState.value}1"
-            self.animationFrameCounter = 0
-
-        else:
-            if self.animationFrameCounter % 10 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+        if self.animationFrameCounter % 10 == 0:
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
 
     
     def newstate(self, vector):
         """
         decide newstate based on vector and state variables
         """
-        vectorState = PlayerStuff.vectorToState[vector]
-        if self.state == PlayerStates.JUMP and vectorState in [PlayerStates.JUMP,PlayerStates.CROUCH,PlayerStates.IDLE]:
-            return PlayerStates.IDLE
         
+        newState = PlayerStuff.vectorToState[(vector[0],vector[1])]
+        self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
         
-        pass
+        #if we are grounded, we can jump
+        if self.wasGrounded:
+            self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
+            self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
+            
+         #check if we are dashing,only allow new dash after the fast part is complete
+        if vector[2] >= 1 and self.dashCount >=1 and self.dashState != "fast" and self.dashRefreshTimer <= 0:
+            self.serviceLocator.offset = utils.screen_shake(5,15,4)
+            self.dashCount -= 1
+            self.dashRefreshTimer = DASH_REFRESH_TIMER
+            self.state = PlayerStates.DASH
+            self.spriteID = f"{self.state.value}1"
+            self.animationFrameCounter = 0
+            self.dashFrameCounter = 0
+            self.dashState = "fast"
+            #change orientation if we are moving in a direction
+            if vector[0] != 0:
+                self.orientation = PlayerOrientation.LEFT if vector[0] < 0 else PlayerOrientation.RIGHT   
+            #save the dash direction
+            #if we are not moving, dash in the direction we are looking
+            if vector[0]==0 and vector[3]==0:
+                self.dashDirection = [1,0] if self.orientation == PlayerOrientation.RIGHT else [-1,0]
+            else:
+                self.dashDirection = [vector[0],vector[3]]
+            
+        elif newState == PlayerStates.JUMP and self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
+            self.state = PlayerStates.JUMP
+            self.jumpState = PlayerJumpStates.INIT
+            self.spriteID = f"{self.state.value}1"
+            self.animationFrameCounter = 0      
+
+        elif self.orientation == PlayerOrientation.RIGHT and vector[0] <= -1:
+                newState = PlayerStates.TURN
+        elif self.orientation == PlayerOrientation.LEFT  and vector[0] >= 1:
+            newState = PlayerStates.TURN
+        
+        if newState != self.state and self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
+            self.state = newState
+            self.spriteID = f"{newState.value}1"
+            self.animationFrameCounter = 0
+                
+        return newState
     
     def move(self, vector: tuple[int, int, int]) -> None:
         """
@@ -293,47 +311,8 @@ class Player(Actor):
         Returns:
             None
         """
-        newState = PlayerStuff.vectorToState[(vector[0],vector[1])]
-        self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
-
-        if self.wasGrounded:
-            self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
-            self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
-
-        #check if we are dashing,only allow new dash after the fast part is complete
-        if vector[2] >= 1 and self.dashCount >=1 and self.dashState != "fast" and self.dashRefreshTimer <= 0:
-            self.serviceLocator.offset = utils.screen_shake(5,15,4)
-            self.dashCount -= 1
-            self.dashRefreshTimer = DASH_REFRESH_TIMER
-            self.state = PlayerStates.DASH
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-            self.dashFrameCounter = 0
-            self.dashState = "fast"
-
-            if vector[0] != 0:
-                self.orientation = PlayerOrientation.LEFT if vector[0] < 0 else PlayerOrientation.RIGHT
-            
-            #vector:(x,space,dash,up)
-
-            #save the dash direction
-            #if we are not moving, dash in the direction we are looking
-            if vector[0]==0 and vector[3]==0:
-                self.dashDirection = [1,0] if self.orientation == PlayerOrientation.RIGHT else [-1,0]
-            else:
-                self.dashDirection = [vector[0],vector[3]]
-
-        elif newState == PlayerStates.JUMP and self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
-            self.state = PlayerStates.JUMP
-            self.jumpState = PlayerJumpStates.INIT
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-
-        elif self.orientation == PlayerOrientation.RIGHT and vector[0] <= -1:
-                newState = PlayerStates.TURN
-        elif self.orientation == PlayerOrientation.LEFT  and vector[0] >= 1:
-            newState = PlayerStates.TURN
-            
+        #vector:(x,space,dash,up)
+        newState = self.newstate(vector)
         #dash state
         if self.state == PlayerStates.DASH:
             if self.dashState == "fast":
@@ -342,24 +321,21 @@ class Player(Actor):
             self.dash(vector,newState)
             #stop other movements during the first step of the dash
 
-
         elif self.state == PlayerStates.JUMP:
           self.jump(vector,newState)
             
-
         #turning left or right
         elif self.state in [PlayerStates.TURN]:
             self.turn(vector,newState)
-
-        elif self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
-            if newState != self.state:
-                self.state = newState
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-
-            else:
-                if self.animationFrameCounter % 10 == 0:
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
+        
+        elif self.state in [PlayerStates.WALK]:
+            self.walk(vector,newState)
+            
+        elif self.state in [PlayerStates.CROUCH]:
+            self.crouch(vector,newState)
+            
+        elif self.state in [PlayerStates.IDLE]:
+            self.idle(vector,newState)
 
 
 
