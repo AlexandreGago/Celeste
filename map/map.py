@@ -3,6 +3,7 @@
 import pygame.sprite
 from actors.dashResetEntity import DashResetEntity
 from actors.strawberry import Strawberry
+from actors.spring import Spring
 import json
 import base64
 levels = json.load(open("maps.json"))
@@ -10,7 +11,7 @@ spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o"]
-POWERS = ["r","q"]
+POWERS = ["r","q","s"]
 
 spritelocations = {
     "x": (105,28, 6,4),
@@ -115,9 +116,11 @@ class Map:
                         dr = DashResetEntity(idy*50, idx*50)
                         self.servicelocator.actorList.append(dr)
                     if cell == "q":
-                        print("strawberry")	
                         s = Strawberry(idy*50, idx*50)
                         self.servicelocator.actorList.append(s)
+                    if cell == "s":
+                        sp = Spring(idy*50, idx*50)
+                        self.servicelocator.actorList.append(sp)
 
         return sprites, spawn, walls
     

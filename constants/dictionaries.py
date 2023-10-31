@@ -141,3 +141,16 @@ class StawberryStuff:
 
 
     }
+class SpringStuff:
+    sprites ={"idle1":"idle1",
+                "extended1":"extended2","extended2":"extended3","extended3":"extended4","extended4":"extended5","extended5":"end",
+                }
+    states = ["idle","extended"]
+    spritesLocation = {
+        "idle1": "./CelesteSprites/Atlases/Gameplay/objects/spring/00.png",
+        "extended1": "./CelesteSprites/Atlases/Gameplay/objects/spring/01.png",
+        "extended2": "./CelesteSprites/Atlases/Gameplay/objects/spring/02.png",
+        "extended3": "./CelesteSprites/Atlases/Gameplay/objects/spring/03.png",
+        "extended4": "./CelesteSprites/Atlases/Gameplay/objects/spring/04.png",
+        "extended5": "./CelesteSprites/Atlases/Gameplay/objects/spring/05.png",
+    }

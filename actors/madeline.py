@@ -12,7 +12,7 @@ import time
 
 
 Y_GRAVITY = 8
-MOVEMENT_X = 4
+MOVEMENT_X = 5
 
 WIDTH, HEIGHT = 800, 800
 
@@ -22,6 +22,8 @@ JUMP_RESET = 10
 JUMP_REFRESH_TIMER = 1
 JUMP_DURATION = 14
 JUMP_SLOW_DURATION = 10
+JUMP_SPRING_DURATION = 2*JUMP_DURATION
+SPRING_COLLISION_COOLDOWN = 60
 
 DASH_SPEED = 10
 DASH_DURATION = 10
@@ -92,6 +94,9 @@ class Player(Actor):
         #this controls the duration of the jump (up)
         self.jumpDuration = 0
         self.jumpSlowDuration = 0
+        #spring
+        self.springCollided = False
+        self.springCollsionCollown = SPRING_COLLISION_COOLDOWN
         #set the starting orientation
         self.orientation = PlayerOrientation.RIGHT
 
@@ -114,9 +119,18 @@ class Player(Actor):
         self.dashState = "end"
         return
     
-    def jump(self, vector: tuple[int, int, int],newState):
+    def jump(self):
         #default jump state
-        if self.jumpState == PlayerJumpStates.INIT:
+        if self.springCollided ==True:
+            self.jumpState = PlayerJumpStates.UP
+            self.animationFrameCounter = 0
+            self.jumpDuration = JUMP_SPRING_DURATION
+            self.spriteID = "jump1"
+            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
+            self.springCollided = False
+            self.dashCount = 1
+
+        elif self.jumpState == PlayerJumpStates.INIT:
             self.jumpState = PlayerJumpStates.UP
             self.animationFrameCounter = 0
             self.jumpDuration = JUMP_DURATION
@@ -174,7 +188,7 @@ class Player(Actor):
                     self.spriteID = "jump3"
     
     
-    def dash(self, vector: tuple[int, int, int],newState):
+    def dash(self):
         if self.dashState == "fast":
             if self.dashDirection[0] != 0:
                 self.x += DASH_SPEED if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED
@@ -215,37 +229,24 @@ class Player(Actor):
 
             if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
                 self.spriteID = PlayerStuff.sprites[self.spriteID]
-            if self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION + DASH_SLOW_DOWN_DURATION:
-                self.dashState = "end"
-                newState = PlayerStates.IDLE if newState == PlayerStates.JUMP else newState
-                self.state = newState 
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-                self.dashFrameCounter = 0
+
 
         self.dashFrameCounter += 1
 
 
-    def turn(self, vector: tuple[int, int, int],newState):
-        #if its not the end of the animation and neither a jump , keep playing it 
-        if self.spriteID != "turn8" and self.spriteID != "turn" :
-            if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-        #if its the end of the animation, change the state
-        else:
-            self.state = PlayerStates.WALK
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
+    def turn(self):
+        if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
             
-    def idle(self, vector: tuple[int, int, int],newState):
+    def idle(self):
         if self.animationFrameCounter % 10 == 0:
             self.spriteID = PlayerStuff.sprites[self.spriteID]
 
-    def walk(self, vector: tuple[int, int, int],newState):
+    def walk(self):
         if self.animationFrameCounter % 10 == 0:
             self.spriteID = PlayerStuff.sprites[self.spriteID]
 
-    def crouch(self, vector: tuple[int, int, int],newState):
+    def crouch(self):
         if self.animationFrameCounter % 10 == 0:
             self.spriteID = PlayerStuff.sprites[self.spriteID]
 
@@ -254,17 +255,19 @@ class Player(Actor):
         """
         decide newstate based on vector and state variables
         """
-        
         newState = PlayerStuff.vectorToState[(vector[0],vector[1])]
         self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
+        self.springCollsionCollown -= 1 if self.springCollsionCollown > 0 else 0
         
         #if we are grounded, we can jump
         if self.wasGrounded:
             self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
             self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
-            
+
+        if self.springCollided:
+            newState = PlayerStates.JUMP
          #check if we are dashing,only allow new dash after the fast part is complete
-        if vector[2] >= 1 and self.dashCount >=1 and self.dashState != "fast" and self.dashRefreshTimer <= 0:
+        elif vector[2] >= 1 and self.dashCount >=1 and self.dashState != "fast" and self.dashRefreshTimer <= 0:
             self.serviceLocator.offset = utils.screen_shake(5,15,4)
             self.dashCount -= 1
             self.dashRefreshTimer = DASH_REFRESH_TIMER
@@ -283,22 +286,70 @@ class Player(Actor):
             else:
                 self.dashDirection = [vector[0],vector[3]]
             
-        elif newState == PlayerStates.JUMP and self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
-            self.state = PlayerStates.JUMP
-            self.jumpState = PlayerJumpStates.INIT
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0      
+        elif newState == PlayerStates.JUMP:
+            if self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
+                self.state = PlayerStates.JUMP
+                self.jumpState = PlayerJumpStates.INIT
+                self.spriteID = f"{self.state.value}1"
+                self.animationFrameCounter = 0    
+            else:
+                newState = self.state  
 
         elif self.orientation == PlayerOrientation.RIGHT and vector[0] <= -1:
-                newState = PlayerStates.TURN
+            newState = PlayerStates.TURN
         elif self.orientation == PlayerOrientation.LEFT  and vector[0] >= 1:
             newState = PlayerStates.TURN
         
-        if newState != self.state and self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
-            self.state = newState
-            self.spriteID = f"{newState.value}1"
-            self.animationFrameCounter = 0
-                
+        # if newState != self.state and self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
+        #     self.state = newState
+        #     self.spriteID = f"{newState.value}1"
+        #     self.animationFrameCounter = 0
+
+        if self.state == PlayerStates.JUMP:
+            newState = newState
+
+        elif self.state == PlayerStates.DASH:
+            if self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION + DASH_SLOW_DOWN_DURATION:
+                self.dashState = "end"
+                newState = PlayerStates.IDLE if newState == PlayerStates.JUMP else newState
+                self.state = newState 
+                self.spriteID = f"{newState.value}1"
+                self.animationFrameCounter = 0
+                self.dashFrameCounter = 0
+            else:
+                newState = self.state
+
+        elif self.state == PlayerStates.WALK:
+            if newState != self.state:
+                self.state = newState
+                self.spriteID = f"{newState.value}1"
+                self.animationFrameCounter = 0
+
+        elif self.state == PlayerStates.CROUCH:
+            if newState != self.state:
+                self.state = newState
+                self.spriteID = f"{newState.value}1"
+                self.animationFrameCounter = 0
+
+        elif self.state == PlayerStates.IDLE:
+            if newState != self.state:
+                self.state = newState
+                self.spriteID = f"{newState.value}1"
+                self.animationFrameCounter = 0
+
+        elif self.state == PlayerStates.TURN:
+            if newState == PlayerStates.JUMP:
+                self.state = PlayerStates.JUMP
+                self.spriteID = f"{self.state.value}1"
+                self.animationFrameCounter = 0
+            elif self.spriteID == "turn8":
+                self.state = PlayerStates.WALK
+                self.spriteID = f"{self.state.value}1"
+                self.animationFrameCounter = 0
+
+
+
+
         return newState
     
     def move(self, vector: tuple[int, int, int]) -> None:
@@ -311,31 +362,35 @@ class Player(Actor):
         Returns:
             None
         """
-        #vector:(x,space,dash,up)
+       #vector:(x,space,dash,up)
         newState = self.newstate(vector)
+        # if newState != self.state:
+        #     self.state = newState
+        #     self.spriteID = f"{self.state.value}1"
+        #     self.animationFrameCounter = 0
         #dash state
         if self.state == PlayerStates.DASH:
             if self.dashState == "fast":
                 newVector = (0,0,vector[2],vector[3])
                 vector = newVector
-            self.dash(vector,newState)
+            self.dash()
             #stop other movements during the first step of the dash
 
         elif self.state == PlayerStates.JUMP:
-          self.jump(vector,newState)
+          self.jump()
             
         #turning left or right
         elif self.state in [PlayerStates.TURN]:
-            self.turn(vector,newState)
+            self.turn()
         
         elif self.state in [PlayerStates.WALK]:
-            self.walk(vector,newState)
+            self.walk()
             
         elif self.state in [PlayerStates.CROUCH]:
-            self.crouch(vector,newState)
+            self.crouch()
             
         elif self.state in [PlayerStates.IDLE]:
-            self.idle(vector,newState)
+            self.idle()
 
 
 
@@ -414,6 +469,12 @@ class Player(Actor):
                     #notify observers
                     for obs in self.observers:
                         obs.notify(actor.name,"dashReset")
+            if actor.type == ActorTypes.SPRING:
+                if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCollown == 0:
+                    for obs in self.observers:
+                        obs.notify(actor.name,"springCollision")
+                        self.springCollided = True
+                        self.springCollsionCollown = SPRING_COLLISION_COOLDOWN
 
             if actor.type == ActorTypes.STRAWBERRY:
                 if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
@@ -435,6 +496,7 @@ class Player(Actor):
     #draws the hair
     def drawHair(self, display):
         #offset for the orientation of the character
+        # print(self.state,self.spriteID)
         offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
         offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
         for i in range (len(points)-1,-1,-1):

@@ -6,6 +6,7 @@ class ActorTypes(Enum):
     NPC = 3
     DASH_RESET = 4
     STRAWBERRY = 5
+    SPRING = 6
 
 class PlayerStates(Enum):
     IDLE = "idle"

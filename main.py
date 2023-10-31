@@ -12,7 +12,7 @@ from itertools import repeat
 
 WIDTH, HEIGHT = 800, 800
 SCALE = 1
-FRAMERATE = 60
+FRAMERATE = 10
 #Sercice discovery
 serviceLocator = serviceLocator()
 
@@ -56,6 +56,8 @@ for actor in serviceLocator.actorList:
         serviceLocator.player.add_observer(actor)
     if actor.type == ActorTypes.STRAWBERRY:
         serviceLocator.player.add_observer(actor)
+    if actor.type == ActorTypes.SPRING:
+        serviceLocator.player.add_observer(actor)
 
 
 #!service locator offset and screen shake function
@@ -68,13 +70,15 @@ is_spawned = False
 #! MEGA PORCO
 target = madeline.y
 madeline.y=800
-def spawn(player):
+def spawn(player,spawned):
     if madeline.y > target:    
         madeline.y -= 8
     else:
         global is_spawned
-        is_spawned = True
+        return True
+    return False
 
+framerate = 60
 
 while running:
     
@@ -84,16 +88,22 @@ while running:
 
     
 
-    keys = pygame.key.get_pressed()    
+    keys = pygame.key.get_pressed()   
+    if keys[pygame.K_v]:
+        framerate = 5 
+    else:
+        framerate = 60
     display.fill((0,0,0))
     particlemanager.update(time)
 
-    #update actors
+    #let input be considered after spawning animation is done
     if is_spawned:
         inputHandler.handleInput(keys)
     else:
-        spawn(madeline)
+        is_spawned = spawn(madeline,is_spawned)
         madeline.sprite.update(madeline.x, madeline.y,madeline.height,madeline.width,madeline.spriteID,madeline.orientation==1)
+        
+        
     particlemanager.draw("cloud", display)
     #draw map
     map.draw(display)
@@ -117,4 +127,4 @@ while running:
     
     
 
-    time += clock.tick(FRAMERATE)
+    time += clock.tick(framerate)

@@ -1,6 +1,6 @@
 import pygame
 from constants.enums import ActorTypes
-from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff
+from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff
 
 
 class SpriteClass(pygame.sprite.Sprite):
@@ -33,6 +33,12 @@ class SpriteClass(pygame.sprite.Sprite):
             img = pygame.image.load(StawberryStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,16,16))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        
+        if self.type == ActorTypes.SPRING:
+            self.spriteID = spriteID
+            img = pygame.image.load(SpringStuff.spritesLocation[self.spriteID])
+            self.image = img.subsurface((0,0,16,16))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
         self.rect = self.image.get_rect()
 
 
@@ -55,9 +61,14 @@ class SpriteClass(pygame.sprite.Sprite):
             #update image
             img = pygame.image.load(DashResetEntityStuff.spritesLocation[spriteID])
             self.image = img.subsurface((0,0,16,16))
+
         if self.type == ActorTypes.STRAWBERRY:
             #update image
             img = pygame.image.load(StawberryStuff.spritesLocation[spriteID])
+            self.image = img.subsurface((0,0,16,16))
+
+        if self.type == ActorTypes.SPRING:
+            img = pygame.image.load(SpringStuff.spritesLocation[spriteID])
             self.image = img.subsurface((0,0,16,16))
 
         if flip:

@@ -26,7 +26,6 @@ class Strawberry(Actor):
     def update(self):
         if self.state != "hidden":
             if self.spriteID== "collected13":
-                print("hide")
                 self.state = "hidden"
                 return
             if self.animationCounter % 5 == 0:
