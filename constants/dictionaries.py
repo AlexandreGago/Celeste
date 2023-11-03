@@ -9,8 +9,9 @@ class PlayerStuff:
         "turn1":"turn2","turn2":"turn3","turn3":"turn4","turn4":"turn5","turn5":"turn6","turn6":"turn7","turn7":"turn8","turn8":"end",
         "turningRight1":"turningRight2","turningRight2":"turningRight3","turningRight3":"turningRight4","turningRight4":"turningRight5","turningRight5":"turningRight6","turningRight6":"turningRight7","turningRight7":"turningRight8","turningRight8":"end",
         "crouch1":"crouch2","crouch2":"crouch3","crouch3":"crouch4","crouch4":"crouch1",
-        "jump1":"jump2","jump2":"jump3","jump3":"jump4","jump4":"jump1",
-        "dash1":"dash2","dash2":"dash3","dash3":"dash4","dash4":"dash1"
+        "jump1":"jump2","jump2":"jump1","jump3":"jump4","jump4":"jump3",
+        "dash1":"dash2","dash2":"dash3","dash3":"dash4","dash4":"dash1",
+        "respawn1":"respawn1"
     }
 
     spritesHairOffset = {PlayerStates.IDLE:{"idle1":(0,5),"idle2":(0,5),"idle3":(0,5),"idle4":(0,5),"idle5":(0,0),"idle6":(0,0),"idle7":(0,0),"idle8":(0,0)},
@@ -19,6 +20,7 @@ class PlayerStuff:
                         PlayerStates.CROUCH:{"crouch1":(-1,-10),"crouch2":(-1,-10),"crouch3":(-1,-10),"crouch4":(-1,-10)},
                         PlayerStates.JUMP:{"jump1":(5,10),"jump2":(5,10),"jump3":(5,5),"jump4":(0,5)},
                         PlayerStates.DASH:{"dash1":(10,0),"dash2":(10,0),"dash3":(10,0),"dash4":(10,0)},
+                        PlayerStates.RESPAWN:{"respawn1":(0,5)}
                         }
     
     vectorToState = {
@@ -34,6 +36,7 @@ class PlayerStuff:
     }
 
     spritesLocation={
+        "respawn1":"./CelesteSprites/Atlases/Gameplay/characters/player/idle00.png",
         #default idle animation
         "idle1": "./CelesteSprites/Atlases/Gameplay/characters/player/idle00.png",
         "idle2": "./CelesteSprites/Atlases/Gameplay/characters/player/idle01.png",
@@ -153,4 +156,26 @@ class SpringStuff:
         "extended3": "./CelesteSprites/Atlases/Gameplay/objects/spring/03.png",
         "extended4": "./CelesteSprites/Atlases/Gameplay/objects/spring/04.png",
         "extended5": "./CelesteSprites/Atlases/Gameplay/objects/spring/05.png",
+    }
+    spritesImageCrop= {
+        "idle1": (2,13,12,3),
+        "extended1": (2,7,12,9),
+        "extended2": (2,5,12,10),
+        "extended3": (2,7,12,9),
+        "extended4": (2,9,12,7),
+        "extended5": (2,12,12,4),
+    }
+    spritesOffset={
+        "idle1": (5,37),
+        "extended1": (5,20),
+        "extended2": (5,10),
+        "extended3": (5,20),
+        "extended4": (5,25),
+        "extended5": (5,30),
+    }
+class SpikeStuff:
+    sprites ={"idle1":"idle1"}
+    states = ["idle"]
+    spritesLocation = {
+        "idle1": "./CelesteSprites/Atlases/Gameplay/danger/spikes/outline_up00.png",
     }

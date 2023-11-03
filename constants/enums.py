@@ -7,6 +7,7 @@ class ActorTypes(Enum):
     DASH_RESET = 4
     STRAWBERRY = 5
     SPRING = 6
+    SPIKE = 7
 
 class PlayerStates(Enum):
     IDLE = "idle"
@@ -15,6 +16,7 @@ class PlayerStates(Enum):
     CROUCH = "crouch"
     DASH = "dash"
     TURN = "turn"
+    RESPAWN = "respawn"
 
 class PlayerJumpStates(Enum):
     INIT = 1

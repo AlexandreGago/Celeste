@@ -4,11 +4,12 @@ import pygame.sprite
 from actors.dashResetEntity import DashResetEntity
 from actors.strawberry import Strawberry
 from actors.spring import Spring
+from actors.spike import Spike
 import json
 import base64
 levels = json.load(open("maps.json"))
 spritesheet = pygame.image.load("atlas.png")
-WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8"]
+WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o"]
 POWERS = ["r","q","s"]
@@ -17,6 +18,8 @@ spritelocations = {
     "x": (105,28, 6,4),
     "y": (114,25, 5,7),
     "z": (121,26, 6,6),
+
+    "A" : (0,24, 8,8),
 
     "a" : (32,16, 8,8),
     "b" : (0,16, 8,8),
@@ -33,6 +36,9 @@ spritelocations = {
     "7": (64,36, 4,4),
     "8": (68,36, 4,4),
 
+    "9": (56,16, 8,8),
+    "0": (56,24, 8,8),
+
     "e": (20,16, 6,8),
     "f": (26,16, 6,8),
     "g": (20,24, 6,8),
@@ -46,7 +52,7 @@ spritelocations = {
     "m": (32,24, 12, 8),
     "n": (44,24, 12, 8),
 
-    "o": (9,11, 7,5)
+    
 
 } 
 
@@ -107,10 +113,13 @@ class Map:
                     image = pygame.transform.scale(image, (x, y))
                     sprites.add(Tile(image, idy*50 + ((50-x)/2), idx*50 + (50-y)))
                 elif cell in ENEMIES:
-                    image = spritesheet.subsurface(*spritelocations[cell])
-                    image = pygame.transform.scale(image, (50, 50))
-                    sprites.add(Tile(image, idy*50, idx*50))
-
+                    # image = spritesheet.subsurface(*spritelocations[cell])
+                    # image = pygame.transform.scale(image, (50, 50))
+                    # sprites.add(Tile(image, idy*50, idx*50))
+                    if cell == "o":
+                        spike = Spike(idy*50, idx*50)
+                        self.servicelocator.actorList.append(spike)
+                
                 elif cell in POWERS:
                     if cell == "r":
                         dr = DashResetEntity(idy*50, idx*50)

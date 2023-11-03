@@ -7,6 +7,7 @@ from actors.dashResetEntity import DashResetEntity
 from actors.particles import ParticleManager
 from constants.enums import ActorTypes
 from states import *
+import utils.utils as utils
 
 from itertools import repeat
 
@@ -70,39 +71,32 @@ is_spawned = False
 #! MEGA PORCO
 target = madeline.y
 madeline.y=800
-def spawn(player,spawned):
-    if madeline.y > target:    
-        madeline.y -= 8
-    else:
-        global is_spawned
-        return True
-    return False
 
 framerate = 60
 
+
 while running:
+    display.fill((0,0,0))
     
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    
-
-    keys = pygame.key.get_pressed()   
+    #parse keys and send to input handler
+    keys = pygame.key.get_pressed()
     if keys[pygame.K_v]:
         framerate = 5 
     else:
         framerate = 60
-    display.fill((0,0,0))
-    particlemanager.update(time)
-
-    #let input be considered after spawning animation is done
-    if is_spawned:
-        inputHandler.handleInput(keys)
-    else:
-        is_spawned = spawn(madeline,is_spawned)
-        madeline.sprite.update(madeline.x, madeline.y,madeline.height,madeline.width,madeline.spriteID,madeline.orientation==1)
         
+    keys = utils.parsePressedKeys(keys)   
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key==pygame.K_x:
+                keys.append(pygame.K_x)
+    #manage input
+    inputHandler.handleInput(keys)  
+    
+      
+    particlemanager.update(time)
         
     particlemanager.draw("cloud", display)
     #draw map
@@ -113,9 +107,7 @@ while running:
         actor.draw(display)
 
     particlemanager.draw("snow", display)
-    
     # pygame.draw.rect(display,(255,0,0), madeline.spriteGroup.sprites()[0].rect,1)
-
 
     #keep track of current frame
     serviceLocator.frameCount += 1
@@ -128,3 +120,4 @@ while running:
     
 
     time += clock.tick(framerate)
+    print(clock.get_fps())

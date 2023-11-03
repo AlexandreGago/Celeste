@@ -34,7 +34,6 @@ class InputHandler():
 
     def handleInput(self, keys):
 
-        keys = self.parsePressedKeys(keys)
         if keys:
             #sum the directions
             vector = [0,0,0,0]
@@ -51,33 +50,3 @@ class InputHandler():
 
 
 
-    def parsePressedKeys(self,keys):
-        newkeys = []
-        if keys :
-            if keys[pygame.K_UP]:
-                newkeys.append(pygame.K_UP)
-            if keys[pygame.K_DOWN]:
-                newkeys.append(pygame.K_DOWN)
-            if keys[pygame.K_LEFT]:
-                newkeys.append(pygame.K_LEFT)
-            if keys[pygame.K_RIGHT]:
-                newkeys.append(pygame.K_RIGHT)
-            if keys[pygame.K_c]:
-                newkeys.append(pygame.K_c)
-            if keys[pygame.K_x]:
-                newkeys.append(pygame.K_x)
-            
-            #remove opposite directions
-            if (pygame.K_RIGHT in newkeys) and (pygame.K_LEFT in newkeys):
-                newkeys.remove(pygame.K_RIGHT)
-                newkeys.remove(pygame.K_LEFT)
-            if (pygame.K_UP in newkeys )and(pygame.K_DOWN in newkeys):
-                newkeys.remove(pygame.K_UP)
-                newkeys.remove(pygame.K_DOWN)
-
-            #if crouched, remain crouched
-            if (pygame.K_DOWN in newkeys):
-                newkeys = []
-                newkeys.append(pygame.K_DOWN)
-
-        return newkeys

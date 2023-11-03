@@ -75,16 +75,12 @@ class Player(Actor):
 
         #set the starting position
         self.x = x
-        self.spawnX = x
-        self.y = 800
-        self.spawnHeight = y
-        
-        self.alive = False
+        self.y = y
+
         self.type = ActorTypes.PLAYER
-        self.enableCollision = False
 
         #set the starting state (idle)
-        self.state = PlayerStates.RESPAWN
+        self.state = PlayerStates.IDLE
         #set the starting sprite (idle1)
         self.spriteID = f"{self.state.value}1"
         
@@ -123,84 +119,18 @@ class Player(Actor):
         self.dashState = "end"
         return
     
-    def spawn(self):
-        if self.y > self.spawnHeight:    
-            self.y -= 8
-        else:
-            return True
-        return False
-             
-    def respawn(self):
-        self.alive = self.spawn()
-        if self.alive:
-            self.state = PlayerStates.IDLE
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-            self.enableCollision = True
-
     def jump(self):
-        #default jump state
-        if self.springCollided ==True:
+
+        if self.springCollided or self.jumpState == PlayerJumpStates.INIT:
             self.jumpState = PlayerJumpStates.UP
             self.animationFrameCounter = 0
-            self.jumpDuration = JUMP_SPRING_DURATION
+            self.jumpDuration = JUMP_SPRING_DURATION if self.springCollided else JUMP_DURATION
             self.spriteID = "jump1"
             self.jumpRefreshTimer = JUMP_REFRESH_TIMER
             self.springCollided = False
             self.dashCount = 1
-
-        elif self.jumpState == PlayerJumpStates.INIT:
-            self.jumpState = PlayerJumpStates.UP
-            self.animationFrameCounter = 0
-            self.jumpDuration = JUMP_DURATION
-            self.spriteID = "jump1"
-            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
-
-        #move up while reducing the jump power
-        elif self.jumpState == PlayerJumpStates.UP:
-            self.y -= Y_GRAVITY + JUMP_SPEED
-            self.jumpDuration -= 1 if self.jumpDuration > 0 else 0
-            #reduce jump power
-            if self.animationFrameCounter % 10 == 0:
-                if self.spriteID == "jump1":
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
-                else:
-                    self.spriteID = "jump1"
-
-            #if jumpDuration is 0, start falling
-            if self.jumpDuration <= 0:
-                self.jumpState = PlayerJumpStates.SLOWUP
-                self.jumpSlowDuration = JUMP_SLOW_DURATION
-
-        elif self.jumpState == PlayerJumpStates.SLOWUP:
-            self.y -= Y_GRAVITY + JUMP_SPEED/2
-            if self.animationFrameCounter % 10 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-                
-            self.jumpSlowDuration -= 1 if self.jumpSlowDuration > 0 else 0
-            if self.jumpSlowDuration <= 0:
-                self.jumpState = PlayerJumpStates.SLOWDOWN
-                self.jumpSlowDuration = JUMP_SLOW_DURATION
-                self.spriteID = PlayerStuff.sprites["jump2"]
-
-        elif self.jumpState == PlayerJumpStates.SLOWDOWN:
-            self.y -= Y_GRAVITY - JUMP_SPEED/2
-            if self.animationFrameCounter % 15 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-
-            self.jumpSlowDuration -= 1 if self.jumpSlowDuration > 0 else 0
-            if self.jumpSlowDuration <= 0:
-                self.jumpState = PlayerJumpStates.DOWN
-                self.spriteID = PlayerStuff.sprites["jump3"]
-
-        #we are falling
-        elif self.jumpState == PlayerJumpStates.DOWN:
-            if self.animationFrameCounter % 15 == 0:
-                if self.spriteID == "jump3":
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
-                else:
-                    self.spriteID = "jump3"
     
+        if self.jumpState == PlayerJumpStates.UP:
     
     def dash(self):
         if self.dashState == "fast":
@@ -263,7 +193,7 @@ class Player(Actor):
     def crouch(self):
         if self.animationFrameCounter % 10 == 0:
             self.spriteID = PlayerStuff.sprites[self.spriteID]
-   
+
     
     def newstate(self, vector):
         """
@@ -282,14 +212,8 @@ class Player(Actor):
             self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
             self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
 
-        if self.alive == False:
-            self.state = PlayerStates.RESPAWN
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-            self.enableCollision = False
-            
         #if last frame we collided with a spring, enter jump state
-        elif self.springCollided:
+        if self.springCollided:
             newState = PlayerStates.JUMP     
             for obs in self.observers:
                 obs.notify(self.name,"ground")       
@@ -334,15 +258,11 @@ class Player(Actor):
         elif self.orientation == PlayerOrientation.LEFT  and xInput >= 1:
             newState = PlayerStates.TURN
         
-
-        if self.state == PlayerStates.RESPAWN:
-            if self.alive == True:
-                self.state = PlayerStates.IDLE
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-                self.enableCollision = True
-                
-        elif self.state == PlayerStates.JUMP:
+        # if newState != self.state and self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
+        #     self.state = newState
+        #     self.spriteID = f"{newState.value}1"
+        #     self.animationFrameCounter = 0
+        if self.state == PlayerStates.JUMP:
             newState = newState
 
         elif self.state == PlayerStates.DASH:
@@ -434,73 +354,73 @@ class Player(Actor):
             
         elif self.state in [PlayerStates.IDLE]:
             self.idle()
-        elif self.state in [PlayerStates.RESPAWN]:
-            self.respawn()
 
-        if self.enableCollision:
-            #!The sprite rect still has the old position, so we need to update it first
-            self.y += Y_GRAVITY
-            self.sprite.rect.y = self.y
-            #ceiling and ground
-            self.wasGrounded = False
-            for tile in self.serviceLocator.map.walls:
-                if self.sprite.rect.colliderect(tile.rect):
-                    #ceiling
-                    if tile.rect.bottom - self.sprite.rect.top <= DASH_SPEED:
-                        # print("ceiling")
-                        self.y = tile.rect.bottom
-                    #ground
-                    elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
-                        # print("ground")
-                        self.wasGrounded = True
-                        self.coyoteCounter = COYOTE_COUNTER
-                        self.y = tile.rect.top - self.height
-                        #reset dash
-                        if self.state != PlayerStates.DASH:
-                            self.dashCount = 1
-                            self.dashRefreshTimer = 0
-                            self.dashState = "end"
 
-                        if self.jumpState == PlayerJumpStates.DOWN:
-                            if newState == PlayerStates.JUMP: # prevents a bug
-                                newState = PlayerStates.IDLE#
-                            self.jumpState = PlayerJumpStates.INIT#
-                            self.state = newState
-                            self.spriteID = f"{newState.value}1"
-                            self.animationFrameCounter = 0
-                            
-                        for obs in self.observers:
-                            obs.notify(self.name,"ground")
-                    #update sprite rect
-                    self.sprite.rect.y = self.y
 
-            #dont let the player go out of the screen
-            if self.x + MOVEMENT_X*vector[0] < 0:
-                self.x = 0
-            elif self.x + vector[0] > WIDTH - self.width:
-                self.x = WIDTH - self.width
-            else:
-                self.x += MOVEMENT_X*vector[0]
 
-            #update sprite rect
-            self.sprite.rect.x = self.x
-            #left and right walls
-            for tile in self.serviceLocator.map.walls:
-                if self.sprite.rect.colliderect(tile.rect):
-                    self.serviceLocator.display.fill((255,0,0),tile.rect)
+        #!The sprite rect still has the old position, so we need to update it first
+        self.y += Y_GRAVITY
+        self.sprite.rect.y = self.y
+        #ceiling and ground
+        self.wasGrounded = False
+        for tile in self.serviceLocator.map.walls:
+            if self.sprite.rect.colliderect(tile.rect):
+                #ceiling
+                if tile.rect.bottom - self.sprite.rect.top <= DASH_SPEED:
+                    # print("ceiling")
+                    self.y = tile.rect.bottom
+                #ground
+                elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
+                    # print("ground")
+                    self.wasGrounded = True
+                    self.coyoteCounter = COYOTE_COUNTER
+                    self.y = tile.rect.top - self.height
+                    #reset dash
+                    if self.state != PlayerStates.DASH:
+                        self.dashCount = 1
+                        self.dashRefreshTimer = 0
+                        self.dashState = "end"
 
-                    # print("subtraction ",tile.rect.left - self.sprite.rect.right)
-                    # print("speed ",-1*DASH_SPEED)
-                    
-                    #left wall
-                    if tile.rect.right - self.sprite.rect.left <= DASH_SPEED:
-                        # print("left wall")
-                        self.x = tile.rect.right
-                    #right wall
-                    elif tile.rect.left - self.sprite.rect.right >= -1*DASH_SPEED:
-                        # print("right wall")
-                        self.x = tile.rect.left - self.width
-                        # print("x rectify",self.x)
+                    if self.jumpState == PlayerJumpStates.DOWN:
+                        if newState == PlayerStates.JUMP: # prevents a bug
+                            newState = PlayerStates.IDLE#
+                        self.jumpState = PlayerJumpStates.INIT#
+                        self.state = newState
+                        self.spriteID = f"{newState.value}1"
+                        self.animationFrameCounter = 0
+                        
+                    for obs in self.observers:
+                        obs.notify(self.name,"ground")
+                #update sprite rect
+                self.sprite.rect.y = self.y
+
+        #dont let the player go out of the screen
+        if self.x + MOVEMENT_X*vector[0] < 0:
+            self.x = 0
+        elif self.x + vector[0] > WIDTH - self.width:
+            self.x = WIDTH - self.width
+        else:
+            self.x += MOVEMENT_X*vector[0]
+
+        #update sprite rect
+        self.sprite.rect.x = self.x
+        #left and right walls
+        for tile in self.serviceLocator.map.walls:
+            if self.sprite.rect.colliderect(tile.rect):
+                self.serviceLocator.display.fill((255,0,0),tile.rect)
+
+                # print("subtraction ",tile.rect.left - self.sprite.rect.right)
+                # print("speed ",-1*DASH_SPEED)
+                
+                #left wall
+                if tile.rect.right - self.sprite.rect.left <= DASH_SPEED:
+                    # print("left wall")
+                    self.x = tile.rect.right
+                #right wall
+                elif tile.rect.left - self.sprite.rect.right >= -1*DASH_SPEED:
+                    # print("right wall")
+                    self.x = tile.rect.left - self.width
+                    # print("x rectify",self.x)
               
     
         #check collisions for the rest of the actors
@@ -512,7 +432,6 @@ class Player(Actor):
                     #notify observers
                     for obs in self.observers:
                         obs.notify(actor.name,"dashReset")
-                        
             if actor.type == ActorTypes.SPRING:
                 if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCooldown == 0:
                     for obs in self.observers:
@@ -525,15 +444,6 @@ class Player(Actor):
                     #notify observers
                     for obs in self.observers:
                         obs.notify(actor.name,"strawberryCollected")
-                        
-            if actor.type == ActorTypes.SPIKE:
-                if self.sprite.rect.colliderect(actor.sprite.rect):
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"spikeCollision")
-                    self.alive = False
-                    self.x = self.spawnX
-                    self.y = 800
 
 
         #update orientation
