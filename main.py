@@ -76,7 +76,7 @@ framerate = 60
 
 
 while running:
-    display.fill((0,0,0))
+    display.fill((0,0,0,255))
     
     #parse keys and send to input handler
     keys = pygame.key.get_pressed()

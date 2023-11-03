@@ -532,13 +532,20 @@ class Player(Actor):
         for i in range(len(points)):
             if i == 0:
                 continue
-            if points[i][2].distance_to(points[i][0]+points[i-1][2]) > points[i][1]:
-                dir = (points[i][2]-(points[i-1][2]+points[i][0])).normalize()
-                offset = dir * points[i][1]
-                points[i][2] = points[i-1][2] + points[i][0]+ offset
+            if self.orientation == PlayerOrientation.RIGHT:
+                if points[i][2].distance_to(points[i][0]+points[i-1][2]) > points[i][1]:
+                    dir = (points[i][2]-(points[i-1][2]+points[i][0])).normalize()
+                    offset = dir * points[i][1]
+                    points[i][2] = points[i-1][2] + points[i][0]+ offset
+            else:
+                if points[i][2].distance_to((points[i][0][0]*-1,points[i][0][1])+points[i-1][2]) > points[i][1]:
+                    dir = (points[i][2]-(points[i-1][2]+(points[i][0][0]*-1,points[i][0][1]))).normalize()
+                    offset = dir * points[i][1]
+                    points[i][2] = points[i-1][2] + (points[i][0][0]*-1,points[i][0][1])+ offset
+            
                 
         
-        for i in range (len(points)):
+        for i in range (len(points)-1,-1,-1):
             if self.wasGrounded:
                 if self.dashRefreshTimer <= 0:
                     pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
@@ -549,6 +556,8 @@ class Player(Actor):
                     pygame.draw.circle(display, (69, 194, 255), points[i][2], points[i][3]) # blue
                 else:
                     pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+            # pygame.draw.circle(display, (0, 0, 0), points[i][2], points[i][3],width = 3) # brown
+                    
 
 
     
