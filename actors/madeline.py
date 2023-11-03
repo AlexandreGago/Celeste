@@ -96,7 +96,7 @@ class Player(Actor):
         self.jumpSlowDuration = 0
         #spring
         self.springCollided = False
-        self.springCollsionCollown = SPRING_COLLISION_COOLDOWN
+        self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
         #set the starting orientation
         self.orientation = PlayerOrientation.RIGHT
 
@@ -255,19 +255,25 @@ class Player(Actor):
         """
         decide newstate based on vector and state variables
         """
-        newState = PlayerStuff.vectorToState[(vector[0],vector[1])]
+        xInput,yInput,dashInput,upInput = vector
+
+        newState = PlayerStuff.vectorToState[(xInput,yInput)]
+        #reduce coyotejump counter
         self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
-        self.springCollsionCollown -= 1 if self.springCollsionCollown > 0 else 0
+        #reduce spring collision cooldown
+        self.springCollsionCooldown -= 1 if self.springCollsionCooldown > 0 else 0
         
-        #if we are grounded, we can jump
+        #if we were grounded last frame, reduce the jump cooldown and the dash cooldown
         if self.wasGrounded:
             self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
             self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
 
+        #if last frame we collided with a spring, enter jump state
         if self.springCollided:
             newState = PlayerStates.JUMP
-         #check if we are dashing,only allow new dash after the fast part is complete
-        elif vector[2] >= 1 and self.dashCount >=1 and self.dashState != "fast" and self.dashRefreshTimer <= 0:
+
+        #let dash if we have dashes and we are not dashing and cooldown is over
+        elif dashInput >= 1 and self.dashCount > 0 and self.dashState != "fast" and self.dashRefreshTimer == 0:
             self.serviceLocator.offset = utils.screen_shake(5,15,4)
             self.dashCount -= 1
             self.dashRefreshTimer = DASH_REFRESH_TIMER
@@ -276,28 +282,33 @@ class Player(Actor):
             self.animationFrameCounter = 0
             self.dashFrameCounter = 0
             self.dashState = "fast"
-            #change orientation if we are moving in a direction
-            if vector[0] != 0:
-                self.orientation = PlayerOrientation.LEFT if vector[0] < 0 else PlayerOrientation.RIGHT   
-            #save the dash direction
-            #if we are not moving, dash in the direction we are looking
-            if vector[0]==0 and vector[3]==0:
-                self.dashDirection = [1,0] if self.orientation == PlayerOrientation.RIGHT else [-1,0]
+
+            #change orientation and save the dash direction
+            if xInput != 0:
+                self.orientation = PlayerOrientation.LEFT if xInput < 0 else PlayerOrientation.RIGHT
+                self.dashDirection = [xInput,upInput]
             else:
-                self.dashDirection = [vector[0],vector[3]]
-            
+                if upInput != 0:
+                    self.dashDirection = [0,upInput]
+                else:
+                    self.dashDirection = [1,upInput] if self.orientation == PlayerOrientation.RIGHT else [-1,upInput]
+
+
+        #if we collide with a spring or pressed jump, enter jump state
         elif newState == PlayerStates.JUMP:
+            #if we are grounded and we are not jumping and we still can jump and cooldown is over
             if self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
                 self.state = PlayerStates.JUMP
                 self.jumpState = PlayerJumpStates.INIT
                 self.spriteID = f"{self.state.value}1"
                 self.animationFrameCounter = 0    
             else:
+                #keep the same state
                 newState = self.state  
 
-        elif self.orientation == PlayerOrientation.RIGHT and vector[0] <= -1:
+        elif self.orientation == PlayerOrientation.RIGHT and xInput <= -1:
             newState = PlayerStates.TURN
-        elif self.orientation == PlayerOrientation.LEFT  and vector[0] >= 1:
+        elif self.orientation == PlayerOrientation.LEFT  and xInput >= 1:
             newState = PlayerStates.TURN
         
         # if newState != self.state and self.state in [PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.IDLE] and newState != PlayerStates.JUMP:
@@ -362,7 +373,7 @@ class Player(Actor):
         Returns:
             None
         """
-       #vector:(x,space,dash,up)
+        #?vector:(x,y,dash, look up?)
         newState = self.newstate(vector)
         # if newState != self.state:
         #     self.state = newState
@@ -470,11 +481,11 @@ class Player(Actor):
                     for obs in self.observers:
                         obs.notify(actor.name,"dashReset")
             if actor.type == ActorTypes.SPRING:
-                if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCollown == 0:
+                if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCooldown == 0:
                     for obs in self.observers:
                         obs.notify(actor.name,"springCollision")
                         self.springCollided = True
-                        self.springCollsionCollown = SPRING_COLLISION_COOLDOWN
+                        self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
 
             if actor.type == ActorTypes.STRAWBERRY:
                 if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
