@@ -8,7 +8,10 @@ class ActorTypes(Enum):
     STRAWBERRY = 5
     SPRING = 6
     SPIKE = 7
-
+    
+class ParticleTypes(Enum):
+    JUMP = 1
+    
 class PlayerStates(Enum):
     IDLE = "idle"
     WALK = "walk"

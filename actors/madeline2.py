@@ -2,11 +2,12 @@ from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
 from constants.enums import ActorTypes,PlayerStates,PlayerJumpStates,PlayerOrientation
-from constants.dictionaries import PlayerStuff
+from constants.dictionaries import PlayerStuff,Sounds
 from spriteClass import SpriteClass
 from states import *
 import utils.utils as utils
 import math
+from actors.spriteParticle import SpriteParticle
 
 import time
 
@@ -90,6 +91,7 @@ class Player(Actor):
         
         #variable that holds grounded value of last frame
         self.wasGrounded = False
+        self.jumped = False
         self.coyoteCounter = 0
         self.jumpRefreshTimer = 0
         
@@ -112,7 +114,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #create the sprite and update it
-        sprite = SpriteClass(self.height,self.width,self.type,self.spriteID)
+        sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation==PlayerOrientation.RIGHT)
         self.sprite = sprite
 
@@ -121,6 +123,9 @@ class Player(Actor):
         self.dashRefreshTimer = 0
         self.dashDirection = [0,0]
         self.dashState = "end"
+        
+        self.particles = []
+        
         return
     
     def spawn(self):
@@ -148,6 +153,7 @@ class Player(Actor):
             self.jumpRefreshTimer = JUMP_REFRESH_TIMER
             self.springCollided = False
             self.dashCount = 1
+            self.jumped = True
 
         elif self.jumpState == PlayerJumpStates.INIT:
             self.jumpState = PlayerJumpStates.UP
@@ -155,6 +161,12 @@ class Player(Actor):
             self.jumpDuration = JUMP_DURATION
             self.spriteID = "jump1"
             self.jumpRefreshTimer = JUMP_REFRESH_TIMER
+            self.jumped = True
+            #play jump sound
+            self.playSound("jump",1)
+
+            #create jump particle
+            self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))
 
         #move up while reducing the jump power
         elif self.jumpState == PlayerJumpStates.UP:
@@ -301,6 +313,7 @@ class Player(Actor):
             newState = PlayerStates.DASH
             self.dashFrameCounter = 0
             self.dashState = "fast"
+            self.playSound("dash",1)
 
             #change orientation and save the dash direction
             if xInput != 0:
@@ -404,13 +417,19 @@ class Player(Actor):
             self.idle()
         elif self.state in [PlayerStates.RESPAWN]:
             self.respawn()
-
+            
+        #update particles and remove the ones that are done
+        for particle in self.particles:
+            if particle.update():
+                self.particles.remove(particle)
         if self.enableCollision:
             #!The sprite rect still has the old position, so we need to update it first
             self.y += Y_GRAVITY
             self.sprite.rect.y = self.y
             #ceiling and ground
-            self.wasGrounded = False
+
+            touchedGround = False
+            collided = False
             for tile in self.serviceLocator.map.walls:
                 if self.sprite.rect.colliderect(tile.rect):
                     #ceiling
@@ -419,7 +438,13 @@ class Player(Actor):
                         self.y = tile.rect.bottom
                     #ground
                     elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
+                        #add land particle (same as jump)
+                        if self.wasGrounded == False:
+                            print("condition")
+                            touchedGround = True
+
                         # print("ground")
+                        collided = True
                         self.wasGrounded = True
                         self.coyoteCounter = COYOTE_COUNTER
                         self.y = tile.rect.top - self.height
@@ -439,9 +464,20 @@ class Player(Actor):
                             
                         for obs in self.observers:
                             obs.notify(self.name,"ground")
-                    #update sprite rect
-                    self.sprite.rect.y = self.y
 
+                        #prevent non collisions to further change wasgrounded
+                        break
+        
+            if not collided:
+                self.wasGrounded = False
+            
+            if touchedGround:
+                self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))
+
+
+            #update sprite rect
+            self.sprite.rect.y = self.y
+                    
             #dont let the player go out of the screen
             if self.x + MOVEMENT_X*vector[0] < 0:
                 self.x = 0
@@ -470,38 +506,44 @@ class Player(Actor):
                         self.x = tile.rect.left - self.width
                         # print("x rectify",self.x)
               
-    
-        #check collisions for the rest of the actors
-        for actor in self.serviceLocator.actorList:
-            if actor.type == ActorTypes.DASH_RESET:
-                #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
-                if self.dashCount == 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
-                    self.dashCount = 1
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"dashReset")
-                        
-            if actor.type == ActorTypes.SPRING:
-                if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCooldown == 0:
-                    for obs in self.observers:
-                        obs.notify(actor.name,"springCollision")
-                        self.springCollided = True
-                        self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
+              
 
-            if actor.type == ActorTypes.STRAWBERRY:
-                if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"strawberryCollected")
-                        
-            if actor.type == ActorTypes.SPIKE:
-                if self.sprite.rect.colliderect(actor.sprite.rect):
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"spikeCollision")
-                    self.alive = False
-                    self.x = self.spawnX
-                    self.y = 800
+                
+            #check collisions for the rest of the actors
+            for actor in self.serviceLocator.actorList:
+                if actor.type == ActorTypes.DASH_RESET:
+                    #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
+                    if self.dashCount == 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                        self.dashCount = 1
+                        #notify observers
+                        for obs in self.observers:
+                            obs.notify(actor.name,"dashReset")
+                            
+                if actor.type == ActorTypes.SPRING:
+                    if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCooldown == 0:
+                        for obs in self.observers:
+                            obs.notify(actor.name,"springCollision")
+                            self.springCollided = True
+                            self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
+                        self.playSound("spring",1)
+
+                if actor.type == ActorTypes.STRAWBERRY:
+                    if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
+                        #notify observers
+                        for obs in self.observers:
+                            obs.notify(actor.name,"strawberryCollected")
+                        self.playSound("strawberry",1)
+                            
+                if actor.type == ActorTypes.SPIKE:
+                    if self.sprite.rect.colliderect(actor.sprite.rect):
+                        #notify observers
+                        for obs in self.observers:
+                            obs.notify(actor.name,"spikeCollision")
+                        self.alive = False
+                        self.x = self.spawnX
+                        self.y = 800
+                        self.playSound("death",1)
+
 
 
         #update orientation
@@ -574,6 +616,8 @@ class Player(Actor):
         #draw hair first to be behind the player
         self.drawHair(display)
         self.sprite.draw(display)
+        for particle in self.particles:
+            particle.draw(display)
 
 
 
@@ -581,5 +625,16 @@ class Player(Actor):
         pass
     def notify(self,actor,event):
         pass
-
+    
+    def levelComplete(self):
+        if self.y < 0:
+            return True
+        else:
+            return False
+        
+    def playSound(self,sound,loops):
+        if sound in Sounds.sounds:
+            pygame.mixer.music.load(Sounds.files[sound])
+            pygame.mixer.music.play(loops=loops)
+            pygame.mixer.music.set_volume(0.1)
         

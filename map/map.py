@@ -14,6 +14,8 @@ DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o"]
 POWERS = ["r","q","s"]
 
+import os
+
 spritelocations = {
     "x": (105,28, 6,4),
     "y": (114,25, 5,7),
@@ -52,9 +54,9 @@ spritelocations = {
     "m": (32,24, 12, 8),
     "n": (44,24, 12, 8),
 
-    
 
-} 
+
+}
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
@@ -64,7 +66,7 @@ class Tile(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-    
+
 
 
 class Map:
@@ -75,7 +77,7 @@ class Map:
         self.sprites, self.spawn, self.walls = self.load(level)
 
 
-    
+
     def load(self, level):
         sprites = pygame.sprite.Group()
         walls = []
@@ -87,7 +89,7 @@ class Map:
         # #split every 16 characters
         # level=[level[i:i+16] for i in range(0, len(level), 16)]
         # print(level)
-        
+
         level = levels[level]
         for idx,row in enumerate(level):
             for idy,cell in enumerate(row):
@@ -102,13 +104,13 @@ class Map:
                     tile = Tile(image, idy*50, idx*50)
                     sprites.add(tile)
                     walls.append(tile)
-                
+
                 elif cell in DECORATIONS:
                     #?scaling is 6x for decorations
                     scale = 6
                     x = spritelocations[cell][2] *scale
                     y = spritelocations[cell][3] *scale
-                    
+
                     image = spritesheet.subsurface(*spritelocations[cell])
                     image = pygame.transform.scale(image, (x, y))
                     sprites.add(Tile(image, idy*50 + ((50-x)/2), idx*50 + (50-y)))
@@ -119,7 +121,7 @@ class Map:
                     if cell == "o":
                         spike = Spike(idy*50, idx*50)
                         self.servicelocator.actorList.append(spike)
-                
+
                 elif cell in POWERS:
                     if cell == "r":
                         dr = DashResetEntity(idy*50, idx*50)
@@ -132,7 +134,7 @@ class Map:
                         self.servicelocator.actorList.append(sp)
 
         return sprites, spawn, walls
-    
+
     def draw(self, screen):
         self.sprites.draw(screen)
 

@@ -179,3 +179,29 @@ class SpikeStuff:
     spritesLocation = {
         "idle1": "./CelesteSprites/Atlases/Gameplay/danger/spikes/outline_up00.png",
     }
+
+class jumpParticles:
+    firstSprite = "jumpParticle1"
+    sprites = {"jumpParticle1":"jumpParticle2","jumpParticle2":"jumpParticle3","jumpParticle3":"jumpParticle1"}
+    spritesLocation = {
+        "jumpParticle1": "./atlas.png",
+        "jumpParticle2": "./atlas.png",
+        "jumpParticle3": "./atlas.png",
+    }
+    spritesImageCrop= {
+        "jumpParticle1": (105,9, 6,6),
+        "jumpParticle2": (112,9, 7,7),
+        "jumpParticle3": (120,8, 8,8),
+    }
+
+class Sounds:
+    sounds = ["death","strawberry","spring","dash","jump","dashEntityReset","dashEntityBreak"]
+    files={
+        "death":"./sounds/madeline_death.wav",
+        "strawberry":"./sounds/strawberry_red_get_1000.wav",
+        "spring":"./sounds/spring.wav",
+        "dash":"./sounds/dash_red_left.wav",
+        "jump":"./sounds/jump.wav",
+        "dashEntityReset":"./sounds/diamond_return_01.wav",
+        "dashEntityBreak":"./sounds/diamond_touch_01.wav"
+    }

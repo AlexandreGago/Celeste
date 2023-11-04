@@ -19,7 +19,7 @@ class Strawberry(Actor):
         #sprite e state
         self.state = "idle"
         self.spriteID = "idle1"
-        self.sprite = SpriteClass(self.height,self.width,self.type,self.spriteID)
+        self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.animationCounter = 0
 
 

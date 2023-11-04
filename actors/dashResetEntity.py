@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from constants.enums import ActorTypes
 from spriteClass import SpriteClass
-from constants.dictionaries import DashResetEntityStuff
+from constants.dictionaries import DashResetEntityStuff,Sounds
 
 class DashResetEntity(Actor):
 
@@ -20,7 +20,7 @@ class DashResetEntity(Actor):
         self.disabledCounter = 0
 
         self.spriteID =  "idle1"
-        self.sprite = SpriteClass(self.height,self.width,self.type,self.spriteID)
+        self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
 
     def update(self):
         if self.state == "outline":
@@ -29,6 +29,8 @@ class DashResetEntity(Actor):
                 self.spriteID = "flash1"
                 self.disabledCounter = 0
                 self.animationCounter = 0
+                print("play refresh sound")
+                self.playSound("dashEntityReset",1)
             else:
                 self.disabledCounter += 1
 
@@ -39,6 +41,9 @@ class DashResetEntity(Actor):
                 self.state = "idle"
                 self.spriteID = "idle1"
                 self.animationCounter = 0
+                #play refresh sound
+
+                
 
         elif self.animationCounter % 5 == 0:
             self.spriteID = DashResetEntityStuff.sprites[self.spriteID]
@@ -56,8 +61,20 @@ class DashResetEntity(Actor):
             self.spriteID = "outline1"
             self.animationCounter = 1
             self.disabledCounter = 0
+            print("play break sound")
+            self.playSound("dashEntityBreak",1)
 
         if event == "ground" and self.state == "outline":
             self.state = "refill"
             self.spriteID = "flash1"
             self.animationCounter = 0
+            #play refill sound
+            print("play refresh sound")
+            self.playSound("dashEntityReset",1)
+            
+    def playSound(self,sound,loops):
+        if sound in Sounds.sounds:
+            print("playing sound",sound)
+            pygame.mixer.music.load(Sounds.files[sound])
+            pygame.mixer.music.play(loops=loops)
+            pygame.mixer.music.set_volume(0.1)

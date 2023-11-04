@@ -19,7 +19,7 @@ class Spike(Actor):
         #sprite e state
         self.state = "idle"
         self.spriteID = "idle1"
-        self.sprite = SpriteClass(self.height,self.width,self.type,self.spriteID)
+        self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
 
 

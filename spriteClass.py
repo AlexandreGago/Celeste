@@ -1,17 +1,18 @@
 import pygame
-from constants.enums import ActorTypes
-from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff
+from constants.enums import ActorTypes,ParticleTypes
+from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff,jumpParticles
 
 
 # atlasIMG = pygame.image.load("atlas.png")
 class SpriteClass(pygame.sprite.Sprite):
-    def __init__(self,height,width,type,spriteID="idle"):
+    def __init__(self,x,y,height,width,type,spriteID):
         super().__init__()
         self.type = type
         self.height = height
         self.width = width
 
         self.spriteID = None
+        self.atlasIMG = None
 
         if self.type == ActorTypes.PLAYER:
             self.spriteID = spriteID
@@ -44,7 +45,17 @@ class SpriteClass(pygame.sprite.Sprite):
             img = pygame.image.load(SpikeStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,8,8))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            
+        if self.type == ParticleTypes.JUMP:
+            self.atlasIMG = pygame.image.load("atlas.png")
+            self.image = self.atlasIMG.subsurface((9,11, 7,5))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            
         self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.rect.height = height
+        self.rect.width = width
 
 
     def update(self,x,y,height,width,spriteID,flip=None):
@@ -82,7 +93,8 @@ class SpriteClass(pygame.sprite.Sprite):
             # self.image = atlasIMG.subsurface((9,11, 7,5))
             img = pygame.image.load(SpikeStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,8,8))
-            
+        if self.type == ParticleTypes.JUMP:
+            self.image = self.atlasIMG.subsurface(jumpParticles.spritesImageCrop[self.spriteID])
         if flip:
             self.image = pygame.transform.flip(self.image,True,False)
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
