@@ -497,7 +497,7 @@ class Player(Actor):
                     # print("speed ",-1*DASH_SPEED)
                     
                     #left wall
-                    if tile.rect.right - self.sprite.rect.left <= DASH_SPEED:
+                    if tile.rect.right - self.sprite.rect.left <=  DASH_SPEED:
                         # print("left wall")
                         self.x = tile.rect.right
                     #right wall
@@ -534,7 +534,8 @@ class Player(Actor):
                             obs.notify(actor.name,"strawberryCollected")
                         self.playSound("strawberry",1)
                             
-                if actor.type == ActorTypes.SPIKE:
+                #!PORCO
+                if actor.type == ActorTypes.SPIKE or self.y > HEIGHT:
                     if self.sprite.rect.colliderect(actor.sprite.rect):
                         #notify observers
                         for obs in self.observers:
