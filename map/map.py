@@ -124,7 +124,7 @@ class Map:
 
                 elif cell in POWERS:
                     if cell == "r":
-                        dr = DashResetEntity(idy*50, idx*50)
+                        dr = DashResetEntity(idy*50, idx*50, self.servicelocator)
                         self.servicelocator.actorList.append(dr)
                     if cell == "q":
                         s = Strawberry(idy*50, idx*50)

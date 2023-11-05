@@ -1,6 +1,20 @@
 import pygame
 from constants.enums import PlayerStates
 
+
+sounds={
+    "song1":"./sounds/level.mp3",
+    "death":"./sounds/madeline_death.wav",
+    "strawberry":"./sounds/strawberry_red_get_1000.wav",
+    "spring":"./sounds/spring.wav",
+    "dash":"./sounds/dash_red_left.wav",
+    "jump":"./sounds/jump.wav",
+    "dashEntityReset":"./sounds/diamond_return_01.wav",
+    "dashEntityBreak":"./sounds/diamond_touch_01.wav"
+}
+
+
+
 class PlayerStuff:
     sprites = {
         "idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle1",
@@ -194,14 +208,3 @@ class jumpParticles:
         "jumpParticle3": (120,8, 8,8),
     }
 
-class Sounds:
-    sounds = ["death","strawberry","spring","dash","jump","dashEntityReset","dashEntityBreak"]
-    files={
-        "death":"./sounds/madeline_death.wav",
-        "strawberry":"./sounds/strawberry_red_get_1000.wav",
-        "spring":"./sounds/spring.wav",
-        "dash":"./sounds/dash_red_left.wav",
-        "jump":"./sounds/jump.wav",
-        "dashEntityReset":"./sounds/diamond_return_01.wav",
-        "dashEntityBreak":"./sounds/diamond_touch_01.wav"
-    }

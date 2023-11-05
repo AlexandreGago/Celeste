@@ -35,9 +35,9 @@ def parsePressedKeys(keys):
             newkeys.remove(pygame.K_UP)
             newkeys.remove(pygame.K_DOWN)
 
-        #if crouched, remain crouched
-        if (pygame.K_DOWN in newkeys):
-            newkeys = []
-            newkeys.append(pygame.K_DOWN)
+        # #if crouched, remain crouched
+        # if (pygame.K_DOWN in newkeys):
+        #     newkeys = []
+        #     newkeys.append(pygame.K_DOWN)
 
     return newkeys

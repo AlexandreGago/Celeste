@@ -2,7 +2,7 @@ from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
 from constants.enums import ActorTypes,PlayerStates,PlayerJumpStates,PlayerOrientation
-from constants.dictionaries import PlayerStuff,Sounds
+from constants.dictionaries import PlayerStuff
 from spriteClass import SpriteClass
 from states import *
 import utils.utils as utils
@@ -163,7 +163,8 @@ class Player(Actor):
             self.jumpRefreshTimer = JUMP_REFRESH_TIMER
             self.jumped = True
             #play jump sound
-            self.playSound("jump",1)
+            #self.playSound("jump",1)
+            self.serviceLocator.soundManager.play("jump")
 
             #create jump particle
             self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))
@@ -215,12 +216,13 @@ class Player(Actor):
     
     
     def dash(self):
+        print(self.dashState,self.dashFrameCounter,self.dashDirection,self.orientation)
         if self.dashState == "fast":
             if self.dashDirection[0] != 0:
                 self.x += DASH_SPEED if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED
             #looking up dash
-            if self.dashDirection[1] == 1:
-                self.y -= DASH_SPEED 
+            if self.dashDirection[1] != 0:
+                self.y -= DASH_SPEED if self.dashDirection[1] == 1 else -1*DASH_SPEED
             
             #during the dash, we are not affected by gravity
             self.y -= Y_GRAVITY
@@ -236,6 +238,7 @@ class Player(Actor):
 
 
         elif self.dashState == "slowUp":
+
             if self.dashDirection[1] == 1:
                 self.y -= DASH_SPEED/2
             else:
@@ -249,6 +252,8 @@ class Player(Actor):
                 self.dashState = "slowDown"
 
         elif self.dashState == "slowDown":
+            # if self.dashDirection[0] != 0:
+            #     self.x += DASH_SPEED/2 if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED/2
             self.y += DASH_SPEED/2
             #during the dash, we are not affected by gravity
             self.y -= Y_GRAVITY
@@ -313,17 +318,19 @@ class Player(Actor):
             newState = PlayerStates.DASH
             self.dashFrameCounter = 0
             self.dashState = "fast"
-            self.playSound("dash",1)
-
+            #self.playSound("dash",1)
+            self.serviceLocator.soundManager.play("dash")
+            #!Avoid the real problem
+            verticalDirection = 1 if upInput == 1 else -yInput if yInput != 0 else 0
             #change orientation and save the dash direction
             if xInput != 0:
                 self.orientation = PlayerOrientation.LEFT if xInput < 0 else PlayerOrientation.RIGHT
-                self.dashDirection = [xInput,upInput]
+                self.dashDirection = [xInput,verticalDirection]
             else:
-                if upInput != 0:
-                    self.dashDirection = [0,upInput]
+                if verticalDirection != 0:
+                    self.dashDirection = [0,verticalDirection]
                 else:
-                    self.dashDirection = [1,upInput] if self.orientation == PlayerOrientation.RIGHT else [-1,upInput]
+                    self.dashDirection = [1,verticalDirection] if self.orientation == PlayerOrientation.RIGHT else [-1,verticalDirection]
 
 
         #if we collide with a spring or pressed jump, enter jump state
@@ -440,7 +447,6 @@ class Player(Actor):
                     elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
                         #add land particle (same as jump)
                         if self.wasGrounded == False:
-                            print("condition")
                             touchedGround = True
 
                         # print("ground")
@@ -525,14 +531,16 @@ class Player(Actor):
                             obs.notify(actor.name,"springCollision")
                             self.springCollided = True
                             self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
-                        self.playSound("spring",1)
+                        #self.playSound("spring",1)
+                        self.serviceLocator.soundManager.play("spring")
 
                 if actor.type == ActorTypes.STRAWBERRY:
                     if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
                         #notify observers
                         for obs in self.observers:
                             obs.notify(actor.name,"strawberryCollected")
-                        self.playSound("strawberry",1)
+                        #self.playSound("strawberry",1)
+                        self.serviceLocator.soundManager.play("strawberry")
                             
                 #!PORCO
                 if actor.type == ActorTypes.SPIKE or self.y > HEIGHT:
@@ -543,7 +551,8 @@ class Player(Actor):
                         self.alive = False
                         self.x = self.spawnX
                         self.y = 800
-                        self.playSound("death",1)
+                        #self.playSound("death",1)
+                        self.serviceLocator.soundManager.play("death")
 
 
 
@@ -632,10 +641,3 @@ class Player(Actor):
             return True
         else:
             return False
-        
-    def playSound(self,sound,loops):
-        if sound in Sounds.sounds:
-            pygame.mixer.music.load(Sounds.files[sound])
-            pygame.mixer.music.play(loops=loops)
-            pygame.mixer.music.set_volume(0.1)
-        

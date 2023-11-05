@@ -7,6 +7,7 @@ from actors.dashResetEntity import DashResetEntity
 from actors.particles import ParticleManager
 from constants.enums import ActorTypes
 from states import *
+from utils.soundManager import SoundManager
 import utils.utils as utils
 
 from itertools import repeat
@@ -26,6 +27,9 @@ clock = pygame.time.Clock()
 #input handler
 inputHandler = InputHandler(serviceLocator)
 
+#sound manager
+soundManager = SoundManager()
+serviceLocator.soundManager = soundManager
 
 level = 1
 map = Map(str(level),serviceLocator)
@@ -70,10 +74,7 @@ addObservers()
 running = True
 framerate = 60
 
-#play music mp3 file
-pygame.mixer.music.load("./sounds/level.mp3")
-pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.1)
+serviceLocator.soundManager.play("song1", loop=True)
 while running:
     display.fill((0,0,0,255))
 
