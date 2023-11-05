@@ -252,8 +252,8 @@ class Player(Actor):
                 self.dashState = "slowDown"
 
         elif self.dashState == "slowDown":
-            # if self.dashDirection[0] != 0:
-            #     self.x += DASH_SPEED/2 if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED/2
+            if self.dashDirection[0] != 0 and self.dashDirection[1] == 0:
+                self.x += DASH_SPEED/2 if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED/2
             self.y += DASH_SPEED/2
             #during the dash, we are not affected by gravity
             self.y -= Y_GRAVITY
@@ -402,6 +402,9 @@ class Player(Actor):
         #dash state
         if self.state == PlayerStates.DASH:
             if self.dashState == "fast":
+                newVector = (0,0,vector[2],vector[3])
+                vector = newVector
+            if self.dashDirection[0] != 0 and self.dashDirection[1] == 0 and self.dashState == "slowDown":
                 newVector = (0,0,vector[2],vector[3])
                 vector = newVector
             self.dash()
