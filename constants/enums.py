@@ -8,6 +8,7 @@ class ActorTypes(Enum):
     STRAWBERRY = 5
     SPRING = 6
     SPIKE = 7
+    FALLINGBLOCK = 8
     
 class ParticleTypes(Enum):
     JUMP = 1
@@ -20,6 +21,7 @@ class PlayerStates(Enum):
     DASH = "dash"
     TURN = "turn"
     RESPAWN = "respawn"
+    WALLHUG = "wallhug"
 
 class PlayerJumpStates(Enum):
     INIT = 1

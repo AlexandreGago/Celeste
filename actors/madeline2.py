@@ -69,7 +69,7 @@ class Player(Actor):
 
         """
         #call the parent constructor (Actor)
-        super().__init__()
+        super().__init__(x,800,50,50,serviceLocator)
 
         self.name = name
         self.serviceLocator = serviceLocator
@@ -77,7 +77,6 @@ class Player(Actor):
         #set the starting position
         self.x = x
         self.spawnX = x
-        self.y = 800
         self.spawnHeight = y
         
         self.alive = False
@@ -105,10 +104,6 @@ class Player(Actor):
         self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
         #set the starting orientation
         self.orientation = PlayerOrientation.RIGHT
-
-        #size of the sprite
-        self.height = 50
-        self.width = 50
 
         #auxiliar variable to control the animation
         self.animationFrameCounter = 0
@@ -144,33 +139,8 @@ class Player(Actor):
             self.enableCollision = True
 
     def jump(self):
-        #default jump state
-        if self.springCollided ==True:
-            self.jumpState = PlayerJumpStates.UP
-            self.animationFrameCounter = 0
-            self.jumpDuration = JUMP_SPRING_DURATION
-            self.spriteID = "jump1"
-            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
-            self.springCollided = False
-            self.dashCount = 1
-            self.jumped = True
-
-        elif self.jumpState == PlayerJumpStates.INIT:
-            self.jumpState = PlayerJumpStates.UP
-            self.animationFrameCounter = 0
-            self.jumpDuration = JUMP_DURATION
-            self.spriteID = "jump1"
-            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
-            self.jumped = True
-            #play jump sound
-            #self.playSound("jump",1)
-            self.serviceLocator.soundManager.play("jump")
-
-            #create jump particle
-            self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))
-
         #move up while reducing the jump power
-        elif self.jumpState == PlayerJumpStates.UP:
+        if self.jumpState == PlayerJumpStates.UP:
             self.y -= Y_GRAVITY + JUMP_SPEED
             self.jumpDuration -= 1 if self.jumpDuration > 0 else 0
             #reduce jump power
@@ -216,7 +186,6 @@ class Player(Actor):
     
     
     def dash(self):
-        print(self.dashState,self.dashFrameCounter,self.dashDirection,self.orientation)
         if self.dashState == "fast":
             if self.dashDirection[0] != 0:
                 self.x += DASH_SPEED if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED
@@ -299,13 +268,13 @@ class Player(Actor):
             self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
             self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
 
-        if self.alive == False:
+        if not self.alive:
             newState = PlayerStates.RESPAWN
             self.enableCollision = False
-            
         #if last frame we collided with a spring, enter jump state
         elif self.springCollided:
             newState = PlayerStates.JUMP     
+            self.initializeJump()
             for obs in self.observers:
                 obs.notify(self.name,"ground")       
 
@@ -331,14 +300,16 @@ class Player(Actor):
                     self.dashDirection = [0,verticalDirection]
                 else:
                     self.dashDirection = [1,verticalDirection] if self.orientation == PlayerOrientation.RIGHT else [-1,verticalDirection]
+        
+        # elif self.wallCollision():
+        #     newState = PlayerStates.WALLHUG
 
 
         #if we collide with a spring or pressed jump, enter jump state
         elif newState == PlayerStates.JUMP:
             #if we are grounded and we are not jumping and we still can jump and cooldown is over
-            if self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
+            if self.state != PlayerStates.JUMP and self.jumpRefreshTimer <= 0 and (self.wasGrounded or self.coyoteCounter > 0):
                 newState = PlayerStates.JUMP
-                self.jumpState = PlayerJumpStates.INIT 
             else:
                 #keep the same state
                 newState = self.state  
@@ -347,37 +318,39 @@ class Player(Actor):
             newState = PlayerStates.TURN
         elif self.orientation == PlayerOrientation.LEFT  and xInput >= 1:
             newState = PlayerStates.TURN
-        
-        if self.state == PlayerStates.RESPAWN:
-            if self.alive == True:
-                newState = PlayerStates.IDLE
-                self.enableCollision = True
-                
-        elif self.state == PlayerStates.JUMP:
-            if newState in [PlayerStates.IDLE,PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.TURN]:
-                newState = PlayerStates.JUMP
+        if newState != PlayerStates.RESPAWN:
+            if self.state == PlayerStates.RESPAWN:
+                if self.alive == True:
+                    newState = PlayerStates.IDLE
+                    self.enableCollision = True
+            
+            elif self.state == PlayerStates.JUMP:
+                if newState in [PlayerStates.IDLE,PlayerStates.WALK,PlayerStates.CROUCH,PlayerStates.TURN] and self.jumpState==PlayerJumpStates.DOWN:
+                    pass
+                else:
+                    newState = PlayerStates.JUMP if newState != PlayerStates.DASH else newState
 
-        elif self.state == PlayerStates.DASH:
-            if self.springCollided:
-                self.dashState = "end"
-                newState = newState 
-                self.dashFrameCounter = 0
-            elif self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION + DASH_SLOW_DOWN_DURATION:
-                self.dashState = "end"
-                newState = PlayerStates.IDLE if newState == PlayerStates.JUMP else newState
-                self.dashFrameCounter = 0
-            else:
-                newState = self.state
-                
-        elif self.state == PlayerStates.TURN:
-            if newState == PlayerStates.JUMP:
-                newState = PlayerStates.JUMP
+            elif self.state == PlayerStates.DASH:
+                if self.springCollided or newState == PlayerStates.JUMP:
+                    self.dashState = "end"
+                    newState = newState 
+                    self.dashFrameCounter = 0
+                elif self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION + DASH_SLOW_DOWN_DURATION:
+                    self.dashState = "end"
+                    newState = PlayerStates.IDLE if newState == PlayerStates.JUMP else newState
+                    self.dashFrameCounter = 0
+                else:
+                    newState = self.state
+                    
+            elif self.state == PlayerStates.TURN:
+                if newState == PlayerStates.JUMP:
+                    newState = PlayerStates.JUMP
 
-            elif self.spriteID == "turn8":
-                newState = PlayerStates.WALK
+                elif self.spriteID == "turn8":
+                    newState = PlayerStates.WALK
 
-        elif self.state in [PlayerStates.WALK,PlayerStates.IDLE,PlayerStates.CROUCH]:
-            pass
+            elif self.state in [PlayerStates.WALK,PlayerStates.IDLE,PlayerStates.CROUCH]:
+                pass
 
         return newState
     
@@ -393,10 +366,11 @@ class Player(Actor):
         """
         #?vector:(x,y,dash, look up?)
         newState = self.newstate(vector)
-        
         if self.state != newState:
             self.spriteID = f"{newState.value}1"
             self.animationFrameCounter = 0
+            if newState == PlayerStates.JUMP:
+                self.initializeJump()
         self.state = newState
 
         #dash state
@@ -427,7 +401,6 @@ class Player(Actor):
             self.idle()
         elif self.state in [PlayerStates.RESPAWN]:
             self.respawn()
-            
         #update particles and remove the ones that are done
         for particle in self.particles:
             if particle.update():
@@ -452,6 +425,17 @@ class Player(Actor):
                         if self.wasGrounded == False:
                             touchedGround = True
 
+                        
+                        
+                        if type(tile).__name__ == "FallingBlock":
+                            for obs in self.observers:
+                                obs.notify(tile.name,"touchFallingBlock")
+                
+                        
+                        
+                        
+                        
+                        
                         # print("ground")
                         collided = True
                         self.wasGrounded = True
@@ -466,10 +450,11 @@ class Player(Actor):
                         if self.jumpState == PlayerJumpStates.DOWN:
                             if newState == PlayerStates.JUMP: # prevents a bug
                                 newState = PlayerStates.IDLE#
-                            self.jumpState = PlayerJumpStates.INIT#
+                            self.initializeJump()
                             self.state = newState
                             self.spriteID = f"{newState.value}1"
                             self.animationFrameCounter = 0
+                            pass
                             
                         for obs in self.observers:
                             obs.notify(self.name,"ground")
@@ -497,11 +482,11 @@ class Player(Actor):
 
             #update sprite rect
             self.sprite.rect.x = self.x
+            # self.wallCollsion
             #left and right walls
             for tile in self.serviceLocator.map.walls:
                 if self.sprite.rect.colliderect(tile.rect):
                     self.serviceLocator.display.fill((255,0,0),tile.rect)
-
                     # print("subtraction ",tile.rect.left - self.sprite.rect.right)
                     # print("speed ",-1*DASH_SPEED)
                     
@@ -535,7 +520,6 @@ class Player(Actor):
                             self.springCollided = True
                             self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
                         #self.playSound("spring",1)
-                        self.serviceLocator.soundManager.play("spring")
 
                 if actor.type == ActorTypes.STRAWBERRY:
                     if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
@@ -543,19 +527,16 @@ class Player(Actor):
                         for obs in self.observers:
                             obs.notify(actor.name,"strawberryCollected")
                         #self.playSound("strawberry",1)
-                        self.serviceLocator.soundManager.play("strawberry")
                             
-                #!PORCO
                 if actor.type == ActorTypes.SPIKE or self.y > HEIGHT:
                     if self.sprite.rect.colliderect(actor.sprite.rect):
-                        #notify observers
-                        for obs in self.observers:
-                            obs.notify(actor.name,"spikeCollision")
                         self.alive = False
                         self.x = self.spawnX
                         self.y = 800
                         #self.playSound("death",1)
                         self.serviceLocator.soundManager.play("death")
+                        
+
 
 
 
@@ -572,9 +553,9 @@ class Player(Actor):
     #draws the hair
     def drawHair(self, display):
         #offset for the orientation of the character
-        # print(self.state,self.spriteID)
-        offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
-        offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
+        if PlayerStuff.spritesHairOffset[self.state][self.spriteID]:
+            offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
+            offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
         for i in range (len(points)-1,-1,-1):
             if i == 0:
                 points[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))
@@ -644,3 +625,26 @@ class Player(Actor):
             return True
         else:
             return False
+
+    def initializeJump(self):
+        if self.springCollided:
+            self.jumpState = PlayerJumpStates.UP
+            self.animationFrameCounter = 0
+            self.jumpDuration = JUMP_SPRING_DURATION
+            self.spriteID = "jump1"
+            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
+            self.springCollided = False
+            self.dashCount = 1
+            self.jumped = True
+
+        else:
+            self.jumpState = PlayerJumpStates.UP
+            self.animationFrameCounter = 0
+            self.jumpDuration = JUMP_DURATION
+            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
+            self.spriteID = "jump1"
+            self.jumped = True
+            self.serviceLocator.soundManager.play("jump")
+
+            #create jump particle
+        self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))

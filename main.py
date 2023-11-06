@@ -31,7 +31,7 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 1
+level = 3
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 
@@ -61,6 +61,8 @@ def addObservers():
         if actor.type == ActorTypes.STRAWBERRY:
             serviceLocator.player.add_observer(actor)
         if actor.type == ActorTypes.SPRING:
+            serviceLocator.player.add_observer(actor)
+        if actor.type == ActorTypes.FALLINGBLOCK:
             serviceLocator.player.add_observer(actor)
 
 
@@ -112,7 +114,6 @@ while running:
                 keys.append(pygame.K_x)
     #manage input
     inputHandler.handleInput(keys)  
-    
       
     particlemanager.update(time)
         

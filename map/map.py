@@ -5,14 +5,15 @@ from actors.dashResetEntity import DashResetEntity
 from actors.strawberry import Strawberry
 from actors.spring import Spring
 from actors.spike import Spike
+from actors.fallingBlock import FallingBlock
 import json
 import base64
 levels = json.load(open("maps.json"))
 spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A"]
 DECORATIONS = ["x", "y", "z"]
-ENEMIES = ["o"]
-POWERS = ["r","q","s"]
+ENEMIES = ["o", "O", "ó" "ò"]
+POWERS = ["r","q","s", "t"]
 
 import os
 
@@ -118,7 +119,7 @@ class Map:
                     # image = spritesheet.subsurface(*spritelocations[cell])
                     # image = pygame.transform.scale(image, (50, 50))
                     # sprites.add(Tile(image, idy*50, idx*50))
-                    if cell == "o":
+                    if cell in ["o","O","ó"]:
                         spike = Spike(idy*50, idx*50)
                         self.servicelocator.actorList.append(spike)
 
@@ -127,11 +128,15 @@ class Map:
                         dr = DashResetEntity(idy*50, idx*50, self.servicelocator)
                         self.servicelocator.actorList.append(dr)
                     if cell == "q":
-                        s = Strawberry(idy*50, idx*50)
+                        s = Strawberry(idy*50, idx*50, self.servicelocator)
                         self.servicelocator.actorList.append(s)
                     if cell == "s":
-                        sp = Spring(idy*50, idx*50)
+                        sp = Spring(idy*50, idx*50, self.servicelocator)
                         self.servicelocator.actorList.append(sp)
+                    if cell == "t":
+                        fb = FallingBlock(idy*50, idx*50, self.servicelocator)
+                        self.servicelocator.actorList.append(fb)
+                        walls.append(fb)
 
         return sprites, spawn, walls
 

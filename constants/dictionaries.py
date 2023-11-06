@@ -208,3 +208,11 @@ class jumpParticles:
         "jumpParticle3": (120,8, 8,8),
     }
 
+class fallingBlockStuff:
+    firstSpriteID = "idle1"
+    states = ["idle","outline"]
+    sprites= {"idle1":"idle1","outline1":"outline1"}
+    spritesLocation = {
+        "idle1": "./CelesteSprites/Atlases/Gameplay/objects/crumbleBlock/default.png",
+        "outline1": "./CelesteSprites/Atlases/Gameplay/objects/crumbleBlock/outline.png",
+    }

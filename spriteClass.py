@@ -1,6 +1,6 @@
 import pygame
 from constants.enums import ActorTypes,ParticleTypes
-from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff,jumpParticles
+from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff,jumpParticles,fallingBlockStuff
 
 
 # atlasIMG = pygame.image.load("atlas.png")
@@ -22,7 +22,6 @@ class SpriteClass(pygame.sprite.Sprite):
 
         if self.type == ActorTypes.DASH_RESET:
             self.spriteID = spriteID
-            print(self.spriteID)
             img = pygame.image.load(DashResetEntityStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,16,16))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
@@ -50,7 +49,13 @@ class SpriteClass(pygame.sprite.Sprite):
             self.atlasIMG = pygame.image.load("atlas.png")
             self.image = self.atlasIMG.subsurface((9,11, 7,5))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-            
+        
+        if self.type == ActorTypes.FALLINGBLOCK:
+            self.spriteID = spriteID
+            img = pygame.image.load(fallingBlockStuff.spritesLocation[self.spriteID])
+            self.image = img.subsurface((0,0,32,8))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -92,9 +97,14 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.SPIKE:
             # self.image = atlasIMG.subsurface((9,11, 7,5))
             img = pygame.image.load(SpikeStuff.spritesLocation[self.spriteID])
-            self.image = img.subsurface((0,0,8,8))
+            self.image = img.subsurface((0,2,8,6))
         if self.type == ParticleTypes.JUMP:
             self.image = self.atlasIMG.subsurface(jumpParticles.spritesImageCrop[self.spriteID])
+
+        if self.type == ActorTypes.FALLINGBLOCK:
+            img = pygame.image.load(fallingBlockStuff.spritesLocation[self.spriteID])
+            self.image = img.subsurface((0,0,23,8))
+
         if flip:
             self.image = pygame.transform.flip(self.image,True,False)
         self.image = pygame.transform.scale(self.image, (self.width, self.height))

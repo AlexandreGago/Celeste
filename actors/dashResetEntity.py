@@ -7,12 +7,8 @@ from constants.dictionaries import DashResetEntityStuff
 class DashResetEntity(Actor):
 
     def __init__(self,x,y, serviceLocator) -> None:
-        super().__init__()
+        super().__init__(x,y,80,80,serviceLocator)
         self.type = ActorTypes.DASH_RESET
-        self.x = x
-        self.y = y
-        self.width = 80
-        self.height = 80
         self.name = id(self)
 
         self.state = "idle"
@@ -31,8 +27,7 @@ class DashResetEntity(Actor):
                 self.spriteID = "flash1"
                 self.disabledCounter = 0
                 self.animationCounter = 0
-                print("play refresh sound")
-                self.playSound("dashEntityReset",1)
+                self.serviceLocator.soundManager.play("dashEntityReset")
             else:
                 self.disabledCounter += 1
 

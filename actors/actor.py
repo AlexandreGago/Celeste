@@ -1,6 +1,11 @@
 class Actor:
-    def __init__(self) -> None:
+    def __init__(self,x,y,height,width,serviceLocator) -> None:
         self.observers = []
+        self.x = x
+        self.y = y
+        self.height = height
+        self.width = width
+        self.serviceLocator = serviceLocator
 
     def move(self):
         raise NotImplementedError()

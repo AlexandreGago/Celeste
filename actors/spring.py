@@ -7,12 +7,8 @@ from constants.enums import ActorTypes
 
 
 class Spring(Actor):
-    def __init__(self, x, y) -> None:
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.height = 50
-        self.width = 45
+    def __init__(self, x, y, serviceLocator) -> None:
+        super().__init__(x,y,50,45,serviceLocator)
         self.name = id(self)
         self.type = ActorTypes.SPRING
 
@@ -53,6 +49,7 @@ class Spring(Actor):
     def notify(self, entityName, event):
         if event == "springCollision" and entityName == self.name:
             if self.state == "idle":
+                self.serviceLocator.soundManager.play("spring")
                 self.state = "extended"
                 self.spriteID = "extended1"
                 self.animationCounter = 1

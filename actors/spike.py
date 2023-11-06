@@ -8,11 +8,8 @@ from constants.enums import ActorTypes
 
 class Spike(Actor):
     def __init__(self, x, y) -> None:
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.height = 50
-        self.width = 50
+        super().__init__(x,y+20,30,50,None)
+
         self.name = id(self)
         self.type = ActorTypes.SPIKE
 
@@ -32,4 +29,4 @@ class Spike(Actor):
 
     def notify(self, entityName, event):
         if event == "touchSpike" and entityName == self.name:
-            print("kill player")
+            pass

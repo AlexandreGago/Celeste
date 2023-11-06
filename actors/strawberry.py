@@ -7,12 +7,9 @@ from constants.enums import ActorTypes
 
 
 class Strawberry(Actor):
-    def __init__(self, x, y) -> None:
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.height = 80
-        self.width = 80
+    def __init__(self, x, y, serviceLocator) -> None:
+        super().__init__(x,y,80,80,serviceLocator)
+
         self.name = id(self)
         self.type = ActorTypes.STRAWBERRY
 
@@ -40,6 +37,7 @@ class Strawberry(Actor):
     def notify(self, entityName, event):
         if event == "strawberryCollected" and entityName == self.name:
             if self.state == "idle":
+                self.serviceLocator.soundManager.play("strawberry")
                 self.state = "collected"
                 self.spriteID = "collected1"
                 self.animationCounter = 1
