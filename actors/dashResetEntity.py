@@ -58,7 +58,6 @@ class DashResetEntity(Actor):
             self.spriteID = "outline1"
             self.animationCounter = 1
             self.disabledCounter = 0
-            print("play break sound")
             self.serviceLocator.soundManager.play("dashEntityBreak")
 
         if event == "ground" and self.state == "outline":
@@ -66,6 +65,5 @@ class DashResetEntity(Actor):
             self.spriteID = "flash1"
             self.animationCounter = 0
             #play refill sound
-            print("play refresh sound")
             # self.playSound("dashEntityReset",1)
             self.serviceLocator.soundManager.play("dashEntityReset")            

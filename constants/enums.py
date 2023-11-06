@@ -33,3 +33,9 @@ class PlayerJumpStates(Enum):
 class PlayerOrientation(Enum):
     LEFT = 1
     RIGHT = 2
+
+class SpikeOrientations(Enum):
+    UP = 1
+    LEFT = 2
+    DOWN = 3
+    RIGHT = 4

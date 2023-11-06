@@ -6,13 +6,14 @@ from actors.strawberry import Strawberry
 from actors.spring import Spring
 from actors.spike import Spike
 from actors.fallingBlock import FallingBlock
+from constants.enums import SpikeOrientations
 import json
 import base64
 levels = json.load(open("maps.json"))
 spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A"]
 DECORATIONS = ["x", "y", "z"]
-ENEMIES = ["o", "O", "ó" "ò"]
+ENEMIES = ["o", "O", "ó", "ò"]
 POWERS = ["r","q","s", "t"]
 
 import os
@@ -119,9 +120,18 @@ class Map:
                     # image = spritesheet.subsurface(*spritelocations[cell])
                     # image = pygame.transform.scale(image, (50, 50))
                     # sprites.add(Tile(image, idy*50, idx*50))
-                    if cell in ["o","O","ó"]:
-                        spike = Spike(idy*50, idx*50)
-                        self.servicelocator.actorList.append(spike)
+                    print(cell)
+                    if cell in ["o"]:
+                        orientation = SpikeOrientations.UP
+                    if cell in ["O"]:
+                        orientation = SpikeOrientations.DOWN 
+                    if cell in ["ó"]:
+                        orientation = SpikeOrientations.RIGHT
+                    if cell in ["ò"]:
+                        orientation = SpikeOrientations.LEFT
+
+                    spike = Spike(idy*50, idx*50,orientation=orientation)
+                    self.servicelocator.actorList.append(spike)
 
                 elif cell in POWERS:
                     if cell == "r":

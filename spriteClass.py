@@ -5,7 +5,7 @@ from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStu
 
 # atlasIMG = pygame.image.load("atlas.png")
 class SpriteClass(pygame.sprite.Sprite):
-    def __init__(self,x,y,height,width,type,spriteID):
+    def __init__(self,x,y,height,width,type,spriteID,flipVertical=None,flipHorizontal=None,rotate=None):
         super().__init__()
         self.type = type
         self.height = height
@@ -56,6 +56,12 @@ class SpriteClass(pygame.sprite.Sprite):
             self.image = img.subsurface((0,0,32,8))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
+        if flipVertical:
+            self.image = pygame.transform.flip(self.image,True,False)
+        if flipHorizontal:
+            self.image = pygame.transform.flip(self.image,False,True)
+
+
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -63,7 +69,7 @@ class SpriteClass(pygame.sprite.Sprite):
         self.rect.width = width
 
 
-    def update(self,x,y,height,width,spriteID,flip=None):
+    def update(self,x,y,height,width,spriteID,flipVertical=None,flipHorizontal=None,rotate = None):
         self.rect.x = x
         self.rect.y = y
         self.rect.height = height
@@ -97,7 +103,7 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.SPIKE:
             # self.image = atlasIMG.subsurface((9,11, 7,5))
             img = pygame.image.load(SpikeStuff.spritesLocation[self.spriteID])
-            self.image = img.subsurface((0,2,8,6))
+            self.image = img.subsurface((1,2,7,6))
         if self.type == ParticleTypes.JUMP:
             self.image = self.atlasIMG.subsurface(jumpParticles.spritesImageCrop[self.spriteID])
 
@@ -105,9 +111,14 @@ class SpriteClass(pygame.sprite.Sprite):
             img = pygame.image.load(fallingBlockStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,23,8))
 
-        if flip:
+        if flipVertical:
             self.image = pygame.transform.flip(self.image,True,False)
+        if flipHorizontal:
+            self.image = pygame.transform.flip(self.image,False,True)
+        if rotate:
+            self.image =pygame.transform.rotate(self.image, rotate)
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        
 
     def draw(self,screen):
         screen.blit(self.image,self.rect)

@@ -25,6 +25,8 @@ class FallingBlock(Actor):
         self.sprite.draw(display)
 
     def notify(self, entityName, event):
+        # if event =="touchFallingBlock":
+            # print(entityName,self.name)
         if event == "touchFallingBlock" and entityName == self.name:
             if self.state == "idle":
                 self.state = "outline"

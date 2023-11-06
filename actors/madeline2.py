@@ -274,7 +274,6 @@ class Player(Actor):
         #if last frame we collided with a spring, enter jump state
         elif self.springCollided:
             newState = PlayerStates.JUMP     
-            self.initializeJump()
             for obs in self.observers:
                 obs.notify(self.name,"ground")       
 
@@ -426,41 +425,65 @@ class Player(Actor):
                             touchedGround = True
 
                         
-                        
+                        #TODO FIX THIS
                         if type(tile).__name__ == "FallingBlock":
                             for obs in self.observers:
-                                obs.notify(tile.name,"touchFallingBlock")
-                
-                        
-                        
-                        
-                        
-                        
-                        # print("ground")
-                        collided = True
-                        self.wasGrounded = True
-                        self.coyoteCounter = COYOTE_COUNTER
-                        self.y = tile.rect.top - self.height
-                        #reset dash
-                        if self.state != PlayerStates.DASH:
-                            self.dashCount = 1
-                            self.dashRefreshTimer = 0
-                            self.dashState = "end"
+                                if obs.type == ActorTypes.FALLINGBLOCK :
+                                    if obs.state == "idle":
+                                        obs.notify(tile.name ,"touchFallingBlock")
+                                    if obs.state != "outline":
+                                        # print("ground")
+                                        collided = True
+                                        self.wasGrounded = True
+                                        self.coyoteCounter = COYOTE_COUNTER
+                                        self.y = tile.rect.top - self.height
+                                        #reset dash
+                                        if self.state != PlayerStates.DASH:
+                                            self.dashCount = 1
+                                            self.dashRefreshTimer = 0
+                                            self.dashState = "end"
 
-                        if self.jumpState == PlayerJumpStates.DOWN:
-                            if newState == PlayerStates.JUMP: # prevents a bug
-                                newState = PlayerStates.IDLE#
-                            self.initializeJump()
-                            self.state = newState
-                            self.spriteID = f"{newState.value}1"
-                            self.animationFrameCounter = 0
-                            pass
+                                        if self.jumpState == PlayerJumpStates.DOWN:
+                                            if newState == PlayerStates.JUMP: # prevents a bug
+                                                newState = PlayerStates.IDLE#
+                                            self.initializeJump()
+                                            self.state = newState
+                                            self.spriteID = f"{newState.value}1"
+                                            self.animationFrameCounter = 0
+                                            pass
+                                            
+                                        for obs in self.observers:
+                                            obs.notify(self.name,"ground")
+
+                                        #prevent non collisions to further change wasgrounded
+                                        break           
+                        else:
                             
-                        for obs in self.observers:
-                            obs.notify(self.name,"ground")
+                            # print("ground")
+                            collided = True
+                            self.wasGrounded = True
+                            self.coyoteCounter = COYOTE_COUNTER
+                            self.y = tile.rect.top - self.height
+                            #reset dash
+                            if self.state != PlayerStates.DASH:
+                                self.dashCount = 1
+                                self.dashRefreshTimer = 0
+                                self.dashState = "end"
 
-                        #prevent non collisions to further change wasgrounded
-                        break
+                            if self.jumpState == PlayerJumpStates.DOWN:
+                                if newState == PlayerStates.JUMP: # prevents a bug
+                                    newState = PlayerStates.IDLE#
+                                self.initializeJump()
+                                self.state = newState
+                                self.spriteID = f"{newState.value}1"
+                                self.animationFrameCounter = 0
+                                pass
+                                
+                            for obs in self.observers:
+                                obs.notify(self.name,"ground")
+
+                            #prevent non collisions to further change wasgrounded
+                            break
         
             if not collided:
                 self.wasGrounded = False
