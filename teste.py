@@ -6,14 +6,33 @@ ground = {
     "acceleration": 0.5,
     "deceleration": 0.5,
 }
+air = {
+    "maxSpeed": 5,
+    "acceleration": 0.5,
+    "deceleration": 0.5,
+}
 
-speed = [-7.8,0]
-while True:
-    if speed[0] < -ground["maxSpeed"]: # decelerate
-        speed[0] = speed[0] + ground["deceleration"] if speed[0] < -ground["maxSpeed"] - ground["deceleration"] else -ground["maxSpeed"]
+dash = {
+    "power": 12,
+}
+jump = {
+    "power": 10,
+}
+movement = [0,0,0]
 
+speed = [0,12]
+
+if movement[1] < 0 :
+    if speed[1] > air["maxSpeed"]: #TODO
+        print("1")
+        speed[1] = speed[1] - air["deceleration"] if speed[1] > air["maxSpeed"] + air["deceleration"] else air["maxSpeed"]
     else:
-        speed[0] = max(speed[0]-ground["deceleration"],0) if speed[0] > 0 else min(speed[0]+ground["deceleration"],0)
+        print("2")
+        speed[1] -= min (jump["power"] - speed[1], 0) if speed[1] < 0 else jump["power"]
+else:
+    print("3")
+    speed[1] = speed[1] + air["acceleration"] if speed[1] < air["maxSpeed"] else min(speed[0]+air["deceleration"],0)
 
-    print(speed[0])
-    time.sleep(1)
+
+print(speed)
+time.sleep(1)

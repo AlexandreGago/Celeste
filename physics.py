@@ -54,7 +54,13 @@ class Physics():
             self.speed[0] = max(self.speed[0]-ground["deceleration"],0) if self.speed[0] > 0 else min(self.speed[0]+ground["deceleration"],0)
             
         if movement[1] < 0 and self.grounded: # jump
-            self.speed[1] -= jump["power"] # jump power
+            if self.speed[1] > air["maxSpeed"]: #TODO
+                self.speed[1] = self.speed[1] - air["deceleration"] if self.speed[1] > air["maxSpeed"] + air["deceleration"] else air["maxSpeed"]
+            else:
+                self.speed[1] -= max(jump["power"] - self.speed[1], 0) if self.speed[1] < 0 else jump["power"]
+        else:
+            self.speed[1] = min(self.speed[1] + air["acceleration"], air["maxSpeed"]) if self.speed[1] > 0 
+            
         
         if movement[2] > 0: #Dash
             if movement[0] > 0:#right
