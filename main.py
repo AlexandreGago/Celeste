@@ -1,7 +1,7 @@
 import pygame
 from inputHandler import InputHandler
 from serviceLocator import serviceLocator
-from actors.madeline2 import Player
+from actors.madeline3 import Player
 from map.map import Map
 from actors.dashResetEntity import DashResetEntity
 from actors.particles import ParticleManager

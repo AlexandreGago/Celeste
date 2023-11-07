@@ -11,11 +11,13 @@ class SoundManager:
 
         self.sounds = {k: self.mixer.Sound(v) for k, v in sounds.items()}
 
-    def play(self, sound, loop=False):
+    def play(self, sound, loop=False, volume=1.0):
         #find an unused channel
         channel = self.mixer.find_channel()
         if channel:
+            sd = self.sounds[sound].set_volume(volume)
             if loop:
-                channel.play(self.sounds[sound], -1)
+                channel.play(sd, -1)
+
             else:
-                channel.play(self.sounds[sound])        
+                channel.play(sd)        

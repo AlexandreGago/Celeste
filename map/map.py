@@ -120,7 +120,6 @@ class Map:
                     # image = spritesheet.subsurface(*spritelocations[cell])
                     # image = pygame.transform.scale(image, (50, 50))
                     # sprites.add(Tile(image, idy*50, idx*50))
-                    print(cell)
                     if cell in ["o"]:
                         orientation = SpikeOrientations.UP
                     if cell in ["O"]:

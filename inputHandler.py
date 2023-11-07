@@ -19,11 +19,11 @@ from constants.enums import ActorTypes
 class InputHandler():
 
     p1command = {
-        pygame.K_UP : (0,0,0,1),
-        pygame.K_DOWN : (0,1,0,0),
+        pygame.K_UP : (0,1,0,0),
+        pygame.K_DOWN : (0,-1,0,0),
         pygame.K_LEFT : (-1,0,0,0),
         pygame.K_RIGHT : (1,0,0,0),
-        pygame.K_c : (0,-1,0,0),
+        pygame.K_c : (0,0,0,-1),
         pygame.K_x : (0,0,1,0),
         "idle": (0,0,0,0)
     }
