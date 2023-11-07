@@ -2,7 +2,7 @@ from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
 from constants.enums import ActorTypes,PlayerStates,PlayerOrientation
-from constants.dictionaries import PlayerStuff
+from constants.dictionaries import PlayerStuff, physicsValues
 from spriteClass import SpriteClass
 from states import *
 import utils.utils as utils
@@ -48,13 +48,13 @@ class Player(Actor):
         self.spawnX = x
         self.spawnY = y
         self.x = x
-        self.y = y
+        self.y = 800
         
         #play type
         self.type = ActorTypes.PLAYER
         
         #physics
-        self.physics = Physics(x,y)
+        self.physics = Physics()
         
         #call the parent constructor (Actor)
         super().__init__(x,800,50,50,serviceLocator)
@@ -62,13 +62,14 @@ class Player(Actor):
         self.serviceLocator = serviceLocator
 
         #collisions
-        self.collisions = [0,0]
+        self.collisions = [0,0,0,0]
         
         #player size and state
         self.height = 50
         self.width = 50
         self.orientation = PlayerOrientation.RIGHT
-        self.state = PlayerStates.IDLE
+        self.state = PlayerStates.RESPAWN
+        self.alive = False
         
         #sprite
         self.spriteID = f"{self.state.value}1"
@@ -84,7 +85,7 @@ class Player(Actor):
         return
     
     def spawn(self):
-        if self.y > self.spawnHeight:    
+        if self.y > self.spawnY:    
             self.y -= 8
         else:
             return True
@@ -96,8 +97,7 @@ class Player(Actor):
             self.state = PlayerStates.IDLE
             self.spriteID = f"{self.state.value}1"
             self.animationFrameCounter = 0
-            self.enableCollision = True
-            self.physics.reset(self.x,self.y)
+            self.physics.reset()
 
     def jump(self):
         if self.animationFrameCounter % 10 == 0:
@@ -123,62 +123,83 @@ class Player(Actor):
     def crouch(self):
         if self.animationFrameCounter % 10 == 0:
             self.spriteID = PlayerStuff.sprites[self.spriteID]
-   
+            
+    def lookup(self):
+        if self.animationFrameCounter % 10 == 0:
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
     
-    def updateState(self,newState):
+    def updateState(self,xInput,yInput,dashInput,jumpInput):
         """"
         This is done to decide if the current state is changed or kept,
         it is done after the move function so that the collisions are updated
         """
-        state = self.state
+        newState = self.vectorToState(xInput,yInput,dashInput,jumpInput)
+        if newState == PlayerStates.JUMP and not self.collisions[3]: #dont jump
+            newState = self.state
+        if newState == PlayerStates.DASH and self.dashCount < 1: #dont dash
+            newState = self.state
+        
         if self.state == PlayerStates.JUMP:
-            state = newState 
+            if newState != PlayerStates.DASH and not self.collisions[3]:
+                newState = PlayerStates.JUMP
             
         elif self.state == PlayerStates.DASH:
-            state = newState 
+            pass
             
         elif self.state in [PlayerStates.TURN]:
-            state = newState 
+            print("turned")
+            pass
             
         elif self.state in [PlayerStates.WALK]:
-            state = newState   
+            # if the nes state is jump or dash, exit walk and enter them
+            if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
+                pass
+            elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
+                newState = PlayerStates.TURN
             
+
         elif self.state in [PlayerStates.CROUCH]:
-            state = newState   
+            pass 
             
         elif self.state in [PlayerStates.IDLE]:
-            state = newState   
+            if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
+                pass
+            elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
+                newState = PlayerStates.TURN
             
         elif self.state in [PlayerStates.RESPAWN]:
-            state = newState 
+            if self.alive: #if the player is alive, change the state else maintain the state
+                pass
+            else:
+                newState = PlayerStates.RESPAWN
             
-        return state
+        elif self.state in [PlayerStates.LOOKUP]:#TODO
+            pass
+            
+        return newState
     
     def move(self,vector) -> None:
-        print("vector",vector)
         #process inputs
         xInput,yInput,dashInput,jumpInput = vector
         dashInput, jumpInput = bool(dashInput), bool(jumpInput)
+        print(self.state)
+        if self.alive :
+            #update collisions
+            self.checkCollisions()
+            #update the position
+            self.x,self.y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation)
         
-        #update collisions
-        self.collisions = self.checkCollisions()
+            #update the state
+            newState = self.updateState(xInput,yInput,dashInput,jumpInput)
+             # if the state changed, reset the animation frame counter and the spriteID
+            if self.state != newState:
+                self.animationFrameCounter = 1
+                self.spriteID = f"{newState.value}1"
+            self.state = newState
         
-        #update orientation
+        #update orientation (cannot be moved up because it is used by updateState)
         self.orientation = self.updateOrientation(xInput)
         
-        #update the position
-        self.x,self.y = self.physics.move(xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation)
-        
-        #update the state
-        newState = PlayerStuff.vectorToState[(xInput,yInput)]
-        self.state = self.updateState(newState)
-        
-        # if the state changed, reset the animation frame counter and the spriteID
-        if self.state != newState:
-            self.animationFrameCounter = 1
-            #initialize the spriteID
-            self.spriteID = f"{self.state.value}1"
-
         #update the sprite corresponding to the state
         if self.state == PlayerStates.JUMP:
             self.jump()
@@ -192,6 +213,8 @@ class Player(Actor):
             self.crouch()
         elif self.state in [PlayerStates.IDLE]:
             self.idle()
+        elif self.state in [PlayerStates.LOOKUP]:
+            self.lookup()
         elif self.state in [PlayerStates.RESPAWN]:
             self.respawn()
             
@@ -236,17 +259,17 @@ class Player(Actor):
                 
         
         for i in range (len(points)-1,-1,-1):
-            if self.collisions[1]:
-                if self.dashRefreshTimer <= 0:
-                    pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
-                else:
-                    pygame.draw.circle(display, (255, 255, 255), points[i][2], points[i][3]) # white
-            else:
-                if self.dashCount <= 0:
-                    pygame.draw.circle(display, (69, 194, 255), points[i][2], points[i][3]) # blue
-                else:
-                    pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
-            # pygame.draw.circle(display, (0, 0, 0), points[i][2], points[i][3],width = 3) # brown
+            # if self.collisions[1]:
+            #     if self.dashRefreshTimer <= 0:
+            #         pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+            #     else:
+            #         pygame.draw.circle(display, (255, 255, 255), points[i][2], points[i][3]) # white
+            # else:
+            #     if self.dashCount <= 0:
+            #         pygame.draw.circle(display, (69, 194, 255), points[i][2], points[i][3]) # blue
+            #     else:
+            #         pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+            pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3],width = 3) # brown
                     
 
 
@@ -282,10 +305,52 @@ class Player(Actor):
     
     #TODO
     def checkCollisions(self):
-        return self.collisions
-    #TODO
+    #left, right, top, bottom
+        self.collisions = [0,0,0,0]
+        print(self.x,self.y)
+        for tile in self.serviceLocator.map.walls:
+            if self.sprite.rect.colliderect(tile):
+                #ceiling
+                if tile.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"]:
+                    self.collisions[2] = 1
+                    self.physics.speed[1] = 0
+                    self.y = tile.rect.bottom
+                #floor
+                elif tile.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]:
+                    self.collisions[3] = 1
+                    self.physics.speed[1] = 0
+                    self.y = tile.rect.top - self.height
+
+                #left
+                elif tile.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]:
+                    self.collisions[0] = 1
+                    self.physics.speed[0] = 0
+                    self.x = tile.rect.right
+                #right
+                elif tile.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]:
+                    self.collisions[1] = 1
+                    self.physics.speed[0] = 0
+                    self.x = tile.rect.left - self.width
+        print(self.collisions) 
+        print("-----------")
+
     def updateOrientation(self,xInput):
-        self.orientation
+        return PlayerOrientation.RIGHT if xInput > 0 else PlayerOrientation.LEFT if xInput < 0 else self.orientation
+    
+    def vectorToState(self,xInput,yInput,dashInput,jumpInput):
+        
+        if yInput == -1:# crouch
+            return PlayerStates.CROUCH
+        if dashInput == 1:
+            return PlayerStates.DASH
+        if jumpInput == 1:
+            return PlayerStates.JUMP
+        if xInput != 0:
+            return PlayerStates.WALK
+        # if yInput == 1:
+        #     return PlayerStates.LOOKUP
+        
+        return PlayerStates.IDLE
         
     def actorCollision(self,actor):
             #check collisions for the rest of the actors

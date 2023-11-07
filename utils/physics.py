@@ -1,27 +1,14 @@
 import pygame
 # import utils.utils as utils
 import utils
+from constants.dictionaries import physicsValues
+import time
 from constants.enums import ActorTypes,PlayerStates,PlayerOrientation
 
-ground = {
-    "maxSpeed": 5,
-    "acceleration": 0.5,
-    "deceleration": 0.5,
-}
-
-air = {
-    "maxSpeed": 5,
-    "gravity": 0.5,
-    
-}
-
-dash = {
-    "power": 12,
-}
-
-jump = {
-    "power": 10,
-}
+ground = physicsValues.ground
+air = physicsValues.air
+jump = physicsValues.jump
+dash = physicsValues.dash
 
 def calculateSpeed(val:int, target:int, amount:int) -> int:
     """
@@ -44,25 +31,29 @@ def calculateSpeed(val:int, target:int, amount:int) -> int:
         return min(val+amount, target)
 
 class Physics():
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y
+    def __init__(self):
         self.speed = [0,0]
     
-    def move(self,xInput,yInput,dashInput,jumpInput,collisions,orientation):
+    def move(self,x,y,xInput,yInput,dashInput,jumpInput,collisions,orientation) -> tuple[float,float]:
         """
+        Calculate new position based on inputs and collisions
 
         Args:
+            x (int): current x position
+            y (int): current y position
+
             xInput (int): -1 for left, 1 for right, 0 for no input
             yInput (int): 1 for up, -1 for down, 0 for no input
             dashInput (bool) : True if dash button is pressed
             jumpInput (bool) : True if jump button is pressed
-            collisions (list): list of collisions [wallCollision,groundCollision] -> 1 for collision, 0 for no collision
+            collisions (list): list of collisions [left,right,top,bottom] -> True if colliding
             orientation (int): orientation -> PlayerOrientation.RIGHT/LEFT
-        """
-        #collisions = [wallCollision,groundCollision]
 
-        
+        Returns:
+            tuple[float,float]: new position
+        """
+       
+        #TODO : add air acceleration 
         #if over the speed limit, decelerate
         if abs(self.speed[0]) > ground["maxSpeed"]:
             #get the sign of the speed to determine which way to decelerate
@@ -75,86 +66,40 @@ class Physics():
 
         #!COYOTE
         #if player pressed jump and is grounded, jump
-        if jumpInput and collisions[1]:
+        if jumpInput and collisions[3]:
             self.speed[1] = -jump["power"]
         
         else:
-            #if not grounded, apply gravity
-            sign = 1 if self.speed[1] < 0 else -1
-            print(self.speed[1])
-            print(sign)
-            self.speed[1] += calculateSpeed(self.speed[1], air["maxSpeed"]*sign, air["gravity"])
-        
+            if collisions[3]: # if we are touching ground, stop gravity
+                self.speed[1] = 0
+            else:
+                #if we are in the air, apply gravity
+                if self.speed[1] > air["maxSpeed"]:
+                    self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], - air["gravity"])
+                else:
+                    self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], air["gravity"])
+
+            
 
         if dashInput: #Dash
             self.speed[0] = dash["power"] * xInput
-            self.speed[1] = dash["power"] * yInput
+            self.speed[1] = dash["power"] * -yInput
 
         
         #!here or in update?
-        self.x += self.speed[0]
-        self.y += self.speed[1]
-        return self.x, self.y
+        x += self.speed[0]
+        y += self.speed[1]
+        return x,y
 
     def update(self):
-        self.x += self.speed[0]
-        self.y += self.speed[1]
+        x += self.speed[0]
+        y += self.speed[1]
 
     def reset(self):
         self.speed = [0,0]
         self.grounded = False
         self.orientation = PlayerOrientation.RIGHT
         
-class Player(Physics):
-    def __init__(self, x, y):
-        super().__init__(x, y)
-        self.width = 50
-        self.height = 50
-        self.color = (255,0,0)
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-    
-    def draw(self, screen):
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        pygame.draw.rect(screen, self.color, self.rect)
-
-# WIDTH, HEIGHT = 800, 800
-
-# player = Player(400,400)
-# screen = pygame.display.set_mode((WIDTH,HEIGHT))
-# clock = pygame.time.Clock()
-
-# pygame.init()
-# while True:
-#     keys = pygame.key.get_pressed()
-#     keys = utils.parsePressedKeys(keys)   
-#     if pygame.K_c in keys:
-#         keys.remove(pygame.K_c)
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             running = False
-#         if event.type == pygame.KEYDOWN:
-#             if event.key==pygame.K_c:
-#                 keys.append(pygame.K_c)
-    
-#     movement = [0,0,0]
-#     for key in keys:
-#         if key == pygame.K_LEFT:
-#             movement[0] -= 1
-#         if key == pygame.K_RIGHT:
-#             movement[0] += 1
-#         if key == pygame.K_UP:
-#             movement[1] -= 1
-#         if key == pygame.K_DOWN:
-#             movement[1] += 1
-#         if key == pygame.K_c:
-#             movement[2] += 1
-
-#     player.move(movement)
-#     player.update()
-#     screen.fill((0,0,0))
-#     player.draw(screen)
-#     pygame.display.update()
-#     clock.tick(60)
-
-        
+    def rollbacl(self, speed):
+        self.speed = speed
         

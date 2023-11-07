@@ -13,7 +13,25 @@ sounds={
     "dashEntityBreak":"./sounds/diamond_touch_01.wav"
 }
 
+class physicsValues:
+    ground = {
+    "maxSpeed": 5,
+    "acceleration": 0.5,
+    "deceleration": 1,
+    }
+    
+    air = {
+        "maxSpeed": 5,
+        "gravity": 0.5,
+    }
 
+    dash = {
+        "power": 12,
+    }
+
+    jump = {
+        "power": 10,
+    }
 
 class PlayerStuff:
     sprites = {

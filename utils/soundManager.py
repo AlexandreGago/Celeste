@@ -15,9 +15,9 @@ class SoundManager:
         #find an unused channel
         channel = self.mixer.find_channel()
         if channel:
-            sd = self.sounds[sound].set_volume(volume)
+            self.sounds[sound].set_volume(volume)
             if loop:
-                channel.play(sd, -1)
+                channel.play(self.sounds[sound], -1)
 
             else:
-                channel.play(sd)        
+                channel.play(self.sounds[sound])        

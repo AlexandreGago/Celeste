@@ -74,9 +74,9 @@ pygame.init()
 addObservers()
 
 running = True
-framerate = 60
+framerate = 1
 
-serviceLocator.soundManager.play("song1", loop=True)
+serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
 while running:
     display.fill((0,0,0,255))
 
@@ -100,7 +100,7 @@ while running:
 
     #!Bullet time
     if keys[pygame.K_v]:
-        framerate = 5 
+        framerate = 1
     else:
         framerate = 60
     #!#####################

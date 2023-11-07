@@ -416,7 +416,7 @@ class Player(Actor):
                 if self.sprite.rect.colliderect(tile.rect):
                     #ceiling
                     if tile.rect.bottom - self.sprite.rect.top <= DASH_SPEED:
-                        # print("ceiling")
+                        print("ceiling")
                         self.y = tile.rect.bottom
                     #ground
                     elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
@@ -515,7 +515,7 @@ class Player(Actor):
                     
                     #left wall
                     if tile.rect.right - self.sprite.rect.left <=  DASH_SPEED:
-                        # print("left wall")
+                        print("left wall")
                         self.x = tile.rect.right
                     #right wall
                     elif tile.rect.left - self.sprite.rect.right >= -1*DASH_SPEED:

@@ -423,7 +423,7 @@ player = {
         psfx(3)
         freeze = 2
         shake = 6
-        this.dash_target.x = 2 * sign(this.spd.x)
+        this.dash_target.x = 2 * sign(this.spd.x) 
         this.dash_target.y = 2 * sign(this.spd.y)
         this.dash_accel.x = 1.5
         this.dash_accel.y = 1.5
