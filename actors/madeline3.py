@@ -144,25 +144,19 @@ class Player(Actor):
         it is done after the move function so that the collisions are updated
         """
         newState = self.vectorToState(xInput,yInput,dashInput,jumpInput)
-
         if self.state != PlayerStates.DASH : # dash cooldown
             self.dashCooldown -= 1 if self.dashCooldown > 0 else 0
 
         if not self.alive : # if we are not alive, we are respawning
             newState = PlayerStates.RESPAWN
 
-        #!REVIEW THIS
-        # if newState == PlayerStates.JUMP and not self.physics.speed[1] <= 0: #dont jump if not on the ground
-        #     newState = self.state
-
-        if newState == PlayerStates.DASH and (self.dashCount < 1 or self.dashCooldown > 0): #dont dash if no dashes left
-            newState = self.state
-        
+            
         if self.state == PlayerStates.JUMP:
             if newState != PlayerStates.DASH and self.airborne == -1:
                 newState = PlayerStates.JUMP
-        
+                
         elif self.state == PlayerStates.DASH:
+            print(newState)
             if self.orientation == PlayerOrientation.RIGHT:
                 if self.physics.speed[0] > physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]:
                     newState = PlayerStates.DASH
@@ -226,16 +220,15 @@ class Player(Actor):
 
         elif self.state in [PlayerStates.LOOKUP]:
             pass
-
+        
         return newState
     
     def move(self,vector) -> None:
         #process inputs
         xInput,yInput,dashInput,jumpInput = vector
         dashInput, jumpInput = bool(dashInput), bool(jumpInput)
-        dashInput = dashInput and self.dashCount >=1
+        dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0
         if self.alive:
-            #update collisions
             #update the position
             temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation)
             #!change place?
@@ -442,6 +435,7 @@ class Player(Actor):
                     #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
                     if self.dashCount <= 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
                         self.dashCount = MAX_DASHES
+                        self.dashCooldown = DASH_COOLDOWN
                         #notify observers
                         for obs in self.observers:
                             obs.notify(actor.name,"dashReset")
