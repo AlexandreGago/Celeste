@@ -25,10 +25,13 @@ def calculateSpeed(val:int, target:int, amount:int) -> int:
     #if the value is greater than the target, decelerate
     if val > target:
         #decelerate val by amount but don't go below the target
-        return max(val-amount, target)
+        result = max(val-amount, target)
     else:
         #accelerate val by amount but don't go above the target
-        return min(val+amount, target)
+        result = min(val+amount, target)
+    return result
+
+    
 
 class Physics():
     def __init__(self):
@@ -52,41 +55,42 @@ class Physics():
         Returns:
             tuple[float,float]: new position
         """
-       
+        surface = ground if collisions[3] else air #! collisions still not 100% working (flickering) so the surface isnt correct
         #TODO : add air acceleration 
         #if over the speed limit, decelerate
         if abs(self.speed[0]) > ground["maxSpeed"]:
             #get the sign of the speed to determine which way to decelerate
-            sign = 1 if self.speed[0] > 0 else -1
-            self.speed[0] = calculateSpeed(self.speed[0], ground["maxSpeed"] * sign , ground["deceleration"])
+            sign = 1 if self.speed[0] > 0 else -1 if self.speed[0] < 0 else 0
+            self.speed[0] = calculateSpeed(self.speed[0], surface["maxSpeed"] * sign , surface["deceleration"])
         #if under the speed limit, accelerate, but don't overshoot the limit
         #movement[0] is the direction the player is trying to move
         else:
-            self.speed[0] = calculateSpeed(self.speed[0], xInput * ground["maxSpeed"], ground["acceleration"])
-
+            self.speed[0] = calculateSpeed(self.speed[0], xInput * surface["maxSpeed"], surface["acceleration"])
+    
         #!COYOTE
         #if player pressed jump and is grounded, jump
         if jumpInput and collisions[3]:
             self.speed[1] = -jump["power"]
         
         else:
-            if collisions[3]: # if we are touching ground, stop gravity
-                self.speed[1] = 0
+
+            #if we are in the air, apply gravity
+            if self.speed[1] > air["maxSpeed"]:
+                self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], - air["gravity"])
             else:
-                #if we are in the air, apply gravity
-                if self.speed[1] > air["maxSpeed"]:
-                    self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], - air["gravity"])
-                else:
-                    self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], air["gravity"])
+                self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], air["gravity"])
 
             
 
         if dashInput: #Dash
+            if xInput == 0 and yInput == 0:
+                xInput = 1 if orientation == PlayerOrientation.RIGHT else -1
             self.speed[0] = dash["power"] * xInput
             self.speed[1] = dash["power"] * -yInput
 
-        
-        #!here or in update?
+        # if yInput == -1 and not collisions[3]: # if we are crouching we cant move #! collsions still not working, so this isnt either
+        #     pass
+        # else:
         x += self.speed[0]
         y += self.speed[1]
         return x,y

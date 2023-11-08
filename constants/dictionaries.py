@@ -16,19 +16,23 @@ sounds={
 class physicsValues:
     ground = {
     "maxSpeed": 5,
-    "acceleration": 0.5,
+    "acceleration": 0.51,
     "deceleration": 1,
     }
     
     air = {
         "maxSpeed": 5,
+        "acceleration": 0.51,#x
+        "deceleration": 0.5,
         "gravity": 0.5,
     }
 
     dash = {
         "power": 12,
     }
-
+    spring = {
+        "power": 12
+    }
     jump = {
         "power": 10,
     }
@@ -38,21 +42,27 @@ class PlayerStuff:
         "idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle1",
         "walk1":"walk2","walk2":"walk3","walk3":"walk4","walk4":"walk5","walk5":"walk6","walk6":"walk7","walk7":"walk8","walk8":"walk9","walk9":"walk10","walk10":"walk11","walk11":"walk12","walk12":"walk1",
         "walkLeft1":"walkLeft2","walkLeft2":"walkLeft3","walkLeft3":"walkLeft4","walkLeft4":"walkLeft5","walkLeft5":"walkLeft6","walkLeft6":"walkLeft7","walkLeft7":"walkLeft8","walkLeft8":"walkLeft9","walkLeft9":"walkLeft10","walkLeft10":"walkLeft11","walkLeft11":"walkLeft12","walkLeft12":"walkLeft1",
-        "turn1":"turn2","turn2":"turn3","turn3":"turn4","turn4":"turn5","turn5":"turn6","turn6":"turn7","turn7":"turn8","turn8":"end",
+        "turn1":"turn2","turn2":"turn3","turn3":"turn4","turn4":"turn5","turn5":"turn6","turn6":"turn7","turn7":"turn8","turn8":"turn8",
         "turningRight1":"turningRight2","turningRight2":"turningRight3","turningRight3":"turningRight4","turningRight4":"turningRight5","turningRight5":"turningRight6","turningRight6":"turningRight7","turningRight7":"turningRight8","turningRight8":"end",
         "crouch1":"crouch2","crouch2":"crouch3","crouch3":"crouch4","crouch4":"crouch1",
-        "jump1":"jump2","jump2":"jump1","jump3":"jump4","jump4":"jump3",
+        "jump1":"jump2","jump2":"jump1",
         "dash1":"dash2","dash2":"dash3","dash3":"dash4","dash4":"dash1",
-        "respawn1":"respawn1"
+        "respawn1":"respawn1",
+        "wallhug1":"wallhug1",
+        "falling1":"falling2","falling2":"falling1",
+        "lookup1":"lookup2","lookup2":"lookup3","lookup3":"lookup4","lookup4":"lookup5","lookup5":"lookup6","lookup6":"lookup7","lookup7":"lookup8","lookup8":"lookup5",
     }
 
     spritesHairOffset = {PlayerStates.IDLE:{"idle1":(0,5),"idle2":(0,5),"idle3":(0,5),"idle4":(0,5),"idle5":(0,0),"idle6":(0,0),"idle7":(0,0),"idle8":(0,0)},
                         PlayerStates.WALK:{"walk1":(5,5),"walk2":(5,0),"walk3":(5,0),"walk4":(5,0),"walk5":(5,10),"walk6":(5,5),"walk7":(5,0),"walk8":(5,0),"walk9":(5,0),"walk10":(5,0),"walk11":(5,10),"walk12":(5,5)},
                         PlayerStates.TURN:{"turn1":(0,0),"turn2":(0,0),"turn3":(0,0),"turn4":(0,0),"turn5":(0,0),"turn6":(0,0),"turn7":(0,0),"turn8":(0,0)},
                         PlayerStates.CROUCH:{"crouch1":(-1,-10),"crouch2":(-1,-10),"crouch3":(-1,-10),"crouch4":(-1,-10)},
-                        PlayerStates.JUMP:{"jump1":(5,10),"jump2":(5,10),"jump3":(5,5),"jump4":(0,5)},
+                        PlayerStates.JUMP:{"jump1":(5,10),"jump2":(5,10)},
                         PlayerStates.DASH:{"dash1":(10,0),"dash2":(10,0),"dash3":(10,0),"dash4":(10,0)},
-                        PlayerStates.RESPAWN:{"respawn1":(0,5)}
+                        PlayerStates.RESPAWN:{"respawn1":(0,5)},
+                        PlayerStates.WALLHUG:{"wallhug1":(0,5)},
+                        PlayerStates.FALLING:{"falling1":(5,5),"falling2":(0,5)},
+                        PlayerStates.LOOKUP:{"lookup1":(0,5),"lookup2":(0,0),"lookup3":(0,5),"lookup4":(-4,5),"lookup5":(-5,0),"lookup6":(-5,0),"lookup7":(-5,5),"lookup8":(-5,5)}
                         }
     
     vectorToState = {
@@ -68,7 +78,11 @@ class PlayerStuff:
     }
 
     spritesLocation={
+        #respawn sprite
         "respawn1":"./CelesteSprites/Atlases/Gameplay/characters/player/idle00.png",
+        #wallhug sprite
+        "wallhug1": "./CelesteSprites/Atlases/Gameplay/characters/player/climb00.png",
+
         #default idle animation
         "idle1": "./CelesteSprites/Atlases/Gameplay/characters/player/idle00.png",
         "idle2": "./CelesteSprites/Atlases/Gameplay/characters/player/idle01.png",
@@ -114,15 +128,25 @@ class PlayerStuff:
         #jump
         "jump1": "./CelesteSprites/Atlases/Gameplay/characters/player/jumpFast00.png",
         "jump2": "./CelesteSprites/Atlases/Gameplay/characters/player/jumpFast01.png",
-        "jump3": "./CelesteSprites/Atlases/Gameplay/characters/player/jumpFast02.png",
-        "jump4": "./CelesteSprites/Atlases/Gameplay/characters/player/jumpFast03.png",
+
+        #falling
+        "falling1": "./CelesteSprites/Atlases/Gameplay/characters/player/jumpFast02.png",
+        "falling2": "./CelesteSprites/Atlases/Gameplay/characters/player/jumpFast03.png",
 
         #dash
         "dash1": "./CelesteSprites/Atlases/Gameplay/characters/player/dash00.png",
         "dash2": "./CelesteSprites/Atlases/Gameplay/characters/player/dash01.png",
         "dash3": "./CelesteSprites/Atlases/Gameplay/characters/player/dash02.png",
         "dash4": "./CelesteSprites/Atlases/Gameplay/characters/player/dash03.png",
-
+        #lookup
+        "lookup1":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp00.png",
+        "lookup2":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp01.png",
+        "lookup3":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp02.png",
+        "lookup4":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp03.png",
+        "lookup5":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp04.png",
+        "lookup6":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp05.png",
+        "lookup7":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp06.png",
+        "lookup8":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp07.png",
     }
 
 class DashResetEntityStuff:

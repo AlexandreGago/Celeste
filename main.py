@@ -100,7 +100,7 @@ while running:
 
     #!Bullet time
     if keys[pygame.K_v]:
-        framerate = 1
+        framerate = 5
     else:
         framerate = 60
     #!#####################

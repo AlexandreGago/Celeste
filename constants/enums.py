@@ -23,6 +23,7 @@ class PlayerStates(Enum):
     RESPAWN = "respawn"
     WALLHUG = "wallhug"
     LOOKUP = "lookup"
+    FALLING = "falling"
 
 class PlayerJumpStates(Enum):
     INIT = 1
