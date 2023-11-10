@@ -154,6 +154,7 @@ class Player(Actor):
             # self.physics.speed[1] = -physicsValues.spring["power"]
             self.dashCount = MAX_DASHES
             newState = PlayerStates.JUMP
+            
         #if we are dead, respawn
         if not self.alive :
             newState = PlayerStates.RESPAWN
@@ -163,6 +164,12 @@ class Player(Actor):
             if self.state == PlayerStates.JUMP:
                 if newState != PlayerStates.DASH and self.airborne == -1:
                     newState = PlayerStates.JUMP
+                elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
+                    newState = PlayerStates.WALLHUG
+                elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
+                    newState =  PlayerStates.WALLHUG
+                elif self.airborne == 1:
+                    newState = PlayerStates.FALLING
                     
             elif self.state == PlayerStates.DASH:
                 if self.orientation == PlayerOrientation.RIGHT:
@@ -188,6 +195,8 @@ class Player(Actor):
                     newState = PlayerStates.WALLHUG
                 elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
                     newState =  PlayerStates.WALLHUG
+                elif self.airborne == 1:
+                    newState = PlayerStates.FALLING
 
             elif self.state in [PlayerStates.WALLHUG]:
                 if not self.collisions[3]:
@@ -206,9 +215,10 @@ class Player(Actor):
                     pass
                 elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
                     newState = PlayerStates.TURN
-
-                elif self.airborne == 1:
+                if self.airborne == 1:
                     newState = PlayerStates.FALLING
+
+
                 
             elif self.state in [PlayerStates.RESPAWN]:
                 if self.alive: #if the player is alive, change the state else maintain the state
@@ -220,7 +230,6 @@ class Player(Actor):
                 pass
 
             elif self.state in [PlayerStates.FALLING]:
-                print(self.airborne)
                 if newState == PlayerStates.DASH :  
                     pass
                 elif self.airborne != 0:
@@ -235,7 +244,7 @@ class Player(Actor):
         #process inputs
         xInput,yInput,dashInput,jumpInput = vector
         dashInput, jumpInput = bool(dashInput), bool(jumpInput)
-        dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0
+        dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
         print(self.state)
         if self.alive:
             #update the position
@@ -248,8 +257,6 @@ class Player(Actor):
             #check for collisions with terrain, update the position if there is a collision
             self.checkCorrectCollisions(temp_x,temp_y) 
 
-            #check for collisions with the rest of the actors
-            self.actorCollision()
 
             #!check if we are in the air after the movement
             if self.physics.speed[1] < 0:
@@ -260,8 +267,10 @@ class Player(Actor):
                 if self.collisions[3]:
                     self.airborne = 0
                 else:
-                    self.airborne = 1
+                    self.airborne = -1
 
+            #check for collisions with the rest of the actors
+            self.actorCollision()
             #update the state
             newState = self.updateState(xInput,yInput,dashInput,jumpInput)
              # if the state changed, reset the animation frame counter and the spriteID

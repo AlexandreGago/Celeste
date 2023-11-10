@@ -55,7 +55,7 @@ class Physics():
         Returns:
             tuple[float,float]: new position
         """
-        surface = ground if collisions[3] else air #! collisions still not 100% working (flickering) so the surface isnt correct
+        surface = ground if collisions[3]else air #! collisions still not 100% working (flickering) so the surface isnt correct
         #TODO : add air acceleration 
         #if over the speed limit, decelerate
         if abs(self.speed[0]) > ground["maxSpeed"]:
@@ -76,7 +76,7 @@ class Physics():
         else:
             #if we are in the air, apply gravity
             if self.speed[1] > air["maxSpeed"]:
-                self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], - air["gravity"])
+                self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], air["gravity"])
             else:
                 self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], air["gravity"])
 
