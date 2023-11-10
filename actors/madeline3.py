@@ -146,80 +146,76 @@ class Player(Actor):
         newState = self.vectorToState(xInput,yInput,dashInput,jumpInput)
         if self.state != PlayerStates.DASH : # dash cooldown
             self.dashCooldown -= 1 if self.dashCooldown > 0 else 0
-
         if not self.alive : # if we are not alive, we are respawning
             newState = PlayerStates.RESPAWN
+        else:
+            if self.state == PlayerStates.JUMP:
+                if newState != PlayerStates.DASH and self.airborne == -1:
+                    newState = PlayerStates.JUMP
+                    
+            elif self.state == PlayerStates.DASH:
+                if self.orientation == PlayerOrientation.RIGHT:
+                    if self.physics.speed[0] > physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]:
+                        newState = PlayerStates.DASH
+                else:
+                    if self.physics.speed[0] < -physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]: # of the speed is greater than the max speed, keep dashing
+                        newState = PlayerStates.DASH
 
-            
-        if self.state == PlayerStates.JUMP:
-            if newState != PlayerStates.DASH and self.airborne == -1:
-                newState = PlayerStates.JUMP
+            elif self.state in [PlayerStates.TURN]:
+                if newState in [PlayerStates.JUMP,PlayerStates.DASH]:  #!this can be removed for a smoother animation
+                    pass
+                elif self.spriteID != "turn8":
+                    newState = PlayerStates.TURN
                 
-        elif self.state == PlayerStates.DASH:
-            print(newState)
-            if self.orientation == PlayerOrientation.RIGHT:
-                if self.physics.speed[0] > physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]:
-                    newState = PlayerStates.DASH
-            else:
-                if self.physics.speed[0] < -physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]: # of the speed is greater than the max speed, keep dashing
-                    newState = PlayerStates.DASH
-
-        elif self.state in [PlayerStates.TURN]:
-            if newState in [PlayerStates.JUMP,PlayerStates.DASH,PlayerStates.RESPAWN]:  #!this can be removed for a smoother animation
-                pass
-            elif self.spriteID != "turn8":
-                newState = PlayerStates.TURN
-            
-        elif self.state in [PlayerStates.WALK]:
-            # if the nes state is jump or dash, exit walk and enter them
-            if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
-                pass
-            elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
-                newState = PlayerStates.TURN
-            elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
-                newState = PlayerStates.WALLHUG
-            elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
-                newState =  PlayerStates.WALLHUG
-
-        elif self.state in [PlayerStates.WALLHUG]:
-            if not self.collisions[3]:
-                if xInput < 0 and self.collisions[0]:
+            elif self.state in [PlayerStates.WALK]:
+                # if the nes state is jump or dash, exit walk and enter them
+                if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
+                    pass
+                elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
+                    newState = PlayerStates.TURN
+                elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
                     newState = PlayerStates.WALLHUG
-                if xInput > 0 and self.collisions[1]:
+                elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
                     newState =  PlayerStates.WALLHUG
 
-            
+            elif self.state in [PlayerStates.WALLHUG]:
+                if not self.collisions[3]:
+                    if xInput < 0 and self.collisions[0]:
+                        newState = PlayerStates.WALLHUG
+                    if xInput > 0 and self.collisions[1]:
+                        newState =  PlayerStates.WALLHUG
 
-        elif self.state in [PlayerStates.CROUCH]:
-            pass 
-            
-        elif self.state in [PlayerStates.IDLE]:
+                
+            elif self.state in [PlayerStates.CROUCH]:
+                pass 
+                
+            elif self.state in [PlayerStates.IDLE]:
 
-            if newState == PlayerStates.JUMP or newState == PlayerStates.DASH or newState == PlayerStates.RESPAWN:  
+                if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
+                    pass
+                elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
+                    newState = PlayerStates.TURN
+
+                elif self.airborne == 1:
+                    newState = PlayerStates.FALLING
+                
+            elif self.state in [PlayerStates.RESPAWN]:
+                if self.alive: #if the player is alive, change the state else maintain the state
+                    pass
+                else:
+                    newState = PlayerStates.RESPAWN
+                
+            elif self.state in [PlayerStates.LOOKUP]:#TODO
                 pass
-            elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
-                newState = PlayerStates.TURN
 
-            elif self.airborne == 1:
-                newState = PlayerStates.FALLING
-            
-        elif self.state in [PlayerStates.RESPAWN]:
-            if self.alive: #if the player is alive, change the state else maintain the state
+            elif self.state in [PlayerStates.FALLING]:
+                if newState == PlayerStates.JUMP or newState == PlayerStates.DASH :  
+                    pass
+                elif self.airborne == 1:
+                    newState = PlayerStates.FALLING
+
+            elif self.state in [PlayerStates.LOOKUP]:
                 pass
-            else:
-                newState = PlayerStates.RESPAWN
-            
-        elif self.state in [PlayerStates.LOOKUP]:#TODO
-            pass
-
-        elif self.state in [PlayerStates.FALLING]:
-            if newState == PlayerStates.JUMP or newState == PlayerStates.DASH or newState == PlayerStates.RESPAWN:  
-                pass
-            elif self.airborne == 1:
-                newState = PlayerStates.FALLING
-
-        elif self.state in [PlayerStates.LOOKUP]:
-            pass
         
         return newState
     

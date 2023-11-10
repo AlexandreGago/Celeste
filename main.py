@@ -119,7 +119,7 @@ while running:
         
     particlemanager.draw("cloud", display)
     #draw map
-    map.draw(display)
+    # map.draw(display)
     #draw actors
     for actor in serviceLocator.actorList:
         actor.update()
