@@ -37,7 +37,7 @@ class Physics():
     def __init__(self):
         self.speed = [0,0]
     
-    def move(self,x,y,xInput,yInput,dashInput,jumpInput,collisions,orientation) -> tuple[float,float]:
+    def move(self,x,y,xInput,yInput,dashInput,jumpInput,collisions,orientation,springCollision) -> tuple[float,float]:
         """
         Calculate new position based on inputs and collisions
 
@@ -69,11 +69,11 @@ class Physics():
     
         #!COYOTE
         #if player pressed jump and is grounded, jump
-        if jumpInput and collisions[3]:
+        if springCollision:
+            self.speed[1] = -physicsValues.spring["power"]
+        elif jumpInput and collisions[3]:
             self.speed[1] = -jump["power"]
-        
         else:
-
             #if we are in the air, apply gravity
             if self.speed[1] > air["maxSpeed"]:
                 self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], - air["gravity"])
