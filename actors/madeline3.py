@@ -245,7 +245,9 @@ class Player(Actor):
         xInput,yInput,dashInput,jumpInput = vector
         dashInput, jumpInput = bool(dashInput), bool(jumpInput)
         dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
-        print(self.state)
+        if self.width < 50:
+            self.width += 2
+            self.x -= 1
         if self.alive:
             #update the position
             temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided)
@@ -283,6 +285,8 @@ class Player(Actor):
                     self.serviceLocator.soundManager.play("dash")
                 if newState == PlayerStates.JUMP:
                     self.serviceLocator.soundManager.play("jump") 
+                    self.x += 10
+                    self.width = 30
             self.state = newState
         
         #update orientation (cannot be moved up because it is used by updateState)
