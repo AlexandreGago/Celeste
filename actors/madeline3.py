@@ -13,7 +13,7 @@ import time
 
 HEIGHT = 800
 MAX_DASHES = 1
-DASH_COOLDOWN = 5
+DASH_COOLDOWN = 1
 PLAYERWIDTH = 50
 PLAYERHEIGHT = 50
 WALLGRACE = 5
@@ -91,6 +91,7 @@ class Player(Actor):
         self.wallGrace = 0
         self.coyoteJump = 0
         self.wallJumpCooldown = 0
+        self.wallJumpSide = 0 # -1 for right, 1 for left
 
         self.hairPoints = [
             [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
@@ -104,12 +105,20 @@ class Player(Actor):
         return
     
     def spawn(self):
+        # print(self.y,self.spawnY)
         if self.y > self.spawnY:    
             self.y -= 8
         else:
             return True
         return False
-             
+    
+    def levelComplete(self):
+        # print("complete",self.y)
+        if self.y < 0:
+            return True
+        else:
+            return False  
+        
     def respawn(self):
         self.alive = self.spawn()
         if self.alive:
@@ -161,9 +170,9 @@ class Player(Actor):
         if self.state != PlayerStates.DASH : # dash cooldown
             self.dashCooldown -= 1 if self.dashCooldown > 0 else 0
                         #spring collision
-        #reset dash count if we collide with a spring
+
+        #reset dash count if we collide with a spring and set the newState to jump (the physics handles the speed of the jump)
         if self.springCollided:
-            # self.physics.speed[1] = -physicsValues.spring["power"]
             self.dashCount = MAX_DASHES
             newState = PlayerStates.JUMP
             
@@ -174,8 +183,13 @@ class Player(Actor):
         #!this was in every state, so to reduce repetion, it is here
         elif xInput < 0 and self.collisions[0] and not self.collisions[3]: # change to wallhug
             newState = PlayerStates.WALLHUG
+            self.wallGrace = WALLGRACE
+            self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
         elif xInput > 0 and self.collisions[1] and not self.collisions[3]: # change to wallhug
             newState =  PlayerStates.WALLHUG
+            self.wallGrace = WALLGRACE
+            self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
+        #!---
         else:
             #if we are jumping, keep jumping unless we are dashing
             if self.state == PlayerStates.JUMP:
@@ -209,6 +223,7 @@ class Player(Actor):
 
             elif self.state in [PlayerStates.WALLHUG]:
                 self.wallGrace = WALLGRACE
+                self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
 
                 
             elif self.state in [PlayerStates.CROUCH]:
@@ -222,7 +237,6 @@ class Player(Actor):
                     newState = PlayerStates.TURN
                 if self.airborne == 1:
                     newState = PlayerStates.FALLING
-
 
                 
             elif self.state in [PlayerStates.RESPAWN]:
@@ -246,100 +260,45 @@ class Player(Actor):
         return newState
     
     def move(self,vector) -> None:
+        print(self.state,self.wallJumpSide)
         #process inputs
-        xInput,yInput,dashInput,jumpInput = vector
-        dashInput, jumpInput = bool(dashInput), bool(jumpInput)
-        dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
-        #decide if we are walljumping
-        wallJump = jumpInput and (self.state == PlayerStates.WALLHUG or self.wallGrace > 0) and self.wallJumpCooldown <= 0
-        if wallJump:
-            self.wallJumpCooldown = WALLJUMP_COOLDOWN
-        #decide if the jump is valid
-        jumpInput = jumpInput and self.airborne >= 0 and (self.collisions[3] or self.coyoteJump > 0) and self.state != PlayerStates.JUMP
-        #reduce the wallgrace
-        self.wallGrace -= 1 if self.wallGrace > 0 else 0    
-        self.coyoteJump -= 1 if self.coyoteJump > 0 else 0
-        self.wallJumpCooldown -= 1 if self.wallJumpCooldown > 0 else 0
-        # print(wallJump,jumpInput,self.state,self.wallGrace,self.wallJumpCooldown)
-
-        if self.alive:
-            #update the position
-            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided,wallJump,self.state)
-            #!change place?
-            if self.state == PlayerStates.WALLHUG and self.physics.speed[1]>=0:
-                diff = self.y - temp_y
-                temp_y = temp_y + diff/2
+        xInput,yInput,dashInput,jumpInput = vector # unpack the vector
+        dashInput,wallJump,jumpInput = self.validateInput(dashInput,jumpInput)# validate the inputs ex: if jumpInput = 1 but we are in the air, jumpInput = 0
+        if self.alive:# only move and change states if the player is alive
+            #update the position of the player through the physics class
+            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided,wallJump,self.state,self.wallJumpSide)
                 
             #check for collisions with terrain, update the position if there is a collision
             self.checkCorrectCollisions(temp_x,temp_y) 
-
-
-            #!check if we are in the air after the movement
-            if self.physics.speed[1] < 0:
-                self.airborne = -1
-            elif self.physics.speed[1] > 0:
-                self.airborne = 1
-            else:
-                if self.collisions[3]:
-                    self.airborne = 0
-                else:
-                    self.airborne = -1
-
+            #check if the player is in the air (descending or ascending) or on the ground
+            self.updateAirborne()
             #check for collisions with the rest of the actors
             self.actorCollision()
-            #update the state
-            newState = self.updateState(xInput,yInput,dashInput,jumpInput)
-             # if the state changed, reset the animation frame counter and the spriteID
-            if self.state != newState:
-                self.animationFrameCounter = 1
-                self.spriteID = f"{newState.value}1"
-                if newState == PlayerStates.DASH:
-                    self.dashCount -= 1 if self.dashCount > 0 else 0 
-                    self.dashCooldown = DASH_COOLDOWN
-                    self.serviceLocator.soundManager.play("dash")
 
-                if newState == PlayerStates.JUMP:
-                    self.serviceLocator.soundManager.play("jump") 
-            self.state = newState
+            #update the state after the move
+            newState = self.updateState(xInput,yInput,dashInput,jumpInput)
+            # check if the state changed and do the corresponding actions
+            self.checkStateChange(newState) 
+            # change state
+            self.state = newState 
         
         #update orientation (cannot be moved up because it is used by updateState)
         self.orientation = self.updateOrientation(xInput)
         
-        
         #update the sprite corresponding to the state
-        match self.state:
-            case PlayerStates.JUMP:
-                self.jump()
-            case PlayerStates.DASH:
-                self.dash()
-            case PlayerStates.TURN:
-                self.turn()
-            case PlayerStates.WALK:
-                self.walk()
-            case PlayerStates.CROUCH:
-                self.crouch()
-            case PlayerStates.IDLE:
-                self.idle()
-            case PlayerStates.LOOKUP: 
-                self.lookup()
-            case PlayerStates.RESPAWN:
-                self.respawn()
-            case PlayerStates.FALLING:
-                self.falling()
-            case PlayerStates.LOOKUP:
-                self.lookup()
-            case _:
-                pass
-
+        self.updateSprite()
             
         #update particles and remove the ones that are done
         for particle in self.particles:
             if particle.update():
                 self.particles.remove(particle)
         
-        self.animationFrameCounter += 1
+        #advance the animationFrameCounter
+        self.animationFrameCounter += 1 if self.animationFrameCounter <= 60 else -59 
+        #update the sprite #! can be called in updateSprite() for optimization
         self.sprite.update(self.x,self.y,self.height,self.spriteWidth,self.spriteID,self.orientation == PlayerOrientation.LEFT,playerName=self.name)
-        pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)
+        
+        pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)#!debug
 
     #draws the hair
     def drawHair(self, display):
@@ -412,13 +371,24 @@ class Player(Actor):
     def notify(self,actor,event):
         pass
     
-    def levelComplete(self):
-        if self.y < 0:
-            return True
-        else:
-            return False
     
-    #TODO
+    def validateInput(self,dashInput,jumpInput):
+        dashInput, jumpInput = bool(dashInput), bool(jumpInput)
+        dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
+        #decide if we are walljumping
+        wallJump = jumpInput and (self.state == PlayerStates.WALLHUG or self.wallGrace > 0) and self.wallJumpCooldown <= 0
+
+        if wallJump:
+            self.wallJumpCooldown = WALLJUMP_COOLDOWN
+        #decide if the jump is valid
+        jumpInput = jumpInput and self.airborne >= 0 and (self.collisions[3] or self.coyoteJump > 0) and self.state != PlayerStates.JUMP
+        #reduce the wallgrace
+        self.wallGrace -= 1 if self.wallGrace > 0 else 0    
+        self.coyoteJump -= 1 if self.coyoteJump > 0 else 0
+        self.wallJumpCooldown -= 1 if self.wallJumpCooldown > 0 else 0
+
+        return dashInput,wallJump,jumpInput
+    
     def checkCorrectCollisions(self,x,y):
     #left, right, top, bottom
         self.collisions = [0,0,0,0]
@@ -471,6 +441,18 @@ class Player(Actor):
     def updateOrientation(self,xInput):
         return PlayerOrientation.RIGHT if xInput > 0 else PlayerOrientation.LEFT if xInput < 0 else self.orientation
     
+    def updateAirborne(self):
+        #!check if we are in the air after the movement
+        if self.physics.speed[1] < 0:
+            self.airborne = -1
+        elif self.physics.speed[1] > 0:
+            self.airborne = 1
+        else:
+            if self.collisions[3]:
+                self.airborne = 0
+            else:
+                self.airborne = -1
+
     def vectorToState(self,xInput,yInput,dashInput,jumpInput):
         if dashInput == 1:
             return PlayerStates.DASH
@@ -484,7 +466,45 @@ class Player(Actor):
             return PlayerStates.LOOKUP
         
         return PlayerStates.IDLE
+    
+    def checkStateChange(self,newState):
+        # if the state changed, reset the animation frame counter and the spriteID
+        if self.state != newState:
+            self.animationFrameCounter = 1
+            self.spriteID = f"{newState.value}1"
+            if newState == PlayerStates.DASH:# if the newState is a dash, reduce the dash count and reset the cooldown
+                self.dashCount -= 1 if self.dashCount > 0 else 0 
+                self.dashCooldown = DASH_COOLDOWN
+                self.serviceLocator.soundManager.play("dash")
+
+            if newState == PlayerStates.JUMP: # id the newState is a jump, play the jump Sound
+                self.serviceLocator.soundManager.play("jump") 
         
+    def updateSprite(self):
+        match self.state:
+            case PlayerStates.JUMP:
+                self.jump()
+            case PlayerStates.DASH:
+                self.dash()
+            case PlayerStates.TURN:
+                self.turn()
+            case PlayerStates.WALK:
+                self.walk()
+            case PlayerStates.CROUCH:
+                self.crouch()
+            case PlayerStates.IDLE:
+                self.idle()
+            case PlayerStates.LOOKUP: 
+                self.lookup()
+            case PlayerStates.RESPAWN:
+                self.respawn()
+            case PlayerStates.FALLING:
+                self.falling()
+            case PlayerStates.LOOKUP:
+                self.lookup()
+            case _:
+                pass
+
     def actorCollision(self):
             #check collisions for the rest of the actors
             self.springCollided = False

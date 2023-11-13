@@ -1,14 +1,17 @@
 import pygame
 from inputHandler import InputHandler
 from serviceLocator import serviceLocator
+from utils.soundManager import SoundManager
+
+import utils.utils as utils
+
 from actors.madeline3 import Player
+
 from map.map import Map
 from actors.dashResetEntity import DashResetEntity
 from actors.particles import ParticleManager
 from constants.enums import ActorTypes
 from states import *
-from utils.soundManager import SoundManager
-import utils.utils as utils
 
 from itertools import repeat
 
@@ -31,7 +34,7 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 2
+level = 1
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 
@@ -56,19 +59,8 @@ particlemanager.add_particles("snow", 50)
 particlemanager.add_particles("cloud", 15)
 
 time = 0
-#add 
-def addObservers():
-        for actor in serviceLocator.actorList:
-            for player in serviceLocator.players:
 
-                if actor.type == ActorTypes.DASH_RESET:
-                    player.add_observer(actor)
-                if actor.type == ActorTypes.STRAWBERRY:
-                    player.add_observer(actor)
-                if actor.type == ActorTypes.SPRING:
-                    player.add_observer(actor)
-                if actor.type == ActorTypes.FALLINGBLOCK:
-                    player.add_observer(actor)
+
 
 
 
@@ -76,7 +68,9 @@ def addObservers():
 serviceLocator.offset = offset
 
 pygame.init()
-addObservers()
+
+#adds the observers to the players
+utils.addObservers(serviceLocator)
 
 running = True
 framerate = 1
@@ -86,17 +80,20 @@ while running:
     display.fill((0,0,0,255))
 
     if madeline.levelComplete():
+        print("completed level")
         level+=1
         serviceLocator.actorList = []
         map = Map(str(level),serviceLocator)
         serviceLocator.map = map
 
+        serviceLocator.players = []
         madeline = Player(*map.spawn,"Madeline",serviceLocator)
-        serviceLocator.player = madeline
+        serviceLocator.players.append(madeline)
         serviceLocator.actorList.append(madeline)
 
-        addObservers()
+        print(serviceLocator.map)
 
+        utils.addObservers(serviceLocator)
         
 
     

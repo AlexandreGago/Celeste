@@ -1,5 +1,10 @@
 import random
 import pygame
+
+from actors.madeline3 import Player
+from constants.enums import ActorTypes
+from map.map import Map
+
 def screen_shake(intensity, amplitude, times):
     direction = -1
     y_shake=1
@@ -56,3 +61,15 @@ def parsePressedKeys(keys):
         #     newkeys.append(pygame.K_DOWN)
 
     return newkeys
+
+def addObservers(serviceLocator):
+    for actor in serviceLocator.actorList:
+        for player in serviceLocator.players:
+            if actor.type == ActorTypes.DASH_RESET:
+                player.add_observer(actor)
+            if actor.type == ActorTypes.STRAWBERRY:
+                player.add_observer(actor)
+            if actor.type == ActorTypes.SPRING:
+                player.add_observer(actor)
+            if actor.type == ActorTypes.FALLINGBLOCK:
+                player.add_observer(actor)
