@@ -5,7 +5,7 @@ from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStu
 
 # atlasIMG = pygame.image.load("atlas.png")
 class SpriteClass(pygame.sprite.Sprite):
-    def __init__(self,x,y,height,width,type,spriteID,flipVertical=None,flipHorizontal=None,rotate=None):
+    def __init__(self,x,y,height,width,type,spriteID,flipVertical=None,flipHorizontal=None,rotate=None,playerName = None):
         super().__init__()
         self.type = type
         self.height = height
@@ -16,7 +16,10 @@ class SpriteClass(pygame.sprite.Sprite):
 
         if self.type == ActorTypes.PLAYER:
             self.spriteID = spriteID
-            img = pygame.image.load(PlayerStuff.spritesLocation[self.spriteID])
+            if playerName == "Badeline":
+                img = pygame.image.load(PlayerStuff.spritesLocationBadeline[self.spriteID])
+            else:
+                img = pygame.image.load(PlayerStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,16,16))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
@@ -69,7 +72,7 @@ class SpriteClass(pygame.sprite.Sprite):
         self.rect.width = width
 
 
-    def update(self,x,y,height,width,spriteID,flipVertical=None,flipHorizontal=None,rotate = None):
+    def update(self,x,y,height,width,spriteID,flipVertical=None,flipHorizontal=None,rotate = None,playerName = None):
         self.rect.x = x
         self.rect.y = y
         self.rect.height = height
@@ -82,7 +85,10 @@ class SpriteClass(pygame.sprite.Sprite):
 
         if self.type == ActorTypes.PLAYER:
             #update image
-            img = pygame.image.load(PlayerStuff.spritesLocation[spriteID])
+            if playerName == "Badeline":
+                img = pygame.image.load(PlayerStuff.spritesLocationBadeline[self.spriteID])
+            else:
+                img = pygame.image.load(PlayerStuff.spritesLocation[self.spriteID])
 
             self.image = img.subsurface((9,19,12,13))
 

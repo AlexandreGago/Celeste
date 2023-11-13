@@ -148,6 +148,77 @@ class PlayerStuff:
         "lookup7":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp06.png",
         "lookup8":"./CelesteSprites/Atlases/Gameplay/characters/player/lookUp07.png",
     }
+    spritesLocationBadeline={
+        #respawn sprite
+        "respawn1":"./CelesteSprites/Atlases/Gameplay/characters/badeline/idle00.png",
+        #wallhug sprite
+        "wallhug1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/climb00.png",
+
+        #default idle animation
+        "idle1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle00.png",
+        "idle2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle01.png",
+        "idle3": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle02.png",
+        "idle4": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle03.png",
+        "idle5": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle04.png",
+        "idle6": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle05.png",
+        "idle7": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle06.png",
+        "idle8": "./CelesteSprites/Atlases/Gameplay/characters/badeline/idle07.png",
+
+        #Walking right
+        "walk1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast00.png",
+        "walk2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast01.png",
+        "walk3": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast02.png",
+        "walk4": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast03.png",
+        "walk5": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast04.png",
+        "walk6": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast05.png",
+        "walk7": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast06.png",
+        "walk8": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast07.png",
+        "walk9": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast08.png",
+        "walk10": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast09.png",
+        "walk11": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast10.png",
+        "walk12": "./CelesteSprites/Atlases/Gameplay/characters/badeline/runFast11.png",
+        
+
+        #turning left
+        "turn1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip00.png",
+        "turn2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip01.png",
+        "turn3": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip02.png",
+        "turn4": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip03.png",
+        "turn5": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip04.png",
+        "turn6": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip05.png",
+        "turn7": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip06.png",
+        "turn8": "./CelesteSprites/Atlases/Gameplay/characters/badeline/flip07.png",
+
+
+        #crouch
+        "crouch1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/duck.png",
+        "crouch2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/duck.png",
+        "crouch3": "./CelesteSprites/Atlases/Gameplay/characters/badeline/duck.png",
+        "crouch4": "./CelesteSprites/Atlases/Gameplay/characters/badeline/duck.png",
+
+        #jump
+        "jump1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/jumpFast00.png",
+        "jump2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/jumpFast01.png",
+
+        #falling
+        "falling1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/jumpFast02.png",
+        "falling2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/jumpFast03.png",
+
+        #dash
+        "dash1": "./CelesteSprites/Atlases/Gameplay/characters/badeline/dash00.png",
+        "dash2": "./CelesteSprites/Atlases/Gameplay/characters/badeline/dash01.png",
+        "dash3": "./CelesteSprites/Atlases/Gameplay/characters/badeline/dash02.png",
+        "dash4": "./CelesteSprites/Atlases/Gameplay/characters/badeline/dash03.png",
+        #lookup
+        "lookup1":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp00.png",
+        "lookup2":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp01.png",
+        "lookup3":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp02.png",
+        "lookup4":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp03.png",
+        "lookup5":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp04.png",
+        "lookup6":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp05.png",
+        "lookup7":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp06.png",
+        "lookup8":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp07.png",
+    }
 
 class DashResetEntityStuff:
     sprites ={"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle1",

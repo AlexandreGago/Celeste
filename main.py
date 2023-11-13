@@ -31,16 +31,20 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 1
+level = 2
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 
 #player
 madeline = Player(*map.spawn,"Madeline",serviceLocator)
+madeline2 = Player(*map.spawn,"Badeline",serviceLocator)
 
 #add player to the service locator
-serviceLocator.player = madeline
+serviceLocator.players.append(madeline)
 serviceLocator.actorList.append(madeline)
+
+serviceLocator.players.append(madeline2)
+serviceLocator.actorList.append(madeline2)
 
 #count the frames (used for animations)
 frameCount = 0
@@ -52,18 +56,19 @@ particlemanager.add_particles("snow", 50)
 particlemanager.add_particles("cloud", 15)
 
 time = 0
-
 #add 
 def addObservers():
-    for actor in serviceLocator.actorList:
-        if actor.type == ActorTypes.DASH_RESET:
-            serviceLocator.player.add_observer(actor)
-        if actor.type == ActorTypes.STRAWBERRY:
-            serviceLocator.player.add_observer(actor)
-        if actor.type == ActorTypes.SPRING:
-            serviceLocator.player.add_observer(actor)
-        if actor.type == ActorTypes.FALLINGBLOCK:
-            serviceLocator.player.add_observer(actor)
+        for actor in serviceLocator.actorList:
+            for player in serviceLocator.players:
+
+                if actor.type == ActorTypes.DASH_RESET:
+                    player.add_observer(actor)
+                if actor.type == ActorTypes.STRAWBERRY:
+                    player.add_observer(actor)
+                if actor.type == ActorTypes.SPRING:
+                    player.add_observer(actor)
+                if actor.type == ActorTypes.FALLINGBLOCK:
+                    player.add_observer(actor)
 
 
 

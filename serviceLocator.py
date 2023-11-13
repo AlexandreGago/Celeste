@@ -1,7 +1,7 @@
 class serviceLocator():
     def __init__(self):
         self.inputHandler = None
-        self.player = None
+        self.players = []
         self.frameCount = None
         self.map = None
         self.display = None
@@ -10,8 +10,8 @@ class serviceLocator():
         self.offset = None
         self.screenshake = None
     
-    def getPlayer(self):
-        return self.player
+    def getPlayers(self):
+        return self.players
     
     def getInputHandler(self):
         return self.inputHandler

@@ -26,6 +26,18 @@ def parsePressedKeys(keys):
             newkeys.append(pygame.K_RIGHT)
         if keys[pygame.K_c]:
             newkeys.append(pygame.K_c)
+        if keys[pygame.K_w]:
+            newkeys.append(pygame.K_w)
+        if keys[pygame.K_s]:
+            newkeys.append(pygame.K_s)
+        if keys[pygame.K_a]:
+            newkeys.append(pygame.K_a)
+        if keys[pygame.K_d]:
+            newkeys.append(pygame.K_d)
+        if keys[pygame.K_1]:
+            newkeys.append(pygame.K_1)
+        if keys[pygame.K_2]:
+            newkeys.append(pygame.K_2)
         
         #remove opposite directions
         if (pygame.K_RIGHT in newkeys) and (pygame.K_LEFT in newkeys):
@@ -34,7 +46,12 @@ def parsePressedKeys(keys):
         if (pygame.K_UP in newkeys )and(pygame.K_DOWN in newkeys):
             newkeys.remove(pygame.K_UP)
             newkeys.remove(pygame.K_DOWN)
-
+        if (pygame.K_w in newkeys )and(pygame.K_s in newkeys):
+            newkeys.remove(pygame.K_w)
+            newkeys.remove(pygame.K_s)
+        if (pygame.K_a in newkeys )and(pygame.K_d in newkeys):
+            newkeys.remove(pygame.K_a)
+            newkeys.remove(pygame.K_d)
         # #if crouched, remain crouched
         # if (pygame.K_DOWN in newkeys):
         #     newkeys = []

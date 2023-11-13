@@ -14,6 +14,8 @@ import time
 HEIGHT = 800
 MAX_DASHES = 1
 DASH_COOLDOWN = 5
+PLAYERWIDTH = 50
+PLAYERHEIGHT = 50
 
 ANIMATION_SPEEDS = {
     "jump": 10,
@@ -22,14 +24,7 @@ ANIMATION_SPEEDS = {
 }
 
 #(offset_x,offset_y),max_dist,(pos_x,pos_y),radius
-points = [
-    [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
-    [pygame.Vector2(-6,4),9,pygame.Vector2(0,0),14],
-    [pygame.Vector2(-2,4),8.5,pygame.Vector2(0,0),13],
-    [pygame.Vector2(-4,4),8,pygame.Vector2(0,0),12], 
-    [pygame.Vector2(-4,2),7.5,pygame.Vector2(0,0),11],
-    [pygame.Vector2(-2,2),7,pygame.Vector2(0,0),10],
-]
+
 
 
 class Player(Actor):
@@ -68,15 +63,16 @@ class Player(Actor):
         self.collisions = [0,0,0,0]
         
         #player size and state
-        self.height = 50
-        self.width = 50
+        self.height = PLAYERHEIGHT
+        self.width = PLAYERWIDTH
         self.orientation = PlayerOrientation.RIGHT
         self.state = PlayerStates.RESPAWN
         self.alive = False
         
         #sprite
         self.spriteID = f"{self.state.value}1"
-        self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
+        self.spriteWidth = self.width
+        self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID,playerName=self.name)
         self.animationFrameCounter = 0
         
         #dash
@@ -88,6 +84,15 @@ class Player(Actor):
 
         self.airborne = 0
         self.dashCooldown = 0
+
+        self.hairPoints = [
+            [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
+            [pygame.Vector2(-6,4),9,pygame.Vector2(0,0),14],
+            [pygame.Vector2(-2,4),8.5,pygame.Vector2(0,0),13],
+            [pygame.Vector2(-4,4),8,pygame.Vector2(0,0),12], 
+            [pygame.Vector2(-4,2),7.5,pygame.Vector2(0,0),11],
+            [pygame.Vector2(-2,2),7,pygame.Vector2(0,0),10],
+        ]
         
         return
     
@@ -226,12 +231,16 @@ class Player(Actor):
                 else:
                     newState = PlayerStates.RESPAWN
                 
-            elif self.state in [PlayerStates.LOOKUP]:#TODO
+            elif self.state in [PlayerStates.LOOKUP]:
                 pass
 
             elif self.state in [PlayerStates.FALLING]:
                 if newState == PlayerStates.DASH :  
                     pass
+                elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
+                    newState = PlayerStates.WALLHUG
+                elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
+                    newState =  PlayerStates.WALLHUG
                 elif self.airborne != 0:
                     newState = PlayerStates.FALLING
 
@@ -245,12 +254,11 @@ class Player(Actor):
         xInput,yInput,dashInput,jumpInput = vector
         dashInput, jumpInput = bool(dashInput), bool(jumpInput)
         dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
-        if self.width < 50:
-            self.width += 2
-            self.x -= 1
+        wallJump = jumpInput and self.state == PlayerStates.WALLHUG
+        # print(self.state,wallJump)
         if self.alive:
             #update the position
-            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided)
+            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided,wallJump)
             #!change place?
             if self.state == PlayerStates.WALLHUG:
                 diff = self.y - temp_y
@@ -283,10 +291,9 @@ class Player(Actor):
                     self.dashCount -= 1 if self.dashCount > 0 else 0 
                     self.dashCooldown = DASH_COOLDOWN
                     self.serviceLocator.soundManager.play("dash")
+
                 if newState == PlayerStates.JUMP:
                     self.serviceLocator.soundManager.play("jump") 
-                    self.x += 10
-                    self.width = 30
             self.state = newState
         
         #update orientation (cannot be moved up because it is used by updateState)
@@ -325,7 +332,7 @@ class Player(Actor):
                 self.particles.remove(particle)
         
         self.animationFrameCounter += 1
-        self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation == PlayerOrientation.LEFT)
+        self.sprite.update(self.x,self.y,self.height,self.spriteWidth,self.spriteID,self.orientation == PlayerOrientation.LEFT,playerName=self.name)
         pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)
 
     #draws the hair
@@ -334,42 +341,42 @@ class Player(Actor):
         if PlayerStuff.spritesHairOffset[self.state][self.spriteID]:
             offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
             offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
-        for i in range (len(points)-1,-1,-1):
+        for i in range (len(self.hairPoints)-1,-1,-1):
             if i == 0:
-                points[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))
+                self.hairPoints[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))
                 continue
             if self.orientation == PlayerOrientation.RIGHT:
-                points[i][2] = points[i][0] + points[i-1][2] 
+                self.hairPoints[i][2] = self.hairPoints[i][0] + self.hairPoints[i-1][2] 
             else:
-                points[i][2] =  points[i-1][2]+(points[i][0][0]*-1,points[i][0][1])
+                self.hairPoints[i][2] =  self.hairPoints[i-1][2]+(self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])
 
-        for i in range(len(points)):
+        for i in range(len(self.hairPoints)):
             if i == 0:
                 continue
             if self.orientation == PlayerOrientation.RIGHT:
-                if points[i][2].distance_to(points[i][0]+points[i-1][2]) > points[i][1]:
-                    dir = (points[i][2]-(points[i-1][2]+points[i][0])).normalize()
-                    offset = dir * points[i][1]
-                    points[i][2] = points[i-1][2] + points[i][0]+ offset
+                if self.hairPoints[i][2].distance_to(self.hairPoints[i][0]+self.hairPoints[i-1][2]) > self.hairPoints[i][1]:
+                    dir = (self.hairPoints[i][2]-(self.hairPoints[i-1][2]+self.hairPoints[i][0])).normalize()
+                    offset = dir * self.hairPoints[i][1]
+                    self.hairPoints[i][2] = self.hairPoints[i-1][2] + self.hairPoints[i][0]+ offset
             else:
-                if points[i][2].distance_to((points[i][0][0]*-1,points[i][0][1])+points[i-1][2]) > points[i][1]:
-                    dir = (points[i][2]-(points[i-1][2]+(points[i][0][0]*-1,points[i][0][1]))).normalize()
-                    offset = dir * points[i][1]
-                    points[i][2] = points[i-1][2] + (points[i][0][0]*-1,points[i][0][1])+ offset
+                if self.hairPoints[i][2].distance_to((self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])+self.hairPoints[i-1][2]) > self.hairPoints[i][1]:
+                    dir = (self.hairPoints[i][2]-(self.hairPoints[i-1][2]+(self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1]))).normalize()
+                    offset = dir * self.hairPoints[i][1]
+                    self.hairPoints[i][2] = self.hairPoints[i-1][2] + (self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])+ offset
             
                 
         
-        for i in range (len(points)-1,-1,-1):
+        for i in range (len(self.hairPoints)-1,-1,-1):
             if self.airborne == 0:
                 if self.dashCooldown > 0:
-                    pygame.draw.circle(display, (255, 255, 255), points[i][2], points[i][3]) # white
+                    pygame.draw.circle(display, (255, 255, 255), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # white
                 else:
-                    pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+                    pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
             else:
                 if self.dashCount <= 0:
-                    pygame.draw.circle(display, (69, 194, 255), points[i][2], points[i][3]) # blue
+                    pygame.draw.circle(display, (69, 194, 255), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # blue
                 else:
-                    pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+                    pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
 
             # pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3],width = 3) # brown
                     
