@@ -37,7 +37,7 @@ class Physics():
     def __init__(self):
         self.speed = [0,0]
     
-    def move(self,x,y,xInput,yInput,dashInput,jumpInput,collisions,orientation,springCollision,wallJump) -> tuple[float,float]:
+    def move(self,x,y,xInput,yInput,dashInput,jumpInput,collisions,orientation,springCollision,wallJump,state) -> tuple[float,float]:
         """
         Calculate new position based on inputs and collisions
 
@@ -71,7 +71,7 @@ class Physics():
         #if player pressed jump and is grounded, jump
         if springCollision:
             self.speed[1] = -physicsValues.spring["power"]
-        elif jumpInput and collisions[3]:
+        elif jumpInput:
             self.speed[1] = -jump["power"]
         else:
             #if we are in the air, apply gravity
@@ -87,9 +87,14 @@ class Physics():
                 xInput = 1 if orientation == PlayerOrientation.RIGHT else -1
             self.speed[0] = dash["power"] * xInput
             self.speed[1] = dash["power"] * -yInput
+
         if wallJump:
-            self.speed[1] = -jump["power"]
-            self.speed[0] = -jump["power"] * xInput
+            if state == PlayerStates.WALLHUG:#if we are in wallJump, jump to oppsoite direction
+                self.speed[1] = -jump["power"]
+                self.speed[0] = -jump["power"] * xInput
+            else:# else jump to the same direction we are facing
+                self.speed[1] = -jump["power"]
+                self.speed[0] =  jump["power"] * xInput
         # if yInput == -1 and not collisions[3]: # if we are crouching we cant move #! collsions still not working, so this isnt either
         #     pass
         # else:

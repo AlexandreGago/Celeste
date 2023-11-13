@@ -24,8 +24,6 @@ def parsePressedKeys(keys):
             newkeys.append(pygame.K_LEFT)
         if keys[pygame.K_RIGHT]:
             newkeys.append(pygame.K_RIGHT)
-        if keys[pygame.K_c]:
-            newkeys.append(pygame.K_c)
         if keys[pygame.K_w]:
             newkeys.append(pygame.K_w)
         if keys[pygame.K_s]:

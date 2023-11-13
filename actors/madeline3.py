@@ -16,6 +16,9 @@ MAX_DASHES = 1
 DASH_COOLDOWN = 5
 PLAYERWIDTH = 50
 PLAYERHEIGHT = 50
+WALLGRACE = 5
+COYOTEJUMP = 10
+WALLJUMP_COOLDOWN = 10
 
 ANIMATION_SPEEDS = {
     "jump": 10,
@@ -84,6 +87,10 @@ class Player(Actor):
 
         self.airborne = 0
         self.dashCooldown = 0
+
+        self.wallGrace = 0
+        self.coyoteJump = 0
+        self.wallJumpCooldown = 0
 
         self.hairPoints = [
             [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
@@ -164,15 +171,16 @@ class Player(Actor):
         if not self.alive :
             newState = PlayerStates.RESPAWN
         #we are alive
+        #!this was in every state, so to reduce repetion, it is here
+        elif xInput < 0 and self.collisions[0] and not self.collisions[3]: # change to wallhug
+            newState = PlayerStates.WALLHUG
+        elif xInput > 0 and self.collisions[1] and not self.collisions[3]: # change to wallhug
+            newState =  PlayerStates.WALLHUG
         else:
             #if we are jumping, keep jumping unless we are dashing
             if self.state == PlayerStates.JUMP:
                 if newState != PlayerStates.DASH and self.airborne == -1:
                     newState = PlayerStates.JUMP
-                elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
-                    newState = PlayerStates.WALLHUG
-                elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
-                    newState =  PlayerStates.WALLHUG
                 elif self.airborne == 1:
                     newState = PlayerStates.FALLING
                     
@@ -196,19 +204,11 @@ class Player(Actor):
                     pass
                 elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
                     newState = PlayerStates.TURN
-                elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
-                    newState = PlayerStates.WALLHUG
-                elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
-                    newState =  PlayerStates.WALLHUG
                 elif self.airborne == 1:
                     newState = PlayerStates.FALLING
 
             elif self.state in [PlayerStates.WALLHUG]:
-                if not self.collisions[3]:
-                    if xInput < 0 and self.collisions[0]:
-                        newState = PlayerStates.WALLHUG
-                    if xInput > 0 and self.collisions[1]:
-                        newState =  PlayerStates.WALLHUG
+                self.wallGrace = WALLGRACE
 
                 
             elif self.state in [PlayerStates.CROUCH]:
@@ -237,10 +237,6 @@ class Player(Actor):
             elif self.state in [PlayerStates.FALLING]:
                 if newState == PlayerStates.DASH :  
                     pass
-                elif xInput < 0 and self.collisions[0] and not self.collisions[3] and self.physics.speed[1]>=0 : # change to wallhug
-                    newState = PlayerStates.WALLHUG
-                elif xInput > 0 and self.collisions[1] and not self.collisions[3] and self.physics.speed[1]>=0: # change to wallhug
-                    newState =  PlayerStates.WALLHUG
                 elif self.airborne != 0:
                     newState = PlayerStates.FALLING
 
@@ -254,13 +250,23 @@ class Player(Actor):
         xInput,yInput,dashInput,jumpInput = vector
         dashInput, jumpInput = bool(dashInput), bool(jumpInput)
         dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
-        wallJump = jumpInput and self.state == PlayerStates.WALLHUG
-        # print(self.state,wallJump)
+        #decide if we are walljumping
+        wallJump = jumpInput and (self.state == PlayerStates.WALLHUG or self.wallGrace > 0) and self.wallJumpCooldown <= 0
+        if wallJump:
+            self.wallJumpCooldown = WALLJUMP_COOLDOWN
+        #decide if the jump is valid
+        jumpInput = jumpInput and self.airborne >= 0 and (self.collisions[3] or self.coyoteJump > 0) and self.state != PlayerStates.JUMP
+        #reduce the wallgrace
+        self.wallGrace -= 1 if self.wallGrace > 0 else 0    
+        self.coyoteJump -= 1 if self.coyoteJump > 0 else 0
+        self.wallJumpCooldown -= 1 if self.wallJumpCooldown > 0 else 0
+        # print(wallJump,jumpInput,self.state,self.wallGrace,self.wallJumpCooldown)
+
         if self.alive:
             #update the position
-            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided,wallJump)
+            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided,wallJump,self.state)
             #!change place?
-            if self.state == PlayerStates.WALLHUG:
+            if self.state == PlayerStates.WALLHUG and self.physics.speed[1]>=0:
                 diff = self.y - temp_y
                 temp_y = temp_y + diff/2
                 
@@ -432,6 +438,8 @@ class Player(Actor):
                     self.collisions[3] = 1
                     self.physics.speed[1] = 0
                     self.dashCount = MAX_DASHES
+                    self.coyoteJump = COYOTEJUMP
+
                     self.sprite.rect.y = tile.rect.top - self.height
                     self.serviceLocator.display.fill((255,0,0),tile.rect)
 

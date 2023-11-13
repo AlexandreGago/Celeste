@@ -37,14 +37,14 @@ serviceLocator.map = map
 
 #player
 madeline = Player(*map.spawn,"Madeline",serviceLocator)
-madeline2 = Player(*map.spawn,"Badeline",serviceLocator)
+# madeline2 = Player(*map.spawn,"Badeline",serviceLocator)
 
 #add player to the service locator
 serviceLocator.players.append(madeline)
 serviceLocator.actorList.append(madeline)
 
-serviceLocator.players.append(madeline2)
-serviceLocator.actorList.append(madeline2)
+# serviceLocator.players.append(madeline2)
+# serviceLocator.actorList.append(madeline2)
 
 #count the frames (used for animations)
 frameCount = 0
@@ -117,6 +117,9 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key==pygame.K_x:
                 keys.append(pygame.K_x)
+        if event.type == pygame.KEYDOWN:
+            if event.key==pygame.K_c:
+                keys.append(pygame.K_c)
     #manage input
     inputHandler.handleInput(keys)  
       
