@@ -15,6 +15,8 @@ from states import *
 
 from itertools import repeat
 
+from titleScreen import drawTitleScreen
+
 WIDTH, HEIGHT = 800, 800
 SCALE = 1
 #Sercice discovery
@@ -76,6 +78,12 @@ running = True
 framerate = 1
 
 serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
+
+drawTitleScreen(display,display_shake,clock,particlemanager)
+
+running = True
+display_shake.fill((0,0,0))
+display.fill((0,0,0))
 while running:
     display.fill((0,0,0,255))
 
@@ -140,8 +148,6 @@ while running:
 
     display_shake.blit(display, next(serviceLocator.offset))
     pygame.display.update()
-    
-    
 
     time += clock.tick(framerate)
     # print(clock.get_fps())

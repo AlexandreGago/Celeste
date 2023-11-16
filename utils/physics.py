@@ -80,7 +80,6 @@ class Physics():
             else:
                 self.speed[1] = calculateSpeed(self.speed[1], air["maxSpeed"], air["gravity"])
 
-            
 
         if dashInput: #Dash
             if xInput == 0 and yInput == 0:
@@ -88,13 +87,9 @@ class Physics():
             self.speed[0] = dash["power"] * xInput
             self.speed[1] = dash["power"] * -yInput
 
-        print(wallJump)
-        if wallJump==True:
-        # print("walljump",state,xInput,wallJumpSide)
-            print("here")
+        elif wallJump==True:
             self.speed[1] = -jump["power"]
             self.speed[0] = -jump["power"] * wallJumpSide
-
 
 
         x += self.speed[0]

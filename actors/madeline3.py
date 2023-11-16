@@ -12,7 +12,7 @@ from utils.physics import Physics
 import time
 
 HEIGHT = 800
-MAX_DASHES = 1
+MAX_DASHES = 2
 DASH_COOLDOWN = 1
 PLAYERWIDTH = 50
 PLAYERHEIGHT = 50
@@ -79,7 +79,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.dashCount = 1
+        self.dashCount = MAX_DASHES
         #Particles
         self.particles = []
         
@@ -181,11 +181,11 @@ class Player(Actor):
             newState = PlayerStates.RESPAWN
         #we are alive
         #!this was in every state, so to reduce repetion, it is here
-        elif xInput < 0 and self.collisions[0] and not self.collisions[3]: # change to wallhug
+        elif xInput < 0 and self.collisions[0] and not self.collisions[3] and newState != PlayerStates.DASH: # change to wallhug
             newState = PlayerStates.WALLHUG
             self.wallGrace = WALLGRACE
             self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
-        elif xInput > 0 and self.collisions[1] and not self.collisions[3]: # change to wallhug
+        elif xInput > 0 and self.collisions[1] and not self.collisions[3]and newState != PlayerStates.DASH: # change to wallhug
             newState =  PlayerStates.WALLHUG
             self.wallGrace = WALLGRACE
             self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
@@ -205,6 +205,8 @@ class Player(Actor):
                 else:
                     if self.physics.speed[0] < -physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]: # of the speed is greater than the max speed, keep dashing
                         newState = PlayerStates.DASH
+                if self.airborne != 0:
+                    newState = PlayerStates.FALLING
 
             elif self.state in [PlayerStates.TURN]:
                 if newState in [PlayerStates.JUMP,PlayerStates.DASH]:  #!this can be removed for a smoother animation
@@ -511,8 +513,8 @@ class Player(Actor):
             for actor in self.serviceLocator.actorList:
                 if actor.type == ActorTypes.DASH_RESET: 
                     #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
-                    if self.dashCount <= 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
-                        self.dashCount = MAX_DASHES
+                    if self.dashCount <= MAX_DASHES-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                        self.dashCount += 1
                         self.dashCooldown = DASH_COOLDOWN
                         #notify observers
                         for obs in self.observers:
