@@ -6,6 +6,7 @@ from actors.strawberry import Strawberry
 from actors.spring import Spring
 from actors.spike import Spike
 from actors.fallingBlock import FallingBlock
+from actors.cloud import Cloud
 from constants.enums import SpikeOrientations
 import json
 import base64
@@ -14,7 +15,7 @@ spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
-POWERS = ["r","q","s", "t"]
+POWERS = ["r","q","s", "t","u"]
 
 import os
 
@@ -83,6 +84,11 @@ class Map:
     def load(self, level):
         sprites = pygame.sprite.Group()
         walls = []
+        
+        self.servicelocator.actorList = []
+        self.servicelocator.fallingBlocks = []
+        self.servicelocator.clouds = []
+        
         spawn = None
         # #decode b64
         # level=base64.b64decode(levels[level])
@@ -95,6 +101,7 @@ class Map:
         level = levels[level]
         for idx,row in enumerate(level):
             for idy,cell in enumerate(row):
+                print(cell)
                 if cell == "p":
                     spawn = (idy*50, idx*50)
                 if cell in WALLS:
@@ -145,7 +152,11 @@ class Map:
                     if cell == "t":
                         fb = FallingBlock(idy*50, idx*50, self.servicelocator)
                         self.servicelocator.actorList.append(fb)
-                        walls.append(fb)
+                        self.servicelocator.fallingBlocks.append(fb)
+                    if cell == "u":
+                        cd = Cloud(idy*50, idx*50, self.servicelocator) 
+                        self.servicelocator.actorList.append(cd)
+                        self.servicelocator.clouds.append(cd)
 
         return sprites, spawn, walls
 

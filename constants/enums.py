@@ -9,6 +9,7 @@ class ActorTypes(Enum):
     SPRING = 6
     SPIKE = 7
     FALLINGBLOCK = 8
+    CLOUD = 9
     
 class ParticleTypes(Enum):
     JUMP = 1

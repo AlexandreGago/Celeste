@@ -1,6 +1,6 @@
 import pygame
 from constants.enums import ActorTypes,ParticleTypes
-from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff,jumpParticles,fallingBlockStuff
+from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff, cloudStuff,jumpParticles,fallingBlockStuff
 
 
 # atlasIMG = pygame.image.load("atlas.png")
@@ -57,6 +57,12 @@ class SpriteClass(pygame.sprite.Sprite):
             self.spriteID = spriteID
             img = pygame.image.load(fallingBlockStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,32,8))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            
+        if self.type == ActorTypes.CLOUD:
+            self.spriteID = spriteID
+            img = pygame.image.load(cloudStuff.spritesLocation[self.spriteID])
+            self.image = img.subsurface((6,4,32,14))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         if flipVertical:
@@ -116,6 +122,12 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.FALLINGBLOCK:
             img = pygame.image.load(fallingBlockStuff.spritesLocation[self.spriteID])
             self.image = img.subsurface((0,0,23,8))
+            
+        if self.type == ActorTypes.CLOUD:
+            self.spriteID = spriteID
+            img = pygame.image.load(cloudStuff.spritesLocation[self.spriteID])
+            self.image = img.subsurface((6,4,32,14))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         if flipVertical:
             self.image = pygame.transform.flip(self.image,True,False)

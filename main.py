@@ -62,10 +62,6 @@ particlemanager.add_particles("cloud", 15)
 
 time = 0
 
-
-
-
-
 #!service locator offset and screen shake function
 serviceLocator.offset = offset
 

@@ -7,6 +7,9 @@ class serviceLocator():
         self.display = None
         self.actorList = []
 
+        self.fallingBlocks = []
+        self.clouds = []
+        
         self.offset = None
         self.screenshake = None
     

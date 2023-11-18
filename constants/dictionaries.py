@@ -329,3 +329,10 @@ class fallingBlockStuff:
         "idle1": "./CelesteSprites/Atlases/Gameplay/objects/crumbleBlock/default.png",
         "outline1": "./CelesteSprites/Atlases/Gameplay/objects/crumbleBlock/outline.png",
     }
+class cloudStuff:
+    firstSpriteID = "idle1"
+    states = ["idle"]
+    sprites= {"idle1":"idle1"}
+    spritesLocation = {
+        "idle1": "./CelesteSprites/Atlases/Gameplay/objects/clouds/cloud00.png",
+    }

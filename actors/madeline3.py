@@ -105,7 +105,6 @@ class Player(Actor):
         return
     
     def spawn(self):
-        # print(self.y,self.spawnY)
         if self.y > self.spawnY:    
             self.y -= 8
         else:
@@ -113,7 +112,6 @@ class Player(Actor):
         return False
     
     def levelComplete(self):
-        # print("complete",self.y)
         if self.y < 0:
             return True
         else:
@@ -262,7 +260,6 @@ class Player(Actor):
         return newState
     
     def move(self,vector) -> None:
-        print(self.state,self.wallJumpSide)
         #process inputs
         xInput,yInput,dashInput,jumpInput = vector # unpack the vector
         dashInput,wallJump,jumpInput = self.validateInput(dashInput,jumpInput)# validate the inputs ex: if jumpInput = 1 but we are in the air, jumpInput = 0
@@ -434,9 +431,20 @@ class Player(Actor):
                     self.physics.speed[0] = 0
                     x = tile.rect.left - self.width
                     self.sprite.rect.x = x
-
                     self.serviceLocator.display.fill((255,0,0),tile.rect)
+                    
+        for cloud in self.serviceLocator.clouds:
+            sprite = cloud.sprite
+            if sprite.rect.colliderect(self.sprite.rect):
+                if sprite.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"] and self.airborne >= 0:
+                    self.collisions[3] = 1
+                    self.physics.speed[1] = 0
+                    self.dashCount = MAX_DASHES
+                    self.coyoteJump = COYOTEJUMP
 
+                    self.sprite.rect.y = sprite.rect.top - self.height
+                    self.serviceLocator.display.fill((255,0,0),sprite.rect)
+                    
         self.x = self.sprite.rect.x
         self.y = self.sprite.rect.y
 
