@@ -18,7 +18,6 @@ def screen_shake(intensity:int, amplitude:int, times:int):
         tuple: x and y position of the shake
 
     """
-    print("hi")
     direction = -1
     y_shake=1
     for _ in range(0, times):

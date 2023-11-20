@@ -7,7 +7,8 @@ from spriteClass import SpriteClass
 
 from actors.spriteParticle import SpriteParticle
 from utils.physics import Physics
-from utils.utils import screen_shake
+import utils.utils as utils
+
 
 MAX_DASHES = 2
 DASH_COOLDOWN = 1
@@ -712,7 +713,8 @@ class Player(Actor):
                 self.dashCount -= 1 if self.dashCount > 0 else 0 
                 self.dashCooldown = DASH_COOLDOWN
                 self.serviceLocator.soundManager.play("dash")
-                self.serviceLocator.offset = screen_shake(5,5,14)
+                self.serviceLocator.offset = utils.screen_shake(5,15,4)
+
 
             if newState == PlayerStates.JUMP: # id the newState is a jump, play the jump Sound
                 self.particles.append(SpriteParticle(self.x + self.width/2,self.y + (self.height/3*2),"jump"))

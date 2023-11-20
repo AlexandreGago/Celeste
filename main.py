@@ -140,7 +140,6 @@ while running:
     serviceLocator.frameCount += 1
     if serviceLocator.frameCount == framerate:
         serviceLocator.frameCount = 0
-    print(serviceLocator.offset)
     
     display_shake.blit(display, next(serviceLocator.offset))
     pygame.display.update()
