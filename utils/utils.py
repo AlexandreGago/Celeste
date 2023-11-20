@@ -1,9 +1,9 @@
 import random
 import pygame
 
-from actors.madeline import Player
+# from actors.madeline import Player
 from constants.enums import ActorTypes
-from map.map import Map
+# from map.map import Map
 
 def screen_shake(intensity:int, amplitude:int, times:int):
     """
@@ -18,6 +18,7 @@ def screen_shake(intensity:int, amplitude:int, times:int):
         tuple: x and y position of the shake
 
     """
+    print("hi")
     direction = -1
     y_shake=1
     for _ in range(0, times):

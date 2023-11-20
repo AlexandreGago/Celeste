@@ -7,7 +7,7 @@ from spriteClass import SpriteClass
 
 from actors.spriteParticle import SpriteParticle
 from utils.physics import Physics
-
+from utils.utils import screen_shake
 
 MAX_DASHES = 2
 DASH_COOLDOWN = 1
@@ -421,12 +421,17 @@ class Player(Actor):
         
         #update the sprite corresponding to the state
         self.updateSprite()
-            
+        
         #update particles and remove the ones that are done
+        if self.physics.speed[0] > 10 or self.physics.speed[0] <-10 or self.physics.speed[1] >10 or self.physics.speed[1] < -10:
+            self.particles.append(SpriteParticle(self.x + self.width/2,self.y + (self.height/2),"jump"))
+
         for particle in self.particles:
             if particle.update():
                 self.particles.remove(particle)
         
+
+
         #advance the animationFrameCounter
         self.animationFrameCounter += 1 if self.animationFrameCounter <= 60 else -59 
         #update the sprite #! can be called in updateSprite() for optimization
@@ -611,8 +616,8 @@ class Player(Actor):
                     self.physics.speed[1] = 0
                     self.dashCount = MAX_DASHES
                     self.coyoteJump = COYOTEJUMP
-                    if self.state == PlayerStates.IDLE:
-                        self.sprite.rect.x -= 3
+                    # if self.state == PlayerStates.IDLE:
+                        # self.physics.speed[0] -= 3 if self.physics.speed[0] >= 0 else -3 - self.physics.speed[0]
 
                     self.sprite.rect.y = sprite.rect.top - self.height
                     self.serviceLocator.display.fill((255,0,0),sprite.rect)
@@ -703,11 +708,14 @@ class Player(Actor):
             self.animationFrameCounter = 1
             self.spriteID = f"{newState.value}1"
             if newState == PlayerStates.DASH:# if the newState is a dash, reduce the dash count and reset the cooldown
+                self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))
                 self.dashCount -= 1 if self.dashCount > 0 else 0 
                 self.dashCooldown = DASH_COOLDOWN
                 self.serviceLocator.soundManager.play("dash")
+                self.serviceLocator.offset = screen_shake(5,5,14)
 
             if newState == PlayerStates.JUMP: # id the newState is a jump, play the jump Sound
+                self.particles.append(SpriteParticle(self.x + self.width/2,self.y + (self.height/3*2),"jump"))
                 self.serviceLocator.soundManager.play("jump") 
         
     def updateSprite(self) -> None:
