@@ -7,7 +7,19 @@ from constants.enums import ActorTypes,SpikeOrientations
 
 
 class Spike(Actor):
-    def __init__(self, x, y,orientation) -> None:
+    def __init__(self, x:int, y:int,orientation:SpikeOrientations) -> None:
+        """
+        Creates a spike
+
+        Args:
+            x (int): x position of the spike
+            y (int): y position of the spike
+            orientation (SpikeOrientations): orientation of the spike
+
+        Returns:
+            None
+
+        """
         xOffset = None
         yOffset = None
         rotateSprite = 0
@@ -53,10 +65,19 @@ class Spike(Actor):
     def update(self):
         pass
 
-    def draw(self, display):
+    def draw(self, display:pygame.display) -> None:
+        """
+        Draws the spike on the display
+
+        Args:
+            display (pygame.display): display to draw the spike on
+
+        Returns:
+            None
+        """
         if self.state != "hidden":
             self.sprite.draw(display)
 
-    def notify(self, entityName, event):
+    def notify(self, entityName, event) -> None:
         if event == "touchSpike" and entityName == self.name:
             pass

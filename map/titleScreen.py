@@ -1,10 +1,21 @@
 
 import pygame
 
+def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:pygame.time.Clock,particlemanager) -> None:
+    """
+    Draw the Title Screen and holds it until a space key is pressed
 
-def drawTitleScreen(display,display_shake,clock,particlemanager):
-    width = display.get_width()
-    height = display.get_height()
+    Args:   
+        display (pygame.display): display where objects are drawn
+        display_shake (pygame.display): display where "display" is drawn with an offset to simulate screen shake
+        clock (pygame.time.Clock): clock to keep track of time
+        particlemanager (ParticleManager): manager to keep track of particles
+    
+    Returns:
+        None
+    """
+    width = display.get_width() # get the width of the display
+    height = display.get_height() # get the height of the display
 
     pygame.font.init()
     #background image
@@ -24,8 +35,6 @@ def drawTitleScreen(display,display_shake,clock,particlemanager):
     while running:
         display.fill((0,0,0))
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     running = False
@@ -44,10 +53,10 @@ def drawTitleScreen(display,display_shake,clock,particlemanager):
             display.blit(text_text,text_rect)
             display_shake.blit(display, (0,0))
         
-
-
-
+        #update display
         display_shake.blit(display, (0,0))
         pygame.display.flip()
+
+        #
         animationFrameCounter += 1
         time += clock.tick(60)

@@ -8,14 +8,16 @@ from actors.spike import Spike
 from actors.fallingBlock import FallingBlock
 from actors.cloud import Cloud
 from constants.enums import SpikeOrientations
+from constants.dictionaries import WIDTH
 import json
 import base64
-levels = json.load(open("maps.json"))
+levels = json.load(open("./map/maps.json"))
 spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
 POWERS = ["r","q","s", "t","u"]
+SIZE = WIDTH/16
 
 import os
 
@@ -62,7 +64,19 @@ spritelocations = {
 }
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, image, x, y):
+    def __init__(self, image:pygame.image, x:int, y:int) -> None:
+        """
+        Creates a tile object
+
+        Args:
+            image (pygame.image): image of the tile
+            x (int): x position of the tile
+            y (int): y position of the tile
+
+        Returns:
+            None
+
+        """
         pygame.sprite.Sprite.__init__(self)
         self.image =  image
         self.rect  =  self.image.get_rect()
@@ -74,14 +88,36 @@ class Tile(pygame.sprite.Sprite):
 
 class Map:
 
-    def __init__(self, level, servicelocator):
+    def __init__(self, level:int, servicelocator) -> None:
+        """
+        Creates a map object
+
+        Args:
+            level (int): level to be loaded
+            servicelocator (ServiceLocator): ServiceLocator object
+
+        Returns:
+            None
+
+        """
         self.level = level
         self.servicelocator = servicelocator
         self.sprites, self.spawn, self.walls = self.load(level)
 
 
 
-    def load(self, level):
+    def load(self, level:int) -> tuple[pygame.sprite.Group, tuple[int,int], list]:
+        """
+        Loads a level from the maps.json file
+
+        Args:
+            level (int): level to be loaded
+
+        Returns:
+            sprites (pygame.sprite.Group): sprites to be drawn
+            spawn (tuple): spawn location
+            walls (list): list of walls
+        """
         sprites = pygame.sprite.Group()
         walls = []
         
@@ -103,14 +139,14 @@ class Map:
             for idy,cell in enumerate(row):
                 print(cell)
                 if cell == "p":
-                    spawn = (idy*50, idx*50)
+                    spawn = (idy*SIZE, idx*SIZE)
                 if cell in WALLS:
                     # print(cell)
                     # print(spritelocations[cell])
                     image = spritesheet.subsurface(*spritelocations[cell])
-                    #50*16=800
-                    image = pygame.transform.scale(image, (50, 50))
-                    tile = Tile(image, idy*50, idx*50)
+                    #SIZE*16=800
+                    image = pygame.transform.scale(image, (SIZE, SIZE))
+                    tile = Tile(image, idy*SIZE, idx*SIZE)
                     sprites.add(tile)
                     walls.append(tile)
 
@@ -122,11 +158,11 @@ class Map:
 
                     image = spritesheet.subsurface(*spritelocations[cell])
                     image = pygame.transform.scale(image, (x, y))
-                    sprites.add(Tile(image, idy*50 + ((50-x)/2), idx*50 + (50-y)))
+                    sprites.add(Tile(image, idy*SIZE + ((SIZE-x)/2), idx*SIZE + (SIZE-y)))
                 elif cell in ENEMIES:
                     # image = spritesheet.subsurface(*spritelocations[cell])
-                    # image = pygame.transform.scale(image, (50, 50))
-                    # sprites.add(Tile(image, idy*50, idx*50))
+                    # image = pygame.transform.scale(image, (SIZE, SIZE))
+                    # sprites.add(Tile(image, idy*SIZE, idx*SIZE))
                     if cell in ["o"]:
                         orientation = SpikeOrientations.UP
                     if cell in ["O"]:
@@ -136,30 +172,40 @@ class Map:
                     if cell in ["ò"]:
                         orientation = SpikeOrientations.LEFT
 
-                    spike = Spike(idy*50, idx*50,orientation=orientation)
+                    spike = Spike(idy*SIZE, idx*SIZE,orientation=orientation)
                     self.servicelocator.actorList.append(spike)
 
                 elif cell in POWERS:
                     if cell == "r":
-                        dr = DashResetEntity(idy*50, idx*50, self.servicelocator)
+                        dr = DashResetEntity(idy*SIZE, idx*SIZE, self.servicelocator)
                         self.servicelocator.actorList.append(dr)
                     if cell == "q":
-                        s = Strawberry(idy*50, idx*50, self.servicelocator)
+                        s = Strawberry(idy*SIZE, idx*SIZE, self.servicelocator)
                         self.servicelocator.actorList.append(s)
                     if cell == "s":
-                        sp = Spring(idy*50, idx*50, self.servicelocator)
+                        sp = Spring(idy*SIZE, idx*SIZE, self.servicelocator)
                         self.servicelocator.actorList.append(sp)
                     if cell == "t":
-                        fb = FallingBlock(idy*50, idx*50, self.servicelocator)
+                        fb = FallingBlock(idy*SIZE, idx*SIZE, self.servicelocator)
                         self.servicelocator.actorList.append(fb)
                         self.servicelocator.fallingBlocks.append(fb)
                     if cell == "u":
-                        cd = Cloud(idy*50, idx*50, self.servicelocator) 
+                        cd = Cloud(idy*SIZE, idx*SIZE,self.servicelocator) 
                         self.servicelocator.actorList.append(cd)
                         self.servicelocator.clouds.append(cd)
 
         return sprites, spawn, walls
 
-    def draw(self, screen):
+    def draw(self, screen:pygame.display) -> None:
+        """
+        Draws the map
+
+        Args:
+            screen (pygame.display): display to draw the map on
+
+        Returns:
+            None
+        
+        """
         self.sprites.draw(screen)
 

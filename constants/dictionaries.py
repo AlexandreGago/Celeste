@@ -1,6 +1,7 @@
 import pygame
 from constants.enums import PlayerStates
 
+WIDTH, HEIGHT = 800, 800
 
 sounds={
     "song1":"./sounds/level.mp3",
@@ -23,7 +24,7 @@ class physicsValues:
     air = {
         "maxSpeed": 5,
         "acceleration": 0.51,#x
-        "deceleration": 0.5,
+        "deceleration": 0.51,
         "gravity": 0.5,
     }
 
@@ -31,7 +32,7 @@ class physicsValues:
         "power": 12,
     }
     spring = {
-        "power": 12
+        "power": 15
     }
     jump = {
         "power": 10,

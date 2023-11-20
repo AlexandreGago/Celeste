@@ -1,24 +1,22 @@
 import pygame
-from inputHandler import InputHandler
-from serviceLocator import serviceLocator
-from utils.soundManager import SoundManager
-
-import utils.utils as utils
-
-from actors.madeline3 import Player
-
-from map.map import Map
-from actors.dashResetEntity import DashResetEntity
-from actors.particles import ParticleManager
-from constants.enums import ActorTypes
-from states import *
-
 from itertools import repeat
 
-from titleScreen import drawTitleScreen
+import utils.utils as utils
+from utils.soundManager import SoundManager
 
-WIDTH, HEIGHT = 800, 800
+from serviceLocator import serviceLocator
+from inputHandler import InputHandler
+from actors.madeline import Player
+from actors.particles import ParticleManager
+
+from map.map import Map
+from map.titleScreen import drawTitleScreen
+
+
+from constants.dictionaries import WIDTH, HEIGHT
+
 SCALE = 1
+FRAMERATE = 60
 #Sercice discovery
 serviceLocator = serviceLocator()
 
@@ -71,7 +69,7 @@ pygame.init()
 utils.addObservers(serviceLocator)
 
 running = True
-framerate = 1
+framerate = FRAMERATE
 
 serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
 
@@ -108,11 +106,12 @@ while running:
     if keys[pygame.K_v]:
         framerate = 5
     else:
-        framerate = 60
+        framerate = FRAMERATE
     #!#####################
-        
+    
+    #parse the currently pressed keys into a list
     keys = utils.parsePressedKeys(keys)   
-    for event in pygame.event.get():
+    for event in pygame.event.get():# we use the pygame.event to only allow one input per press on the jump and dash keys
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
@@ -126,16 +125,16 @@ while running:
       
     particlemanager.update(time)
         
-    particlemanager.draw("cloud", display)
-    #draw map
-    map.draw(display)
-    #draw actors
+    particlemanager.draw("cloud", display)#draw clouds
+
+    map.draw(display) # draw the map
+
+    #draw and update actors
     for actor in serviceLocator.actorList:
         actor.update()
         actor.draw(display)
 
     particlemanager.draw("snow", display)
-    # pygame.draw.rect(display,(255,0,0), madeline.spriteGroup.sprites()[0].rect,1)
     
     #keep track of current frame
     serviceLocator.frameCount += 1

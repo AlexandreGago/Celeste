@@ -1,20 +1,5 @@
 import pygame
 from constants.enums import ActorTypes
-# class Up():
-#     def move(self, actor):
-#         actor.move((0,-1))
-
-# class Down():
-#     def move(self, actor):
-#         actor.move((0,1))
-
-# class Left():
-#     def move(self, actor):
-#         actor.move((-1,0))
-
-# class Right():
-#     def move(self, actor):
-#         actor.move((1,0))
 
 class InputHandler():
 
