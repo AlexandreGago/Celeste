@@ -1,11 +1,23 @@
 import random
 import pygame
 
-from actors.madeline3 import Player
+# from actors.madeline import Player
 from constants.enums import ActorTypes
-from map.map import Map
+# from map.map import Map
 
-def screen_shake(intensity, amplitude, times):
+def screen_shake(intensity:int, amplitude:int, times:int):
+    """
+    Function that calculates the screen shake
+
+    Args:
+        intensity (int): intensity of the shake
+        amplitude (int): amplitude of the shake
+        times (int): how many times the shake will happen
+
+    Yields:
+        tuple: x and y position of the shake
+
+    """
     direction = -1
     y_shake=1
     for _ in range(0, times):
@@ -55,14 +67,19 @@ def parsePressedKeys(keys):
         if (pygame.K_a in newkeys )and(pygame.K_d in newkeys):
             newkeys.remove(pygame.K_a)
             newkeys.remove(pygame.K_d)
-        # #if crouched, remain crouched
-        # if (pygame.K_DOWN in newkeys):
-        #     newkeys = []
-        #     newkeys.append(pygame.K_DOWN)
 
     return newkeys
 
-def addObservers(serviceLocator):
+def addObservers(serviceLocator) -> None:
+    """
+    Function that adds observers to the player
+
+    Args:
+        serviceLocator (ServiceLocator): ServiceLocator object
+
+    Returns:
+        None
+    """
     for actor in serviceLocator.actorList:
         for player in serviceLocator.players:
             if actor.type == ActorTypes.DASH_RESET:

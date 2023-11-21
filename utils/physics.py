@@ -84,7 +84,7 @@ class Physics():
         if dashInput: #Dash
             if xInput == 0 and yInput == 0:
                 xInput = 1 if orientation == PlayerOrientation.RIGHT else -1
-            self.speed[0] = dash["power"] * xInput
+            self.speed[0] = dash["power"] * xInput * 1.2
             self.speed[1] = dash["power"] * -yInput
 
         elif wallJump==True:
@@ -100,7 +100,6 @@ class Physics():
             y = y + diff/2
         else:#normal gravity
             y += self.speed[1]
-
         return x,y
 
     def update(self):

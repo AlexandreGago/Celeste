@@ -1,8 +1,7 @@
 import pygame
 import random
 import math
-WIDTH, HEIGHT = 800, 800
-
+from constants.dictionaries import WIDTH, HEIGHT
 
 
 

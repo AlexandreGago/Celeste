@@ -2,13 +2,8 @@ import pygame, random
 from constants.dictionaries import jumpParticles
 from constants.enums import ParticleTypes
 from spriteClass import SpriteClass
-# a particle is...
-# a thing that exists at a location
-# typically moves around
-# typically changes over time
-# and typically disappears after a certain amount of time
 
-# [loc, velocity, timer]
+
 class SpriteParticle:
     def __init__(self,x,y,action) -> None:
         self.x = x

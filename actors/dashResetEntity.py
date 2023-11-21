@@ -6,7 +6,19 @@ from constants.dictionaries import DashResetEntityStuff
 
 class DashResetEntity(Actor):
 
-    def __init__(self,x,y, serviceLocator) -> None:
+    def __init__(self,x:int,y:int, serviceLocator) -> None:
+        """
+        Creates a dash reset entity
+
+        Args:
+            x (int): x position of the entity
+            y (int): y position of the entity
+            serviceLocator (ServiceLocator): ServiceLocator object
+
+        Returns:
+            None
+
+        """
         super().__init__(x,y,80,80,serviceLocator)
         self.type = ActorTypes.DASH_RESET
         self.name = id(self)
@@ -20,7 +32,17 @@ class DashResetEntity(Actor):
         self.spriteID =  "idle1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
 
-    def update(self):
+    def update(self)->None:
+        """
+        Updates the entity's position ,sprite and state
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        """
         if self.state == "outline":
             if self.disabledCounter >= 300: # refill animation
                 self.state = "refill"
@@ -49,10 +71,29 @@ class DashResetEntity(Actor):
         self.animationCounter += 1
         
 
-    def draw(self,display):
+    def draw(self,display:pygame.display):
+        """
+        Draws the entity
+
+        Args:
+            display (pygame.display): display where the entity is drawn
+
+        Returns:
+            None
+        """
         self.sprite.draw(display)
     
-    def notify(self, entityName, event):
+    def notify(self, entityName:str, event:str)->None:
+        """
+        Notifies the entity of an event
+
+        Args:
+            entityName (str): name of the entity that triggered the event
+            event (str): event triggered
+
+        Returns:
+            None
+        """
         if event == "dashReset" and entityName == self.name:
             self.state = "outline"
             self.spriteID = "outline1"
@@ -64,6 +105,10 @@ class DashResetEntity(Actor):
             self.state = "refill"
             self.spriteID = "flash1"
             self.animationCounter = 0
-            #play refill sound
-            # self.playSound("dashEntityReset",1)
-            self.serviceLocator.soundManager.play("dashEntityReset")            
+            self.serviceLocator.soundManager.play("dashEntityReset")      
+
+        if event == "springCollision" and self.state == "outline":
+            self.state = "refill"
+            self.spriteID = "flash1"
+            self.animationCounter = 0
+            self.serviceLocator.soundManager.play("dashEntityReset")      

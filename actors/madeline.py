@@ -1,36 +1,22 @@
 from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
-from constants.enums import ActorTypes,PlayerStates,PlayerJumpStates,PlayerOrientation
-from constants.dictionaries import PlayerStuff
+from constants.enums import ActorTypes,PlayerStates,PlayerOrientation
+from constants.dictionaries import HEIGHT,WIDTH,PlayerStuff, physicsValues
 from spriteClass import SpriteClass
-from states import *
+
+from actors.spriteParticle import SpriteParticle
+from utils.physics import Physics
 import utils.utils as utils
-import math
-
-import time
 
 
-Y_GRAVITY = 8
-MOVEMENT_X = 5
-
-WIDTH, HEIGHT = 800, 800
-
-JUMP_SPEED = 6
-COYOTE_COUNTER = 10
-JUMP_RESET = 10
-JUMP_REFRESH_TIMER = 1
-JUMP_DURATION = 14
-JUMP_SLOW_DURATION = 10
-JUMP_SPRING_DURATION = 2*JUMP_DURATION
-SPRING_COLLISION_COOLDOWN = 60
-
-DASH_SPEED = 10
-DASH_DURATION = 10
-DASH_SLOW_UP_DURATION = 10
-DASH_SLOW_DOWN_DURATION = 10
-DASH_REFRESH_TIMER = 0
-
+MAX_DASHES = 2
+DASH_COOLDOWN = 1
+PLAYERWIDTH = 50
+PLAYERHEIGHT = 50
+WALLGRACE = 5
+COYOTEJUMP = 10
+WALLJUMP_COOLDOWN = 10
 
 ANIMATION_SPEEDS = {
     "jump": 10,
@@ -39,21 +25,8 @@ ANIMATION_SPEEDS = {
 }
 
 
-
-
-#(offset_x,offset_y),max_dist,(pos_x,pos_y),radius
-points = [
-    [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
-    [pygame.Vector2(-6,4),9,pygame.Vector2(0,0),14],
-    [pygame.Vector2(-2,4),8.5,pygame.Vector2(0,0),13],
-    [pygame.Vector2(-4,4),8,pygame.Vector2(0,0),12], 
-    [pygame.Vector2(-4,2),7.5,pygame.Vector2(0,0),11],
-    [pygame.Vector2(-2,2),7,pygame.Vector2(0,0),10],
-]
-
-        
 class Player(Actor):
-    def __init__(self,x,y,name,serviceLocator) -> None:
+    def __init__(self,x:int,y:int,name:str,serviceLocator) -> None:
         """
         Player class
         
@@ -67,520 +40,461 @@ class Player(Actor):
             None
 
         """
+        #player localizations
+        self.spawnX = x
+        self.spawnY = y
+        self.x = x
+        self.y = HEIGHT
+        
+        #play type
+        self.type = ActorTypes.PLAYER
+        
+        #physics
+        self.physics = Physics()
+        
         #call the parent constructor (Actor)
-        super().__init__()
-
+        super().__init__(x,HEIGHT,50,50,serviceLocator)
         self.name = name
         self.serviceLocator = serviceLocator
 
-        #set the starting position
-        self.x = x
-        self.spawnX = x
-        self.y = 800
-        self.spawnHeight = y
+        #collisions
+        self.collisions = [0,0,0,0]
         
-        self.alive = False
-        self.type = ActorTypes.PLAYER
-        self.enableCollision = False
-
-        #set the starting state (idle)
-        self.state = PlayerStates.RESPAWN
-        #set the starting sprite (idle1)
-        self.spriteID = f"{self.state.value}1"
-        
-        #variable that holds grounded value of last frame
-        self.wasGrounded = False
-        self.coyoteCounter = 0
-        self.jumpRefreshTimer = 0
-        
-        #this controls the jump state
-        self.jumpState = PlayerJumpStates.INIT
-        #this controls the duration of the jump (up)
-        self.jumpDuration = 0
-        self.jumpSlowDuration = 0
-        #spring
-        self.springCollided = False
-        self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
-        #set the starting orientation
+        #player size and state
+        self.height = PLAYERHEIGHT
+        self.width = PLAYERWIDTH
         self.orientation = PlayerOrientation.RIGHT
-
-        #size of the sprite
-        self.height = 50
-        self.width = 50
-
-        #auxiliar variable to control the animation
+        self.state = PlayerStates.RESPAWN
+        self.alive = False
+        
+        #sprite
+        self.spriteID = f"{self.state.value}1"
+        self.spriteWidth = self.width
+        self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID,playerName=self.name)
         self.animationFrameCounter = 0
         
-        #create the sprite and update it
-        sprite = SpriteClass(self.height,self.width,self.type,self.spriteID)
-        sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation==PlayerOrientation.RIGHT)
-        self.sprite = sprite
+        #dash
+        self.dashCount = MAX_DASHES
+        #Particles
+        self.particles = []
+        
+        self.springCollided = False
 
-        self.dashCount = 1
-        self.dashFrameCounter = 0
-        self.dashRefreshTimer = 0
-        self.dashDirection = [0,0]
-        self.dashState = "end"
+        self.airborne = 0
+
+        #Grace periods
+        self.wallGrace = 0
+        self.coyoteJump = 0
+
+        #Cooldowns
+        self.dashCooldown = 0
+        self.wallJumpCooldown = 0
+
+        self.wallJumpSide = 0 # -1 for right, 1 for left
+
+        self.hairPoints = [#offset, max_distance, position, size
+            [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
+            [pygame.Vector2(-6,4),9,pygame.Vector2(0,0),14],
+            [pygame.Vector2(-2,4),8.5,pygame.Vector2(0,0),13],
+            [pygame.Vector2(-4,4),8,pygame.Vector2(0,0),12], 
+            [pygame.Vector2(-4,2),7.5,pygame.Vector2(0,0),11],
+            [pygame.Vector2(-2,2),7,pygame.Vector2(0,0),10],
+        ]
+        
         return
     
-    def spawn(self):
-        if self.y > self.spawnHeight:    
-            self.y -= 8
-        else:
-            return True
-        return False
-             
-    def respawn(self):
-        self.alive = self.spawn()
-        if self.alive:
-            self.state = PlayerStates.IDLE
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-            self.enableCollision = True
-
-    def jump(self):
-        #default jump state
-        if self.springCollided ==True:
-            self.jumpState = PlayerJumpStates.UP
-            self.animationFrameCounter = 0
-            self.jumpDuration = JUMP_SPRING_DURATION
-            self.spriteID = "jump1"
-            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
-            self.springCollided = False
-            self.dashCount = 1
-
-        elif self.jumpState == PlayerJumpStates.INIT:
-            self.jumpState = PlayerJumpStates.UP
-            self.animationFrameCounter = 0
-            self.jumpDuration = JUMP_DURATION
-            self.spriteID = "jump1"
-            self.jumpRefreshTimer = JUMP_REFRESH_TIMER
-
-        #move up while reducing the jump power
-        elif self.jumpState == PlayerJumpStates.UP:
-            self.y -= Y_GRAVITY + JUMP_SPEED
-            self.jumpDuration -= 1 if self.jumpDuration > 0 else 0
-            #reduce jump power
-            if self.animationFrameCounter % 10 == 0:
-                if self.spriteID == "jump1":
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
-                else:
-                    self.spriteID = "jump1"
-
-            #if jumpDuration is 0, start falling
-            if self.jumpDuration <= 0:
-                self.jumpState = PlayerJumpStates.SLOWUP
-                self.jumpSlowDuration = JUMP_SLOW_DURATION
-
-        elif self.jumpState == PlayerJumpStates.SLOWUP:
-            self.y -= Y_GRAVITY + JUMP_SPEED/2
-            if self.animationFrameCounter % 10 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-                
-            self.jumpSlowDuration -= 1 if self.jumpSlowDuration > 0 else 0
-            if self.jumpSlowDuration <= 0:
-                self.jumpState = PlayerJumpStates.SLOWDOWN
-                self.jumpSlowDuration = JUMP_SLOW_DURATION
-                self.spriteID = PlayerStuff.sprites["jump2"]
-
-        elif self.jumpState == PlayerJumpStates.SLOWDOWN:
-            self.y -= Y_GRAVITY - JUMP_SPEED/2
-            if self.animationFrameCounter % 15 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-
-            self.jumpSlowDuration -= 1 if self.jumpSlowDuration > 0 else 0
-            if self.jumpSlowDuration <= 0:
-                self.jumpState = PlayerJumpStates.DOWN
-                self.spriteID = PlayerStuff.sprites["jump3"]
-
-        #we are falling
-        elif self.jumpState == PlayerJumpStates.DOWN:
-            if self.animationFrameCounter % 15 == 0:
-                if self.spriteID == "jump3":
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
-                else:
-                    self.spriteID = "jump3"
-    
-    
-    def dash(self):
-        if self.dashState == "fast":
-            if self.dashDirection[0] != 0:
-                self.x += DASH_SPEED if self.orientation == PlayerOrientation.RIGHT else -1 *DASH_SPEED
-            #looking up dash
-            if self.dashDirection[1] == 1:
-                self.y -= DASH_SPEED 
-            
-            #during the dash, we are not affected by gravity
-            self.y -= Y_GRAVITY
-
-            if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-            if self.dashFrameCounter >= DASH_DURATION:
-                if self.dashDirection[1] != 1:
-                    self.dashState = "slowDown"
-                    self.dashFrameCounter+=DASH_SLOW_UP_DURATION
-                else:
-                    self.dashState = "slowUp"
-
-
-        elif self.dashState == "slowUp":
-            if self.dashDirection[1] == 1:
-                self.y -= DASH_SPEED/2
-            else:
-                self.y += DASH_SPEED/2
-            #during the dash, we are not affected by gravity
-            self.y -= Y_GRAVITY
-
-            if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-            if self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION:
-                self.dashState = "slowDown"
-
-        elif self.dashState == "slowDown":
-            self.y += DASH_SPEED/2
-            #during the dash, we are not affected by gravity
-            self.y -= Y_GRAVITY
-
-            if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
-
-
-        self.dashFrameCounter += 1
-
-
-    def turn(self):
-        if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
-            
-    def idle(self):
-        if self.animationFrameCounter % 10 == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
-
-    def walk(self):
-        if self.animationFrameCounter % 10 == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
-
-    def crouch(self):
-        if self.animationFrameCounter % 10 == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
-   
-    
-    def newstate(self, vector):
+    def spawn(self) -> None:
         """
-        decide newstate based on vector and state variables
-        """
-        xInput,yInput,dashInput,upInput = vector
+        Spawns the player
 
-        newState = PlayerStuff.vectorToState[(xInput,yInput)]
-        #reduce coyotejump counter
-        self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
-        #reduce spring collision cooldown
-        self.springCollsionCooldown -= 1 if self.springCollsionCooldown > 0 else 0
-        
-        #if we were grounded last frame, reduce the jump cooldown and the dash cooldown
-        if self.wasGrounded:
-            self.dashRefreshTimer -= 1 if self.dashRefreshTimer > 0 else 0
-            self.jumpRefreshTimer -= 1 if self.jumpRefreshTimer > 0 else 0
-
-        if self.alive == False:
-            self.state = PlayerStates.RESPAWN
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-            self.enableCollision = False
-            
-        #if last frame we collided with a spring, enter jump state
-        elif self.springCollided:
-            newState = PlayerStates.JUMP     
-            for obs in self.observers:
-                obs.notify(self.name,"ground")       
-
-                
-        #let dash if we have dashes and we are not dashing and cooldown is over
-        elif dashInput >= 1 and self.dashCount > 0 and self.dashState != "fast" and self.dashRefreshTimer == 0:
-            self.serviceLocator.offset = utils.screen_shake(5,15,4)
-            self.dashCount -= 1
-            self.dashRefreshTimer = DASH_REFRESH_TIMER
-            self.state = PlayerStates.DASH
-            self.spriteID = f"{self.state.value}1"
-            self.animationFrameCounter = 0
-            self.dashFrameCounter = 0
-            self.dashState = "fast"
-
-            #change orientation and save the dash direction
-            if xInput != 0:
-                self.orientation = PlayerOrientation.LEFT if xInput < 0 else PlayerOrientation.RIGHT
-                self.dashDirection = [xInput,upInput]
-            else:
-                if upInput != 0:
-                    self.dashDirection = [0,upInput]
-                else:
-                    self.dashDirection = [1,upInput] if self.orientation == PlayerOrientation.RIGHT else [-1,upInput]
-
-
-        #if we collide with a spring or pressed jump, enter jump state
-        elif newState == PlayerStates.JUMP:
-            #if we are grounded and we are not jumping and we still can jump and cooldown is over
-            if self.state != PlayerStates.JUMP and self.coyoteCounter > 0 and self.jumpRefreshTimer <= 0 and self.wasGrounded:
-                self.state = PlayerStates.JUMP
-                self.jumpState = PlayerJumpStates.INIT
-                self.spriteID = f"{self.state.value}1"
-                self.animationFrameCounter = 0    
-            else:
-                #keep the same state
-                newState = self.state  
-
-        elif self.orientation == PlayerOrientation.RIGHT and xInput <= -1:
-            newState = PlayerStates.TURN
-        elif self.orientation == PlayerOrientation.LEFT  and xInput >= 1:
-            newState = PlayerStates.TURN
-        
-
-        if self.state == PlayerStates.RESPAWN:
-            if self.alive == True:
-                self.state = PlayerStates.IDLE
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-                self.enableCollision = True
-                
-        elif self.state == PlayerStates.JUMP:
-            newState = newState
-
-        elif self.state == PlayerStates.DASH:
-            if self.springCollided:
-                self.dashState = "end"
-                self.state = newState 
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-                self.dashFrameCounter = 0
-                
-            elif self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION + DASH_SLOW_DOWN_DURATION:
-                self.dashState = "end"
-                newState = PlayerStates.IDLE if newState == PlayerStates.JUMP else newState
-                self.state = newState 
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-                self.dashFrameCounter = 0
-                
-            else:
-                newState = self.state
-
-        elif self.state == PlayerStates.WALK:
-            if newState != self.state:
-                self.state = newState
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-
-        elif self.state == PlayerStates.CROUCH:
-            if newState != self.state:
-                self.state = newState
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-
-        elif self.state == PlayerStates.IDLE:
-            if newState != self.state:
-                self.state = newState
-                self.spriteID = f"{newState.value}1"
-                self.animationFrameCounter = 0
-
-        elif self.state == PlayerStates.TURN:
-            if newState == PlayerStates.JUMP:
-                self.state = PlayerStates.JUMP
-                self.spriteID = f"{self.state.value}1"
-                self.animationFrameCounter = 0
-            elif self.spriteID == "turn8":
-                self.state = PlayerStates.WALK
-                self.spriteID = f"{self.state.value}1"
-                self.animationFrameCounter = 0
-
-
-        return newState
-    
-    def move(self, vector: tuple[int, int, int]) -> None:
-        """
-        Move the player
-        
         Args:
-            vector (tuple[int, int]): movement vector
+            None
 
         Returns:
             None
         """
-        #?vector:(x,y,dash, look up?)
-        newState = self.newstate(vector)
-        # if newState != self.state:
-        #     self.state = newState
-        #     self.spriteID = f"{self.state.value}1"
-        #     self.animationFrameCounter = 0
-        #dash state
-        if self.state == PlayerStates.DASH:
-            if self.dashState == "fast":
-                newVector = (0,0,vector[2],vector[3])
-                vector = newVector
-            self.dash()
-            #stop other movements during the first step of the dash
-
-        elif self.state == PlayerStates.JUMP:
-          self.jump()
-            
-        #turning left or right
-        elif self.state in [PlayerStates.TURN]:
-            self.turn()
-        
-        elif self.state in [PlayerStates.WALK]:
-            self.walk()
-            
-        elif self.state in [PlayerStates.CROUCH]:
-            self.crouch()
-            
-        elif self.state in [PlayerStates.IDLE]:
-            self.idle()
-        elif self.state in [PlayerStates.RESPAWN]:
-            self.respawn()
-
-        if self.enableCollision:
-            #!The sprite rect still has the old position, so we need to update it first
-            self.y += Y_GRAVITY
-            self.sprite.rect.y = self.y
-            #ceiling and ground
-            self.wasGrounded = False
-            for tile in self.serviceLocator.map.walls:
-                if self.sprite.rect.colliderect(tile.rect):
-                    #ceiling
-                    if tile.rect.bottom - self.sprite.rect.top <= DASH_SPEED:
-                        # print("ceiling")
-                        self.y = tile.rect.bottom
-                    #ground
-                    elif tile.rect.top - self.sprite.rect.bottom >= -1*DASH_SPEED:
-                        # print("ground")
-                        self.wasGrounded = True
-                        self.coyoteCounter = COYOTE_COUNTER
-                        self.y = tile.rect.top - self.height
-                        #reset dash
-                        if self.state != PlayerStates.DASH:
-                            self.dashCount = 1
-                            self.dashRefreshTimer = 0
-                            self.dashState = "end"
-
-                        if self.jumpState == PlayerJumpStates.DOWN:
-                            if newState == PlayerStates.JUMP: # prevents a bug
-                                newState = PlayerStates.IDLE#
-                            self.jumpState = PlayerJumpStates.INIT#
-                            self.state = newState
-                            self.spriteID = f"{newState.value}1"
-                            self.animationFrameCounter = 0
-                            
-                        for obs in self.observers:
-                            obs.notify(self.name,"ground")
-                    #update sprite rect
-                    self.sprite.rect.y = self.y
-
-            #dont let the player go out of the screen
-            if self.x + MOVEMENT_X*vector[0] < 0:
-                self.x = 0
-            elif self.x + vector[0] > WIDTH - self.width:
-                self.x = WIDTH - self.width
-            else:
-                self.x += MOVEMENT_X*vector[0]
-
-            #update sprite rect
-            self.sprite.rect.x = self.x
-            #left and right walls
-            for tile in self.serviceLocator.map.walls:
-                if self.sprite.rect.colliderect(tile.rect):
-                    self.serviceLocator.display.fill((255,0,0),tile.rect)
-
-                    # print("subtraction ",tile.rect.left - self.sprite.rect.right)
-                    # print("speed ",-1*DASH_SPEED)
-                    
-                    #left wall
-                    if tile.rect.right - self.sprite.rect.left <= DASH_SPEED:
-                        # print("left wall")
-                        self.x = tile.rect.right
-                    #right wall
-                    elif tile.rect.left - self.sprite.rect.right >= -1*DASH_SPEED:
-                        # print("right wall")
-                        self.x = tile.rect.left - self.width
-                        # print("x rectify",self.x)
-              
+        if self.y > self.spawnY:    
+            self.y -= 8
+        else:
+            return True
+        return False
     
-        #check collisions for the rest of the actors
-        for actor in self.serviceLocator.actorList:
-            if actor.type == ActorTypes.DASH_RESET:
-                #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
-                if self.dashCount == 0 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
-                    self.dashCount = 1
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"dashReset")
-                        
-            if actor.type == ActorTypes.SPRING:
-                if self.sprite.rect.colliderect(actor.sprite.rect) and self.springCollsionCooldown == 0:
-                    for obs in self.observers:
-                        obs.notify(actor.name,"springCollision")
-                        self.springCollided = True
-                        self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
+    def levelComplete(self) -> bool:
+        """
+        Checks if the player is above the screen
 
-            if actor.type == ActorTypes.STRAWBERRY:
-                if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"strawberryCollected")
-                        
-            if actor.type == ActorTypes.SPIKE:
-                if self.sprite.rect.colliderect(actor.sprite.rect):
-                    #notify observers
-                    for obs in self.observers:
-                        obs.notify(actor.name,"spikeCollision")
-                    self.alive = False
-                    self.x = self.spawnX
-                    self.y = 800
+        Args:
+            None
 
-
-        #update orientation
-        if vector[0] > 0:
-            self.orientation = PlayerOrientation.RIGHT 
-        elif vector[0] < 0 and self.state != PlayerStates.DASH:
-            self.orientation = PlayerOrientation.LEFT
+        Returns:
+            bool: True if the player is above the screen, False otherwise
+        """
+        if self.y < 0:
+            return True
+        else:
+            return False  
         
-        self.animationFrameCounter += 1
-        self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation == PlayerOrientation.LEFT)
-        pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)
+    def respawn(self) -> None:
+        """
+        Respawn State
+        -Checks if the player is alive and if he is, changes the state to IDLE
+
+        Args:
+            None
+
+        Returns:    
+            None
+        """
+        self.alive = self.spawn() # check if the player is alive
+        if self.alive: # if the player is alive, change the state to idle, reset the physics and reset the sprite
+            self.state = PlayerStates.IDLE
+            self.spriteID = f"{self.state.value}1"
+            self.animationFrameCounter = 0
+            self.physics.reset()
+
+    def jump(self) -> None:
+        """
+        Jump State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0: # update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+        pass
+    
+    def dash(self) -> None:
+        """
+        Dash State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+
+    def turn(self) -> None:
+        """
+        Turn State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:# update the spite every 2 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            
+    def idle(self) -> None:
+        """
+        Idle State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+
+    def walk(self) -> None:
+        """
+        Walk State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+
+    def crouch(self) -> None:
+        """
+        Crouch State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            
+    def lookup(self) -> None:
+        """
+        LookUp State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+
+    def falling(self) -> None:
+        """
+        Falling State
+        -Updates the sprite
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
+            self.spriteID = PlayerStuff.sprites[self.spriteID]
+    
+    def updateState(self,xInput:int,yInput:int,dashInput:int,jumpInput:int) -> PlayerStates:
+        """"
+        This function decides the state of the player based on the inputs and the current state
+        it is done after the move function so that the collisions are updated
+
+        Args:
+            xInput (int): x input
+            yInput (int): y input
+            dashInput (int): dash input
+            jumpInput (int): jump input
+
+        Returns:
+            PlayerStates: the new state
+        """
+        newState = self.vectorToState(xInput,yInput,dashInput,jumpInput)
+        
+        #reduce the dash cooldown
+        if self.state != PlayerStates.DASH : # dash cooldown
+            self.dashCooldown -= 1 if self.dashCooldown > 0 else 0
+                        #spring collision
+
+        #reset dash count if we collide with a spring and set the newState to jump (the physics handles the speed of the jump)
+        if self.springCollided:
+            self.dashCount = MAX_DASHES
+            newState = PlayerStates.JUMP
+            
+        #if we are dead, respawn
+        if not self.alive :
+            newState = PlayerStates.RESPAWN
+        #we are alive
+        #!this was in every state, so to reduce repetion, it is here
+        elif xInput < 0 and self.collisions[0] and not self.collisions[3] and newState != PlayerStates.DASH: # change to wallhug
+            newState = PlayerStates.WALLHUG
+            self.wallGrace = WALLGRACE
+            self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
+        elif xInput > 0 and self.collisions[1] and not self.collisions[3]and newState != PlayerStates.DASH: # change to wallhug
+            newState =  PlayerStates.WALLHUG
+            self.wallGrace = WALLGRACE
+            self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
+        #!---
+        else:
+            #if we are jumping, keep jumping unless we are dashing
+            if self.state == PlayerStates.JUMP:
+                if newState != PlayerStates.DASH and self.airborne == -1:
+                    newState = PlayerStates.JUMP
+                elif self.airborne == 1:
+                    newState = PlayerStates.FALLING
+                    
+            elif self.state == PlayerStates.DASH:
+                if self.orientation == PlayerOrientation.RIGHT:
+                    if self.physics.speed[0] > physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]:
+                        newState = PlayerStates.DASH
+                else:
+                    if self.physics.speed[0] < -physicsValues.air["maxSpeed"] or self.physics.speed[1] < -physicsValues.air["maxSpeed"]: # of the speed is greater than the max speed, keep dashing
+                        newState = PlayerStates.DASH
+                if self.airborne != 0:
+                    newState = PlayerStates.FALLING
+
+            elif self.state in [PlayerStates.TURN]:
+                if newState in [PlayerStates.JUMP,PlayerStates.DASH]:  #!this can be removed for a smoother animation
+                    pass
+                elif self.spriteID != "turn8":
+                    newState = PlayerStates.TURN
+                
+            elif self.state in [PlayerStates.WALK]:
+                # if the nes state is jump or dash, exit walk and enter them
+                if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
+                    pass
+                elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
+                    newState = PlayerStates.TURN
+                elif self.airborne == 1:
+                    newState = PlayerStates.FALLING
+
+            elif self.state in [PlayerStates.WALLHUG]:
+                self.wallGrace = WALLGRACE
+                self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
+
+                
+            elif self.state in [PlayerStates.CROUCH]:
+                pass 
+                
+            elif self.state in [PlayerStates.IDLE]:
+
+                if newState == PlayerStates.JUMP or newState == PlayerStates.DASH:  
+                    pass
+                elif ((self.orientation == PlayerOrientation.RIGHT) and (xInput == -1)) or (self.orientation == PlayerOrientation.LEFT and xInput > 0):
+                    newState = PlayerStates.TURN
+                if self.airborne == 1:
+                    newState = PlayerStates.FALLING
+
+                
+            elif self.state in [PlayerStates.RESPAWN]:
+                if self.alive: #if the player is alive, change the state else maintain the state
+                    pass
+                else:
+                    newState = PlayerStates.RESPAWN
+                
+            elif self.state in [PlayerStates.LOOKUP]:
+                pass
+
+            elif self.state in [PlayerStates.FALLING]:
+                if newState == PlayerStates.DASH :  
+                    pass
+                elif self.airborne != 0:
+                    newState = PlayerStates.FALLING
+
+            elif self.state in [PlayerStates.LOOKUP]:
+                pass
+        
+        return newState
+    
+    def move(self,vector:tuple) -> None:
+        """
+        Move the player and update the state and sprite
+        -Parse the inputs
+        -Move the player through the physics class
+        -Check for collisions with terrain
+        -Check if the player is in the air or on the ground
+        -Check for collisions with the rest of the actors
+        -Update the state based on the inputs and the current state
+        -Update the orientation
+        -Update the particles
+        -Update the animation frame counter
+        -Update the sprite
+
+        Args:
+            vector (tuple): (xInput,yInput,dashInput,jumpInput)
+
+        Returns:
+            None
+        """
+        #process inputs
+        xInput,yInput,dashInput,jumpInput = vector # unpack the vector
+        dashInput,wallJump,jumpInput = self.validateInput(dashInput,jumpInput)# validate the inputs ex: if jumpInput = 1 but we are in the air, jumpInput = 0
+        if self.alive:# only move and change states if the player is alive
+            #update the position of the player through the physics class
+            temp_x,temp_y = self.physics.move(self.x,self.y,xInput,yInput,dashInput,jumpInput,self.collisions,self.orientation,self.springCollided,wallJump,self.state,self.wallJumpSide)
+                
+            #check for collisions with terrain, update the position if there is a collision
+            self.checkCorrectCollisions(temp_x,temp_y) 
+            #check if the player is in the air (descending or ascending) or on the ground
+            self.updateAirborne()
+            #check for collisions with the rest of the actors
+            self.actorCollision()
+
+            #update the state after the move
+            newState = self.updateState(xInput,yInput,dashInput,jumpInput)
+            # check if the state changed and do the corresponding actions
+            self.checkStateChange(newState) 
+            # change state
+            self.state = newState 
+        
+        #update orientation (cannot be moved up because it is used by updateState)
+        self.orientation = self.updateOrientation(xInput)
+        
+        #update the sprite corresponding to the state
+        self.updateSprite()
+        
+        #update particles and remove the ones that are done
+        if self.physics.speed[0] > 10 or self.physics.speed[0] <-10 or self.physics.speed[1] >10 or self.physics.speed[1] < -10:
+            self.particles.append(SpriteParticle(self.x + self.width/2,self.y + (self.height/2),"jump"))
+
+        for particle in self.particles:
+            if particle.update():
+                self.particles.remove(particle)
+        
+
+
+        #advance the animationFrameCounter
+        self.animationFrameCounter += 1 if self.animationFrameCounter <= 60 else -59 
+        #update the sprite #! can be called in updateSprite() for optimization
+        self.sprite.update(self.x,self.y,self.height,self.spriteWidth,self.spriteID,self.orientation == PlayerOrientation.LEFT,playerName=self.name)
+        
+        pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)#!debug
 
     #draws the hair
-    def drawHair(self, display):
+    def drawHair(self, display:pygame.display) -> None:
+        """
+        Draw the hair of the player
+        -The hair are a bunch of circles that follow each other
+
+        Args:
+            display (pygame.display): display to draw the hair
+
+        Returns:
+            None
+        """
         #offset for the orientation of the character
-        # print(self.state,self.spriteID)
-        offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
-        offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
-        for i in range (len(points)-1,-1,-1):
+        if PlayerStuff.spritesHairOffset[self.state][self.spriteID]:
+            offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
+            offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
+        for i in range (len(self.hairPoints)-1,-1,-1):
             if i == 0:
-                points[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))
+                self.hairPoints[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))
                 continue
             if self.orientation == PlayerOrientation.RIGHT:
-                points[i][2] = points[i][0] + points[i-1][2] 
+                self.hairPoints[i][2] = self.hairPoints[i][0] + self.hairPoints[i-1][2] 
             else:
-                points[i][2] =  points[i-1][2]+(points[i][0][0]*-1,points[i][0][1])
+                self.hairPoints[i][2] =  self.hairPoints[i-1][2]+(self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])
 
-        for i in range(len(points)):
+        for i in range(len(self.hairPoints)):
             if i == 0:
                 continue
-            if points[i][2].distance_to(points[i][0]+points[i-1][2]) > points[i][1]:
-                dir = (points[i][2]-(points[i-1][2]+points[i][0])).normalize()
-                offset = dir * points[i][1]
-                points[i][2] = points[i-1][2] + points[i][0]+ offset
+            if self.orientation == PlayerOrientation.RIGHT:
+                if self.hairPoints[i][2].distance_to(self.hairPoints[i][0]+self.hairPoints[i-1][2]) > self.hairPoints[i][1]:
+                    dir = (self.hairPoints[i][2]-(self.hairPoints[i-1][2]+self.hairPoints[i][0])).normalize()
+                    offset = dir * self.hairPoints[i][1]
+                    self.hairPoints[i][2] = self.hairPoints[i-1][2] + self.hairPoints[i][0]+ offset
+            else:
+                if self.hairPoints[i][2].distance_to((self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])+self.hairPoints[i-1][2]) > self.hairPoints[i][1]:
+                    dir = (self.hairPoints[i][2]-(self.hairPoints[i-1][2]+(self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1]))).normalize()
+                    offset = dir * self.hairPoints[i][1]
+                    self.hairPoints[i][2] = self.hairPoints[i-1][2] + (self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])+ offset
+            
                 
         
-        for i in range (len(points)):
-            if self.wasGrounded:
-                if self.dashRefreshTimer <= 0:
-                    pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+        for i in range (len(self.hairPoints)-1,-1,-1):
+            if self.airborne == 0:
+                if self.dashCooldown > 0:
+                    pygame.draw.circle(display, (255, 255, 255), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # white
                 else:
-                    pygame.draw.circle(display, (255, 255, 255), points[i][2], points[i][3]) # white
+                    pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
             else:
                 if self.dashCount <= 0:
-                    pygame.draw.circle(display, (69, 194, 255), points[i][2], points[i][3]) # blue
+                    pygame.draw.circle(display, (69, 194, 255), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # blue
                 else:
-                    pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3]) # brown
+                    pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
+
+            # pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3],width = 3) # brown
+                    
 
 
     
@@ -597,6 +511,8 @@ class Player(Actor):
         #draw hair first to be behind the player
         self.drawHair(display)
         self.sprite.draw(display)
+        for particle in self.particles:
+            particle.draw(display)
 
 
 
@@ -604,5 +520,281 @@ class Player(Actor):
         pass
     def notify(self,actor,event):
         pass
+    
+    
+    def validateInput(self,dashInput:int,jumpInput:int) -> tuple:
+        """
+        Validates the inputs
+        -Checks if the dash is allowed
+        -Checks if the jump is allowed
+        -Checks if the we are walljumping
+        -Reduces the wallgrace
+        -Reduces the coyoteJump
+        -Reduces the wallJumpCooldown
 
+        Args:
+            dashInput (int): dash input
+            jumpInput (int): jump input
+
+        Returns:
+            tuple: dashInput,wallJump,jumpInput
+        """
+        dashInput, jumpInput = bool(dashInput), bool(jumpInput)
+        dashInput = dashInput and self.dashCount >=1 and self.dashCooldown <= 0 #if we have dashes and the cooldown is over, dash allowed
+        #decide if we are walljumping
+        wallJump = jumpInput and (self.state == PlayerStates.WALLHUG or self.wallGrace > 0) and self.wallJumpCooldown <= 0
+
+        if wallJump:
+            self.wallJumpCooldown = WALLJUMP_COOLDOWN
+        #decide if the jump is valid
+        jumpInput = jumpInput and self.airborne >= 0 and (self.collisions[3] or self.coyoteJump > 0) and self.state != PlayerStates.JUMP
+        #reduce the wallgrace
+        self.wallGrace -= 1 if self.wallGrace > 0 else 0    
+        self.coyoteJump -= 1 if self.coyoteJump > 0 else 0
+        self.wallJumpCooldown -= 1 if self.wallJumpCooldown > 0 else 0
+
+        return dashInput,wallJump,jumpInput
+    
+    def checkCorrectCollisions(self,x:int,y:int) -> None:
+        """
+        Checks for collisions with the terrain and updates the position if there is a collision
+
+        Args:
+            x (int): x position
+            y (int): y position
+
+        Returns:
+            None
+        """
+        self.collisions = [0,0,0,0]
+
+        self.sprite.rect.y = y
+        for tile in self.serviceLocator.map.walls:
+            if self.sprite.rect.colliderect(tile):
+                #ceiling
+                if tile.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"] *1.2:
+                    self.collisions[2] = 1
+                    self.physics.speed[1] = 0
+                    self.sprite.rect.y = tile.rect.bottom
+                    self.serviceLocator.display.fill((255,0,0),tile.rect)
+
+                #floor
+                elif tile.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]*1.2:
+                    self.collisions[3] = 1
+                    self.physics.speed[1] = 0
+                    self.dashCount = MAX_DASHES
+                    self.coyoteJump = COYOTEJUMP
+
+                    self.sprite.rect.y = tile.rect.top - self.height
+                    self.serviceLocator.display.fill((255,0,0),tile.rect)
+
+        self.sprite.rect.x = x
+     
+        for tile in self.serviceLocator.map.walls:
+            # if tile.rect.right == 250:
+            if self.sprite.rect.colliderect(tile):
+                #left
+                if tile.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]*1.2:
+                    self.collisions[0] = 1
+                    self.physics.speed[0] = 0
+                    self.sprite.rect.x = tile.rect.right
+
+
+                    self.serviceLocator.display.fill((255,0,0),tile.rect)
+                #right
+                elif tile.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]*1.2:
+                    self.collisions[1] = 1
+                    self.physics.speed[0] = 0
+                    x = tile.rect.left - self.width
+                    self.sprite.rect.x = x
+                    self.serviceLocator.display.fill((255,0,0),tile.rect)
+                    
+        for cloud in self.serviceLocator.clouds:
+            sprite = cloud.sprite
+            if sprite.rect.colliderect(self.sprite.rect):
+                if sprite.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"] and self.airborne >= 0:
+                    self.collisions[3] = 1
+                    self.physics.speed[1] = 0
+                    self.dashCount = MAX_DASHES
+                    self.coyoteJump = COYOTEJUMP
+                    # if self.state == PlayerStates.IDLE:
+                        # self.physics.speed[0] -= 3 if self.physics.speed[0] >= 0 else -3 - self.physics.speed[0]
+
+                    self.sprite.rect.y = sprite.rect.top - self.height
+                    self.serviceLocator.display.fill((255,0,0),sprite.rect)
+
+        if self.collisions[3]:
+            for obs in self.observers:
+                obs.notify(self.name,"ground")
+
+        self.x = self.sprite.rect.x
+        self.y = self.sprite.rect.y
+
+    def updateOrientation(self,xInput:int) -> PlayerOrientation:
+        """
+        Updates the orientation of the player based on the xInput
+        -If the xInput is positive, the orientation is right
+        -If the xInput is negative, the orientation is left
+        -If the xInput is 0, the orientation is the same as before
+        Args:
+            xInput (int): x input
+
+        Returns:
+            PlayerOrientation: the new orientation
+        """
+        return PlayerOrientation.RIGHT if xInput > 0 else PlayerOrientation.LEFT if xInput < 0 else self.orientation
+    
+    def updateAirborne(self) -> None:
+        """
+        Checks if the player is in the air (descending or ascending) or on the ground
+        -If the speed is negative, the player is ascending
+        -If the speed is positive, the player is descending
+        -If the speed is 0, the player is on the ground
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        #!check if we are in the air after the movement
+        if self.physics.speed[1] < 0:
+            self.airborne = -1
+        elif self.physics.speed[1] > 0:
+            self.airborne = 1
+        else:
+            if self.collisions[3]:
+                self.airborne = 0
+            else:
+                self.airborne = -1
+
+    def vectorToState(self,xInput:int,yInput:int,dashInput:int,jumpInput:int) -> PlayerStates:
+        """
+        Parses the inputs into a state
+
+        Args:
+            xInput (int): x input
+            yInput (int): y input
+            dashInput (int): dash input
+            jumpInput (int): jump input
+
+        Returns:
+            PlayerStates: The state corresponding to the inputs
+        """
+        if dashInput == 1:
+            return PlayerStates.DASH
+        if yInput == -1:
+            return PlayerStates.CROUCH
+        if jumpInput == 1:
+            return PlayerStates.JUMP
+        if xInput != 0:
+            return PlayerStates.WALK
+        if yInput == 1:
+            return PlayerStates.LOOKUP
         
+        return PlayerStates.IDLE
+    
+    def checkStateChange(self,newState:PlayerStates) -> None:
+        """
+        Checks if the state changed and do the corresponding actions for the new state
+
+        Args:
+            newState (PlayerStates): the new state
+
+        Returns:
+            None
+        """
+        # if the state changed, reset the animation frame counter and the spriteID
+        if self.state != newState:
+            self.animationFrameCounter = 1
+            self.spriteID = f"{newState.value}1"
+            if newState == PlayerStates.DASH:# if the newState is a dash, reduce the dash count and reset the cooldown
+                self.particles.append(SpriteParticle(self.x + self.width/2,self.y + self.height/2,"jump"))
+                self.dashCount -= 1 if self.dashCount > 0 else 0 
+                self.dashCooldown = DASH_COOLDOWN
+                self.serviceLocator.soundManager.play("dash")
+                self.serviceLocator.offset = utils.screen_shake(5,15,4)
+
+
+            if newState == PlayerStates.JUMP: # id the newState is a jump, play the jump Sound
+                self.particles.append(SpriteParticle(self.x + self.width/2,self.y + (self.height/3*2),"jump"))
+                self.serviceLocator.soundManager.play("jump") 
+        
+    def updateSprite(self) -> None:
+        """
+        Updates the sprite of the player based on the state
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        match self.state:
+            case PlayerStates.JUMP:
+                self.jump()
+            case PlayerStates.DASH:
+                self.dash()
+            case PlayerStates.TURN:
+                self.turn()
+            case PlayerStates.WALK:
+                self.walk()
+            case PlayerStates.CROUCH:
+                self.crouch()
+            case PlayerStates.IDLE:
+                self.idle()
+            case PlayerStates.LOOKUP: 
+                self.lookup()
+            case PlayerStates.RESPAWN:
+                self.respawn()
+            case PlayerStates.FALLING:
+                self.falling()
+            case PlayerStates.LOOKUP:
+                self.lookup()
+            case _:
+                pass
+
+    def actorCollision(self) -> None:
+        """
+        Checks for collisions with the rest of the actors (except clouds and fallingBlock that are done in checkCollisions)
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        #check collisions for the rest of the actors
+        self.springCollided = False
+        for actor in self.serviceLocator.actorList:
+            if actor.type == ActorTypes.DASH_RESET:                     
+                #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
+                if self.dashCount <= MAX_DASHES-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                    self.dashCount += 1
+                    self.dashCooldown = DASH_COOLDOWN
+                    #notify observers
+                    for obs in self.observers:
+                        obs.notify(actor.name,"dashReset")
+                        
+            if actor.type == ActorTypes.SPRING:
+                if self.sprite.rect.colliderect(actor.sprite.rect) :#and self.springCollsionCooldown == 0:
+                    for obs in self.observers:
+                        obs.notify(actor.name,"springCollision")
+                    self.springCollided = True
+                    # self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
+
+            if actor.type == ActorTypes.STRAWBERRY:
+                if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
+                    #notify observers
+                    for obs in self.observers:
+                        obs.notify(actor.name,"strawberryCollected")
+                    #self.playSound("strawberry",1)
+                        
+            if actor.type == ActorTypes.SPIKE or self.y > HEIGHT:
+                if self.sprite.rect.colliderect(actor.sprite.rect):
+                    self.alive = False
+                    self.x = self.spawnX
+                    self.y = 800
+                    #self.playSound("death",1)
+                    self.serviceLocator.soundManager.play("death")
+                    

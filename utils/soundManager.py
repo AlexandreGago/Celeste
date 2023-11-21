@@ -3,7 +3,17 @@ from constants.dictionaries import sounds
 
 class SoundManager:
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Creates a sound manager object
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        """
         self.mixer = pygame.mixer
         self.mixer.init()
         self.mixer.set_num_channels(15)
@@ -11,7 +21,18 @@ class SoundManager:
 
         self.sounds = {k: self.mixer.Sound(v) for k, v in sounds.items()}
 
-    def play(self, sound, loop=False, volume=0.1):
+    def play(self, sound:str, loop:bool=False, volume:float=0.1) -> None:
+        """
+        Plays a sound
+
+        Args:
+            sound (str): sound to be played
+            loop (bool, optional): if the sound should loop. Defaults to False.
+            volume (float, optional): volume of the sound. Defaults to 0.1.
+
+        Returns:
+            None
+        """
         #find an unused channel
         channel = self.mixer.find_channel()
         if channel:

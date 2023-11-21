@@ -7,7 +7,18 @@ from constants.enums import ActorTypes
 
 
 class Strawberry(Actor):
-    def __init__(self, x, y, serviceLocator) -> None:
+    def __init__(self, x:int, y:int, serviceLocator) -> None:
+        """
+        Creates a strawberry
+
+        Args:
+            x (int): x position of the strawberry
+            y (int): y position of the strawberry
+            serviceLocator (ServiceLocator): ServiceLocator object
+
+        Returns:
+            None
+        """
         super().__init__(x,y,80,80,serviceLocator)
 
         self.name = id(self)
@@ -20,7 +31,17 @@ class Strawberry(Actor):
         self.animationCounter = 0
 
 
-    def update(self):
+    def update(self) -> None:
+        """
+        Updates the strawberry's sprite and state
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        """
         if self.state != "hidden":
             if self.spriteID== "collected13":
                 self.state = "hidden"
@@ -30,11 +51,32 @@ class Strawberry(Actor):
             self.animationCounter += 1
             self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
 
-    def draw(self, display):
+    def draw(self, display:pygame.display) -> None:
+        """
+        Draws the strawberry
+
+        Args:
+            display (pygame.display): pygame.display object
+
+        Returns:
+            None
+
+        """
         if self.state != "hidden":
             self.sprite.draw(display)
 
-    def notify(self, entityName, event):
+    def notify(self, entityName:str, event:str) -> None:
+        """
+        Notifies the strawberry of an event
+
+        Args:
+            entityName (str): name of the entity that triggered the event
+            event (str): name of the event
+
+        Returns:
+            None
+            
+        """
         if event == "strawberryCollected" and entityName == self.name:
             if self.state == "idle":
                 self.serviceLocator.soundManager.play("strawberry")
