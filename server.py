@@ -1,48 +1,32 @@
-import socket
-import threading
-import time
+import asyncio
+import websockets
+import argparse
 
-# Server configuration
-HOST = '127.0.0.1'
-PORT = 5555
-
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-server_socket.listen()
-
-clients = []
-
-def handle_client(client_socket, client_number):
-    global clients
-    try:
-        if client_number == 0:
-            print(f"Madeline connected")
-        elif client_number == 1:
-            print(f"Badeline connected")
-
-
-        # You can do something with the client data here
-
-    except Exception as e:
-        print(f"Error handling client {client_number}: {str(e)}")
-
-
-def await_players():
-    server_socket.settimeout(5)
+async def server_handler(websocket, path):
     while True:
         try:
-            client_socket, addr = server_socket.accept()
-            clients.append(client_socket)
+            # Wait for a message from the client
+            message = await websocket.recv()
+            print(f"Received message: {message}")
 
-            handle_client(client_socket, len(clients) - 1)
-        except socket.timeout:
+            # Send a response back to the client
+            response = f"Server received: {message}"
+            await websocket.send(response)
+        except websockets.exceptions.ConnectionClosed:
+            print("Connection closed")
             break
+
+async def start_server(port=8765):
+    server = await websockets.serve(
+        server_handler, "0.0.0.0", port
+    )
+    print(f"WebSocket server started on ws://localhost:{port}")
+
+    # Keep the server running
+    await server.wait_closed()
     
-
-await_players()
-
-for socket in clients:
-    print(socket)
-
-
-
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Websocket Server')
+    parser.add_argument('--port', type=int, default=8765, help='port number')
+    args = parser.parse_args()
+    asyncio.run(start_server(args.port))

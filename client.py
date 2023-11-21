@@ -1,28 +1,25 @@
-import socket
-import pygame
-import sys
+import asyncio
+import websockets
+import argparse
 
-# Client configuration
-HOST = '127.0.0.1'
-PORT = 5555
+async def client(port=8765):
+    uri = f"ws://localhost:{port}"
+    async with websockets.connect(uri) as websocket:
+        while True:
+            # Send a message to the server
+            message = input("Enter a message to send to the server (or 'exit' to quit): ")
+            await websocket.send(message)
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((HOST, PORT))
+            if message.lower() == 'exit':
+                break
 
-pygame.init()
+            # Receive and print the server's response
+            response = await websocket.recv()
+            print(f"Server response: {response}")
 
-# Your Pygame initialization code goes here
-
-try:
-    # Receive the identification message from the server
-    identification_message = client_socket.recv(1024).decode('utf-8')
-    print(identification_message)
-
-    # Your Pygame game loop goes here
-
-except Exception as e:
-    print(f"Error: {str(e)}")
-finally:
-    client_socket.close()
-    pygame.quit()
-    sys.exit()
+# Run the client
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Websocket Client')
+    parser.add_argument('--port', type=int, default=8765, help='port number')
+    args = parser.parse_args()
+    asyncio.run(client(args.port))
