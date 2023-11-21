@@ -13,7 +13,7 @@ import json
 import base64
 levels = json.load(open("./map/maps.json"))
 spritesheet = pygame.image.load("atlas.png")
-WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A"]
+WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
 POWERS = ["r","q","s", "t","u"]
@@ -58,7 +58,9 @@ spritelocations = {
 
     "m": (32,24, 12, 8),
     "n": (44,24, 12, 8),
-
+    
+    "á":(32,16, 8,8),
+    "à":(32,16, 8,8),
 
 
 }
@@ -144,8 +146,12 @@ class Map:
                     # print(cell)
                     # print(spritelocations[cell])
                     image = spritesheet.subsurface(*spritelocations[cell])
-                    #SIZE*16=800
+                    if cell == "á":
+                        image = pygame.transform.rotate(image,90)
+                    if cell == "à":
+                        image = pygame.transform.rotate(image,270)
                     image = pygame.transform.scale(image, (SIZE, SIZE))
+                    #SIZE*16=800
                     tile = Tile(image, idy*SIZE, idx*SIZE)
                     sprites.add(tile)
                     walls.append(tile)

@@ -34,7 +34,7 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 1
+level = "5"
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 
