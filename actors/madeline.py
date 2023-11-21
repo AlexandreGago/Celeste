@@ -432,7 +432,6 @@ class Player(Actor):
                 self.particles.remove(particle)
         
 
-
         #advance the animationFrameCounter
         self.animationFrameCounter += 1 if self.animationFrameCounter <= 60 else -59 
         #update the sprite #! can be called in updateSprite() for optimization
@@ -555,6 +554,56 @@ class Player(Actor):
 
         return dashInput,wallJump,jumpInput
     
+    def checkCollisionY(self,rect:pygame.Rect,x:int,y:int,up:bool,down:bool) -> tuple:
+        upCollision,downCollision = False,False
+        if self.sprite.rect.colliderect(rect):
+            #ceiling
+            if rect.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"] *1.2 and down:
+                self.collisions[2] = 1
+                self.physics.speed[1] = 0
+                self.sprite.rect.y = rect.rect.bottom
+                self.serviceLocator.display.fill((255,0,0),rect.rect)
+
+                downCollision = True
+
+            #floor
+            elif rect.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]*1.2 and up:
+                self.collisions[3] = 1
+                self.physics.speed[1] = 0
+                self.dashCount = MAX_DASHES
+                self.coyoteJump = COYOTEJUMP
+
+                self.serviceLocator.display.fill((255,0,0),rect.rect)
+
+                upCollision = True
+
+        return upCollision,downCollision
+
+
+    def checkCollisionX(self,rect:pygame.Rect,x:int,y:int,left:bool,right:bool) -> tuple:
+        leftCollision,rightCollision = False,False
+        if self.sprite.rect.colliderect(rect):
+            #left
+            if rect.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]*1.2 and left:
+                self.collisions[0] = 1
+                self.physics.speed[0] = 0
+                self.sprite.rect.x = rect.rect.right
+
+                leftCollision = True
+
+                self.serviceLocator.display.fill((255,0,0),rect.rect)
+            #right
+            elif rect.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]*1.2 and right:
+                self.collisions[1] = 1
+                self.physics.speed[0] = 0
+                x = rect.rect.left - self.width
+                self.sprite.rect.x = x
+                self.serviceLocator.display.fill((255,0,0),rect.rect)
+
+                rightCollision = True
+
+        return leftCollision,rightCollision
+
     def checkCorrectCollisions(self,x:int,y:int) -> None:
         """
         Checks for collisions with the terrain and updates the position if there is a collision
@@ -570,58 +619,37 @@ class Player(Actor):
 
         self.sprite.rect.y = y
         for tile in self.serviceLocator.map.walls:
-            if self.sprite.rect.colliderect(tile):
-                #ceiling
-                if tile.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"] *1.2:
-                    self.collisions[2] = 1
-                    self.physics.speed[1] = 0
-                    self.sprite.rect.y = tile.rect.bottom
-                    self.serviceLocator.display.fill((255,0,0),tile.rect)
+            up,down = self.checkCollisionY(tile,x,y,True,True)
+            if up:
+                self.sprite.rect.y = tile.rect.top - self.height
 
-                #floor
-                elif tile.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]*1.2:
-                    self.collisions[3] = 1
-                    self.physics.speed[1] = 0
-                    self.dashCount = MAX_DASHES
-                    self.coyoteJump = COYOTEJUMP
-
-                    self.sprite.rect.y = tile.rect.top - self.height
-                    self.serviceLocator.display.fill((255,0,0),tile.rect)
 
         self.sprite.rect.x = x
-     
         for tile in self.serviceLocator.map.walls:
-            # if tile.rect.right == 250:
-            if self.sprite.rect.colliderect(tile):
-                #left
-                if tile.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]*1.2:
-                    self.collisions[0] = 1
-                    self.physics.speed[0] = 0
-                    self.sprite.rect.x = tile.rect.right
+            self.checkCollisionX(tile,x,y,True,True)
+
+        fallingBlockCollision = False # this serves to check every falling block, without this, only the firt one is detetcted
+        for actor in self.serviceLocator.actorList:
+            if actor.type == ActorTypes.CLOUD:
+                sprite = actor.sprite
+                if self.airborne >= 0:
+                    up,down = self.checkCollisionY(sprite,x,y,True,False)
+                    if up:
+                        self.sprite.rect.y = sprite.rect.top - self.height
+
+            if actor.type == ActorTypes.FALLINGBLOCK:
+                sprite = actor.sprite
+                if self.airborne >= 0 and actor.state != "outline":
+                    up,down = self.checkCollisionY(sprite,x,y,True,False)
+                    if up:
+                        for obs in self.observers:
+                            obs.notify(actor.name,"touchFallingBlock")
+                        fallingBlockCollision = True
+
+        if fallingBlockCollision:#falling block collision
+            self.sprite.rect.y = sprite.rect.top - self.height
 
 
-                    self.serviceLocator.display.fill((255,0,0),tile.rect)
-                #right
-                elif tile.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]*1.2:
-                    self.collisions[1] = 1
-                    self.physics.speed[0] = 0
-                    x = tile.rect.left - self.width
-                    self.sprite.rect.x = x
-                    self.serviceLocator.display.fill((255,0,0),tile.rect)
-                    
-        for cloud in self.serviceLocator.clouds:
-            sprite = cloud.sprite
-            if sprite.rect.colliderect(self.sprite.rect):
-                if sprite.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"] and self.airborne >= 0:
-                    self.collisions[3] = 1
-                    self.physics.speed[1] = 0
-                    self.dashCount = MAX_DASHES
-                    self.coyoteJump = COYOTEJUMP
-                    # if self.state == PlayerStates.IDLE:
-                        # self.physics.speed[0] -= 3 if self.physics.speed[0] >= 0 else -3 - self.physics.speed[0]
-
-                    self.sprite.rect.y = sprite.rect.top - self.height
-                    self.serviceLocator.display.fill((255,0,0),sprite.rect)
 
         if self.collisions[3]:
             for obs in self.observers:
