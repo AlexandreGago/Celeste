@@ -10,6 +10,7 @@ class ActorTypes(Enum):
     SPIKE = 7
     FALLINGBLOCK = 8
     CLOUD = 9
+    DASH_UPGRADE = 10
     
 class ParticleTypes(Enum):
     JUMP = 1

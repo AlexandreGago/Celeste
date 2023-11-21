@@ -7,16 +7,17 @@ from actors.spring import Spring
 from actors.spike import Spike
 from actors.fallingBlock import FallingBlock
 from actors.cloud import Cloud
+from actors.dashUpgrade import DashUpgrade
 from constants.enums import SpikeOrientations
 from constants.dictionaries import WIDTH
 import json
 import base64
 levels = json.load(open("./map/maps.json"))
 spritesheet = pygame.image.load("atlas.png")
-WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à"]
+WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
-POWERS = ["r","q","s", "t","u"]
+POWERS = ["r","q","s", "t","u","v"]
 SIZE = WIDTH/16
 
 import os
@@ -61,7 +62,28 @@ spritelocations = {
     
     "á":(32,16, 8,8),
     "à":(32,16, 8,8),
+    "Á":(64,32,8,8),
+    "À":(0,24, 8,8),
+    "ã":(20,16,12,16),
 
+    "é":(16,32,8,8),
+    "è":(24,32,8,8),
+    "É":(32,32,8,8),
+    "È":(16,40,8,8),
+    "ẽ":(24,40,8,8),
+    "Ẽ":(32,40,8,8),
+    "ê":(16,48,8,8),
+    "Ê":(24,48,8,8),
+    "ë":(32,48,8,8),
+    "Ë":(16,56,8,8),
+    "ē":(24,56,8,8),
+    "Ē":(32,56,8,8),
+    "ė":(40,32,8,8),
+    "Ė":(40,40,8,8),
+    "ę":(40,48,8,8),
+    "Ę":(40,56,8,8),
+    "ĕ":(),
+    "Ĕ":(),
 
 }
 
@@ -139,7 +161,6 @@ class Map:
         level = levels[level]
         for idx,row in enumerate(level):
             for idy,cell in enumerate(row):
-                print(cell)
                 if cell == "p":
                     spawn = (idy*SIZE, idx*SIZE)
                 if cell in WALLS:
@@ -150,6 +171,8 @@ class Map:
                         image = pygame.transform.rotate(image,90)
                     if cell == "à":
                         image = pygame.transform.rotate(image,270)
+                    if cell == "À":
+                        image = pygame.transform.rotate(image,90)
                     image = pygame.transform.scale(image, (SIZE, SIZE))
                     #SIZE*16=800
                     tile = Tile(image, idy*SIZE, idx*SIZE)
@@ -199,6 +222,9 @@ class Map:
                         cd = Cloud(idy*SIZE, idx*SIZE,self.servicelocator) 
                         self.servicelocator.actorList.append(cd)
                         self.servicelocator.clouds.append(cd)
+                    if cell == "v":
+                        du = DashUpgrade(idy*SIZE, idx*SIZE)
+                        self.servicelocator.actorList.append(du)
 
         return sprites, spawn, walls
 

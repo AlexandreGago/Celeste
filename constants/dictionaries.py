@@ -338,3 +338,10 @@ class cloudStuff:
     spritesLocation = {
         "idle1": "./CelesteSprites/Atlases/Gameplay/objects/clouds/cloud00.png",
     }
+class dashUpgradeStuff:
+    firstSpriteID = "idle1"
+    states = ["idle","hidden"]
+    sprites= {"idle1":"idle1"}
+    spritesLocation = {
+        "idle1": "./CelesteSprites/Atlases/Gameplay/objects/dashRefill/idle00.png",
+    }

@@ -90,3 +90,5 @@ def addObservers(serviceLocator) -> None:
                 player.add_observer(actor)
             if actor.type == ActorTypes.FALLINGBLOCK:
                 player.add_observer(actor)
+            if actor.type == ActorTypes.DASH_UPGRADE:
+                player.add_observer(actor)

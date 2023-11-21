@@ -10,7 +10,7 @@ from utils.physics import Physics
 import utils.utils as utils
 
 
-MAX_DASHES = 2
+# MAX_DASHES = 2
 DASH_COOLDOWN = 1
 PLAYERWIDTH = 50
 PLAYERHEIGHT = 50
@@ -74,7 +74,8 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.dashCount = MAX_DASHES
+        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
+        self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []
         
@@ -288,7 +289,7 @@ class Player(Actor):
 
         #reset dash count if we collide with a spring and set the newState to jump (the physics handles the speed of the jump)
         if self.springCollided:
-            self.dashCount = MAX_DASHES
+            self.dashCount = self.currentDashCount
             newState = PlayerStates.JUMP
             
         #if we are dead, respawn
@@ -485,13 +486,18 @@ class Player(Actor):
                 if self.dashCooldown > 0:
                     pygame.draw.circle(display, (255, 255, 255), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # white
                 else:
-                    pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
+                    if self.dashCount <= 1:
+                        pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
+                    else:
+                        pygame.draw.circle(display, (50, 172, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # green
             else:
                 if self.dashCount <= 0:
                     pygame.draw.circle(display, (69, 194, 255), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # blue
                 else:
-                    pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
-
+                    if self.dashCount <= 1:
+                        pygame.draw.circle(display, (172, 50, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # brown
+                    else:
+                        pygame.draw.circle(display, (50, 172, 49), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50) # green
             # pygame.draw.circle(display, (172, 50, 49), points[i][2], points[i][3],width = 3) # brown
                     
 
@@ -570,7 +576,7 @@ class Player(Actor):
             elif rect.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]*1.2 and up:
                 self.collisions[3] = 1
                 self.physics.speed[1] = 0
-                self.dashCount = MAX_DASHES
+                self.dashCount = self.currentDashCount
                 self.coyoteJump = COYOTEJUMP
 
                 self.serviceLocator.display.fill((255,0,0),rect.rect)
@@ -797,7 +803,7 @@ class Player(Actor):
         for actor in self.serviceLocator.actorList:
             if actor.type == ActorTypes.DASH_RESET:                     
                 #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
-                if self.dashCount <= MAX_DASHES-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                if self.dashCount <= self.currentDashCount-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
                     self.dashCount += 1
                     self.dashCooldown = DASH_COOLDOWN
                     #notify observers
@@ -825,4 +831,11 @@ class Player(Actor):
                     self.y = 800
                     #self.playSound("death",1)
                     self.serviceLocator.soundManager.play("death")
+
+            if actor.type == ActorTypes.DASH_UPGRADE:
+                if actor.state == "idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                    for obs in self.observers:
+                        obs.notify(actor.name,"touchDashUpgrade")
+                    self.currentDashCount += 1
+                    self.dashCount = self.currentDashCount
                     
