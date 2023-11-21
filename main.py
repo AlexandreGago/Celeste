@@ -34,7 +34,7 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = "5"
+level = 5
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 
@@ -88,12 +88,11 @@ while running:
         map = Map(str(level),serviceLocator)
         serviceLocator.map = map
 
-        serviceLocator.players = []
-        madeline = Player(*map.spawn,"Madeline",serviceLocator)
-        serviceLocator.players.append(madeline)
-        serviceLocator.actorList.append(madeline)
+        for player in serviceLocator.players:
+            serviceLocator.actorList.append(player)
+            player.reset(*map.spawn)
+            print(player.x,player.y)
 
-        print(serviceLocator.map)
 
         utils.addObservers(serviceLocator)
         

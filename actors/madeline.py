@@ -838,4 +838,52 @@ class Player(Actor):
                         obs.notify(actor.name,"touchDashUpgrade")
                     self.currentDashCount += 1
                     self.dashCount = self.currentDashCount
-                    
+
+    def reset(self,x:int,y):
+        """
+        Resets the player when changing level
+
+        Args:
+            x (int): x position
+            y (int): y position
+
+        Returns:
+            None
+        """
+        self.x = x
+        self.y = HEIGHT
+        self.sprite.rect.x = x
+        self.sprite.rect.y = HEIGHT
+
+        self.spawnX = x
+        self.spawnY = y
+        
+        self.physics.reset()
+
+        self.state = PlayerStates.RESPAWN
+        self.alive = False
+
+        self.dashCount = self.currentDashCount
+        self.dashCooldown = 0
+        self.wallJumpCooldown = 0
+        self.wallGrace = 0
+        self.coyoteJump = 0
+        self.wallJumpSide = 0
+        self.airborne = 0
+        self.orientation = PlayerOrientation.RIGHT
+        self.animationFrameCounter = 0
+        self.spriteID = f"{self.state.value}1"
+        self.collisions = [0,0,0,0]
+        self.springCollided = False
+        self.particles = []
+        self.hairPoints = [#offset, max_distance, position, size
+            [pygame.Vector2(0,0),0,pygame.Vector2(0,0),15], #first point is the center of the head
+            [pygame.Vector2(-6,4),9,pygame.Vector2(0,0),14],
+            [pygame.Vector2(-2,4),8.5,pygame.Vector2(0,0),13],
+            [pygame.Vector2(-4,4),8,pygame.Vector2(0,0),12], 
+            [pygame.Vector2(-4,2),7.5,pygame.Vector2(0,0),11],
+            [pygame.Vector2(-2,2),7,pygame.Vector2(0,0),10],
+        ]
+        
+
+
