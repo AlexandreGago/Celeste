@@ -23,32 +23,41 @@ class Spike(Actor):
         xOffset = None
         yOffset = None
         rotateSprite = 0
+        self.hitbox = None
         if orientation == SpikeOrientations.UP:
             xOffset = x + 5
-            yOffset = y + 40
+            yOffset = y + 30
             self.width = 40
-            self.height = 10
+            self.height = 20
+            
+            self.hitbox = pygame.Rect(xOffset,y+49,self.width,1)
 
         if orientation == SpikeOrientations.LEFT:
-            xOffset = x + 40
+            xOffset = x + 30
             yOffset = y + 5
-            self.width = 10
+            self.width = 20
             self.height = 40
             rotateSprite = 90
+            
+            self.hitbox = pygame.Rect(x+49,yOffset,1,self.height)
 
         if orientation == SpikeOrientations.DOWN:
             xOffset = x + 5
             yOffset = y
             self.width = 40
-            self.height = 10
+            self.height = 20
             rotateSprite = 180
+            
+            self.hitbox = pygame.Rect(xOffset,y,self.width,1)
         
         if orientation == SpikeOrientations.RIGHT:
             xOffset = x
             yOffset = y + 5
-            self.width = 10
+            self.width = 20
             self.height = 40
             rotateSprite = -90
+            
+            self.hitbox = pygame.Rect(x,yOffset,1,self.height)
             
         super().__init__(xOffset,yOffset,self.height,self.width,None)
 

@@ -655,8 +655,13 @@ class Player(Actor):
         if fallingBlockCollision:#falling block collision
             self.sprite.rect.y = sprite.rect.top - self.height
 
+        #check if we are out of bounds
+        if self.sprite.rect.x < 0:
+            self.sprite.rect.x = 0
+        if self.sprite.rect.x > WIDTH - self.width:
+            self.sprite.rect.x = WIDTH - self.width
 
-
+        #notify observers of groud collision
         if self.collisions[3]:
             for obs in self.observers:
                 obs.notify(self.name,"ground")
@@ -824,13 +829,18 @@ class Player(Actor):
                         obs.notify(actor.name,"strawberryCollected")
                     #self.playSound("strawberry",1)
                         
-            if actor.type == ActorTypes.SPIKE or self.y > HEIGHT:
-                if self.sprite.rect.colliderect(actor.sprite.rect):
+            if actor.type == ActorTypes.SPIKE :
+                if self.sprite.rect.colliderect(actor.hitbox):
                     self.alive = False
                     self.x = self.spawnX
                     self.y = 800
                     #self.playSound("death",1)
                     self.serviceLocator.soundManager.play("death")
+            
+            if self.y > HEIGHT:
+                self.alive = False
+                self.x = self.spawnX
+                self.y = 800
 
             if actor.type == ActorTypes.DASH_UPGRADE:
                 if actor.state == "idle" and self.sprite.rect.colliderect(actor.sprite.rect):

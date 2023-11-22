@@ -4,7 +4,7 @@ from itertools import repeat
 import utils.utils as utils
 from utils.soundManager import SoundManager
 
-from serviceLocator import serviceLocator
+from serviceLocator import ServiceLocator
 from inputHandler import InputHandler
 from actors.madeline import Player
 from actors.particles import ParticleManager
@@ -18,7 +18,7 @@ from constants.dictionaries import WIDTH, HEIGHT
 SCALE = 1
 FRAMERATE = 60
 #Sercice discovery
-serviceLocator = serviceLocator()
+serviceLocator = ServiceLocator()
 
 offset = repeat((0,0))
 display_shake = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
