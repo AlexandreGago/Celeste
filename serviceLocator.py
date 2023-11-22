@@ -1,4 +1,4 @@
-class serviceLocator():
+class ServiceLocator():
     def __init__(self):
         self.inputHandler = None
         self.players = []

@@ -12,7 +12,7 @@ from constants.enums import SpikeOrientations
 from constants.dictionaries import WIDTH
 import json
 import base64
-levels = json.load(open("./map/maps.json"))
+levels = json.load(open("./map/maps.json", encoding="utf-8"))
 spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę"]
 DECORATIONS = ["x", "y", "z"]

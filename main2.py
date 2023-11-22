@@ -2,29 +2,37 @@ import pygame
 import websockets
 import asyncio
 import argparse
+import threading
+import json
 from itertools import repeat
 
 import utils.utils as utils
 from utils.soundManager import SoundManager
 
-from serviceLocator import serviceLocator
+from serviceLocator import ServiceLocator
 from inputHandler import InputHandler
 from actors.madeline import Player
 from actors.particles import ParticleManager
+from spriteClass import SpriteClass
+from constants.enums import ActorTypes,PlayerOrientation
+
+
 
 from map.map import Map
 from map.titleScreen import drawTitleScreen
 
+import server
 
 from constants.dictionaries import WIDTH, HEIGHT
 
 SCALE = 1
 FRAMERATE = 60
-#Sercice discovery
-peers = []
-async def gameloop(port, host):
-    
-    serviceLocator = serviceLocator()
+
+
+
+async def gameloop(url, port):
+
+    serviceLocator = ServiceLocator()
 
     offset = repeat((0,0))
     display_shake = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
@@ -46,8 +54,8 @@ async def gameloop(port, host):
 
     #player
     madeline = Player(*map.spawn,"Madeline",serviceLocator)
-    # madeline2 = Player(*map.spawn,"Badeline",serviceLocator)
-
+    madeline2 = SpriteClass(0,0,50,50,ActorTypes.PLAYER,"idle1",playerName="Badeline")
+    print(madeline2)
     #add player to the service locator
     serviceLocator.players.append(madeline)
     serviceLocator.actorList.append(madeline)
@@ -84,8 +92,7 @@ async def gameloop(port, host):
     running = True
     display_shake.fill((0,0,0))
     display.fill((0,0,0))
-    
-    server = await websockets.serve(handle_connection, host, port)
+
     while running:
         display.fill((0,0,0,255))
 
@@ -104,9 +111,9 @@ async def gameloop(port, host):
             print(serviceLocator.map)
 
             utils.addObservers(serviceLocator)
-            
 
-        
+
+
         #parse keys and send to input handler
         keys = pygame.key.get_pressed()
 
@@ -116,12 +123,18 @@ async def gameloop(port, host):
         else:
             framerate = FRAMERATE
         #!#####################
-        
+
         #parse the currently pressed keys into a list
-        keys = utils.parsePressedKeys(keys)   
+        keys = utils.parsePressedKeys(keys)
         for event in pygame.event.get():# we use the pygame.event to only allow one input per press on the jump and dash keys
             if event.type == pygame.QUIT:
                 running = False
+                print("quit")
+
+            if event.type == pygame.USEREVENT:
+                x,y,height,width,spriteID,orientation = event.message
+                madeline2.update(x,y,height,width,spriteID,orientation,playerName="Badeline")
+
             if event.type == pygame.KEYDOWN:
                 if event.key==pygame.K_x:
                     keys.append(pygame.K_x)
@@ -129,10 +142,10 @@ async def gameloop(port, host):
                 if event.key==pygame.K_c:
                     keys.append(pygame.K_c)
         #manage input
-        inputHandler.handleInput(keys)  
-        
+        inputHandler.handleInput(keys)
+
         particlemanager.update(time)
-            
+
         particlemanager.draw("cloud", display)#draw clouds
 
         map.draw(display) # draw the map
@@ -141,49 +154,72 @@ async def gameloop(port, host):
         for actor in serviceLocator.actorList:
             actor.update()
             actor.draw(display)
+        madeline2.draw(display)
+        
 
         particlemanager.draw("snow", display)
-        
+
         #keep track of current frame
         serviceLocator.frameCount += 1
         if serviceLocator.frameCount == framerate:
             serviceLocator.frameCount = 0
-        
-        await send_position(madeline, port)
+        # print(serviceLocator.frameCount)
+        uri= f"ws://{url}:{port}"
+        async with websockets.connect(uri) as websocket:
+            orientation = madeline.orientation == PlayerOrientation.LEFT
+            attributes = [
+                madeline.x,
+                madeline.y,
+                madeline.height,
+                madeline.spriteWidth,
+                madeline.spriteID,
+                orientation
+            ]
+            await websocket.send(json.dumps(attributes))
+            
 
-        for ws in peers:
-            position = await receive_position(ws)
-            print(position)
-        
-        
+
+            
+
+
+
         display_shake.blit(display, next(serviceLocator.offset))
         pygame.display.update()
 
         time += clock.tick(framerate)
         # print(clock.get_fps())
 
-async def handle_connection(websocket,path):
-    try:
-        async for message in websocket:
-            # Broadcast received position to all connected clients
-            for ws in peers:
-                if ws != websocket:
-                    await ws.send(message)
-    except websockets.exceptions.ConnectionClosed:
-        pass
 
-async def send_position(position, port):
-    uri = f"ws://localhost:{port}"
-    async with websockets.connect(uri) as websocket:
-        await websocket.send(f"{position[0]},{position[1]}")
+def start_server(loop,future, port):
+    loop.run_until_complete(server.main(future, port))
 
-async def receive_position(websocket):
-    message = await websocket.recv()
-    return tuple(map(int, message.split(",")))
+def stop_server(loop,future):
+    loop.call_soon_threadsafe(future.set_result, None)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Game')
     parser.add_argument('--port', type=int, default=8765, help='port number')
-    parser.add_argument('--host', type=str, default="localhost", help='host')
+    parser.add_argument('--p2ip', type=str, default="127.0.0.1", help='host')
+    parser.add_argument('--p2port', type=int, default=8766, help='port number')
+
+    parser.add_argument('--player', type=int, default=1, help='player number')
+
+
     args = parser.parse_args()
-    asyncio.run(gameloop(args.port, args.host))
+
+    print(f"I am {args.port} and I am connecting to {args.p2ip}:{args.p2port}")
+
+    loop = asyncio.get_event_loop()
+    future = loop.create_future()
+    thread = threading.Thread(target=start_server, args=(loop,future, args.port))
+    thread.start()
+
+    asyncio.run(gameloop(args.p2ip, args.p2port))
+
+    stop_server(loop,future)
+    thread.join()
+    pygame.quit()
+
+    
+
