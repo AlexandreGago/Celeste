@@ -201,7 +201,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Game')
     parser.add_argument('--port', type=int, default=8765, help='port number')
     parser.add_argument('--p2ip', type=str, default="127.0.0.1", help='host')
-    parser.add_argument('--p2port', type=int, default=8766, help='port number')
+    parser.add_argument('--p2port', type=int, default=8765, help='port number')
 
     parser.add_argument('--player', type=int, default=1, help='player number')
 
