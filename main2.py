@@ -93,7 +93,12 @@ async def gameloop(mp,url, port):
     running = True
     display_shake.fill((0,0,0))
     display.fill((0,0,0))
-
+    # uri= f"ws://{url}:{port}"
+    # async with websockets.connect(uri) as websocket:
+    if mp:
+        uri= f"ws://{url}:{port}"
+        websocket = await websockets.connect(uri)
+        
     while running:
         display.fill((0,0,0,255))
 
@@ -166,8 +171,6 @@ async def gameloop(mp,url, port):
             serviceLocator.frameCount = 0
         # print(serviceLocator.frameCount)
         if mp:
-            uri= f"ws://{url}:{port}"
-            async with websockets.connect(uri) as websocket:
                 orientation = madeline.orientation == PlayerOrientation.LEFT
                 attributes = [
                     madeline.x,

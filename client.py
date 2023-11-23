@@ -3,7 +3,7 @@ import websockets
 import argparse
 
 async def client(port=8765):
-    uri = f"ws://localhost:{port}"
+    uri = f"ws://0.0.0.0:{port}"
     async with websockets.connect(uri) as websocket:
         while True:
             # Send a message to the server
