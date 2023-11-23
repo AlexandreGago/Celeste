@@ -4,6 +4,7 @@ import asyncio
 import argparse
 import threading
 import json
+import pickle
 from itertools import repeat
 
 import utils.utils as utils
@@ -29,16 +30,30 @@ SCALE = 1
 FRAMERATE = 60
 
 
+#this is the main game loop that runs the game and multiplayer logic
+async def gameloop(coop:bool, mp:bool,url:str, port:int):
+    """Summary
+    This is the main game loop that runs the game and multiplayer logic
 
-async def gameloop(mp,url, port):
-
+    Args:
+        coop (bool) : whether or not to run the game in coop mode
+        mp (bool)  : whether or not to run the game in multiplayer mode
+        url (str)  : ip address of player 2
+        port (int) : port number of player 2
+    """
+    #this is the service locator that is used to pass around the game objects
     serviceLocator = ServiceLocator()
 
+    #this is the offset that is used to shake the screen
     offset = repeat((0,0))
+    serviceLocator.offset = offset
+    #this is the display that is used to shake the screen
     display_shake = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
+    #this is the display that is used to draw the game
     display = display_shake.copy()
+    #actors will be drawn to display
     serviceLocator.display = display
-
+    #clock is used to run the game at a constant framerate
     clock = pygame.time.Clock()
 
     #input handler
@@ -48,60 +63,67 @@ async def gameloop(mp,url, port):
     soundManager = SoundManager()
     serviceLocator.soundManager = soundManager
 
+    #player 1 level
     level = 1
+    #load the first map
     map = Map(str(level),serviceLocator)
+    #add the map to the service locator
     serviceLocator.map = map
 
-    #player
+    #Player 1 object
     madeline = Player(*map.spawn,"Madeline",serviceLocator)
+    
+    #player 2 is a sprite that will be updated if we are in multiplayer
     if mp:
         madeline2 = SpriteClass(0,0,50,50,ActorTypes.PLAYER,"idle1",playerName="Badeline")
-    # print(madeline2)
-    #add player to the service locator
-    serviceLocator.players.append(madeline)
-    serviceLocator.actorList.append(madeline)
-
-    # serviceLocator.players.append(madeline2)
-    # serviceLocator.actorList.append(madeline2)
+    
+    #if coop is true, add player 2 to the service locator
+    if coop:
+        madeline2 = Player(*map.spawn,"Badeline",serviceLocator)
+        serviceLocator.players.append(madeline2)
+        serviceLocator.actorList.append(madeline2)
 
     #count the frames (used for animations)
     frameCount = 0
     serviceLocator.frameCount = frameCount
 
-
+    #particle manager manages clouds and snow
     particlemanager = ParticleManager()
     particlemanager.add_particles("snow", 50)
     particlemanager.add_particles("cloud", 15)
-
     time = 0
+    
 
-    #!service locator offset and screen shake function
-    serviceLocator.offset = offset
-
+    #initialize pygame
     pygame.init()
 
     #adds the observers to the players
     utils.addObservers(serviceLocator)
 
+    #running is used to determine if the game is running
     running = True
+    #framerate is used to determine the framerate of the game
     framerate = FRAMERATE
 
+    #play bg music
     serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
 
+    #title screen until the user presses space
     drawTitleScreen(display,display_shake,clock,particlemanager)
 
-    running = True
-
+    #clear the screen after the title screen
     bgColor = map.bgColor
     display_shake.fill(bgColor)
     display.fill(bgColor)
-    # uri= f"ws://{url}:{port}"
-    # async with websockets.connect(uri) as websocket:
+
+    #if we are in multiplayer, connect to the other player
     if mp:
         uri= f"ws://{url}:{port}"
         websocket = await websockets.connect(uri)
+        p2level = 1
         
     while running:
+        #get the pressed keys
         keys = pygame.key.get_pressed()
 
         #!Bullet time
@@ -119,7 +141,7 @@ async def gameloop(mp,url, port):
                 print("quit")
 
             if event.type == pygame.USEREVENT:
-                x,y,height,width,spriteID,orientation = event.message
+                x,y,height,width,spriteID,orientation, p2level = event.message
                 madeline2.update(x,y,height,width,spriteID,orientation,playerName="Badeline")
 
             if event.type == pygame.KEYDOWN:
@@ -163,7 +185,7 @@ async def gameloop(mp,url, port):
             actor.update()
             actor.draw(display)
         
-        if mp:
+        if mp and p2level == level:
             madeline2.draw(display)
         
 
@@ -175,14 +197,18 @@ async def gameloop(mp,url, port):
             serviceLocator.frameCount = 0
         # print(serviceLocator.frameCount)
         if mp:
+                hairpoints = madeline.hairPoints
                 orientation = madeline.orientation == PlayerOrientation.LEFT
                 attributes = [
                     madeline.x,
                     madeline.y,
                     madeline.height,
-                    madeline.spriteWidth,
+                    madeline.width,
                     madeline.spriteID,
-                    orientation
+                    orientation,
+                    # madeline.hairPoints,
+                    # madeline.particles,
+                    level
                 ]
                 await websocket.send(json.dumps(attributes))
                 
@@ -206,6 +232,7 @@ def stop_server(loop,future):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Game')
     parser.add_argument('--mp', type=bool, default=False, help='multiplayer')
+    parser.add_argument('--coop', type=bool, default=False, help='coop')
     parser.add_argument('--port', type=int, default=8765, help='port number')
     parser.add_argument('--p2ip', type=str, default="127.0.0.1", help='host')
     parser.add_argument('--p2port', type=int, default=8765, help='port number')
@@ -214,6 +241,10 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
+    #mp and coop are mutually exclusive
+    if args.mp and args.coop:
+        print("mp and coop are mutually exclusive")
+        exit()
 
     if args.mp:            
         loop = asyncio.get_event_loop()

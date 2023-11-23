@@ -69,7 +69,6 @@ class Player(Actor):
         
         #sprite
         self.spriteID = f"{self.state.value}1"
-        self.spriteWidth = self.width
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID,playerName=self.name)
         self.animationFrameCounter = 0
         
@@ -436,7 +435,7 @@ class Player(Actor):
         #advance the animationFrameCounter
         self.animationFrameCounter += 1 if self.animationFrameCounter <= 60 else -59 
         #update the sprite #! can be called in updateSprite() for optimization
-        self.sprite.update(self.x,self.y,self.height,self.spriteWidth,self.spriteID,self.orientation == PlayerOrientation.LEFT,playerName=self.name)
+        self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation == PlayerOrientation.LEFT,playerName=self.name)
         
         pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)#!debug
 
