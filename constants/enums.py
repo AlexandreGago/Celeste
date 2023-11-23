@@ -43,3 +43,12 @@ class SpikeOrientations(Enum):
     LEFT = 2
     DOWN = 3
     RIGHT = 4
+
+class EventType(Enum):
+    DASH_RESET_COLLISION = 1
+    SPRING_COLLISION = 2
+    STRAWBERRY_COLLISION = 3
+    FALLINGBLOCK_COLLISION = 4
+    SPIKE_COLLISION = 5
+    DASH_UPGRADE_COLLISION = 6
+    GROUND_COLLISION = 7

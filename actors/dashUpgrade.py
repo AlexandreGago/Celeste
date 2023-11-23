@@ -1,8 +1,7 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import SpikeStuff
-from constants.enums import ActorTypes,SpikeOrientations
+from constants.enums import ActorTypes,EventType
 
 
 
@@ -44,5 +43,5 @@ class DashUpgrade(Actor):
             self.sprite.draw(display)
 
     def notify(self, entityName, event) -> None:
-        if event == "touchDashUpgrade" and entityName == self.name and self.state =="idle":
+        if event == EventType.DASH_UPGRADE_COLLISION and entityName == self.name and self.state =="idle":
             self.state = "hidden"

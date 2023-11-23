@@ -1,6 +1,6 @@
 import pygame
 from actors.actor import Actor
-from constants.enums import ActorTypes
+from constants.enums import ActorTypes,EventType
 from spriteClass import SpriteClass
 from constants.dictionaries import DashResetEntityStuff
 
@@ -83,7 +83,7 @@ class DashResetEntity(Actor):
         """
         self.sprite.draw(display)
     
-    def notify(self, entityName:str, event:str)->None:
+    def notify(self, entityName:str, event:EventType)->None:
         """
         Notifies the entity of an event
 
@@ -94,21 +94,16 @@ class DashResetEntity(Actor):
         Returns:
             None
         """
-        if event == "dashReset" and entityName == self.name:
+        if event == EventType.DASH_RESET_COLLISION and entityName == self.name:
             self.state = "outline"
             self.spriteID = "outline1"
             self.animationCounter = 1
             self.disabledCounter = 0
             self.serviceLocator.soundManager.play("dashEntityBreak")
 
-        if event == "ground" and self.state == "outline":
+        if (event == EventType.GROUND_COLLISION or event == EventType.SPRING_COLLISION) and self.state == "outline":
             self.state = "refill"
             self.spriteID = "flash1"
             self.animationCounter = 0
             self.serviceLocator.soundManager.play("dashEntityReset")      
-
-        if event == "springCollision" and self.state == "outline":
-            self.state = "refill"
-            self.spriteID = "flash1"
-            self.animationCounter = 0
-            self.serviceLocator.soundManager.play("dashEntityReset")      
+   

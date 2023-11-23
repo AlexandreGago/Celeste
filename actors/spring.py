@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import SpringStuff
-from constants.enums import ActorTypes
+from constants.enums import ActorTypes,EventType
 
 
 
@@ -77,7 +77,7 @@ class Spring(Actor):
         # pygame.draw.rect(display,(0,0,255),self.sprite.rect,1)
 
 
-    def notify(self, entityName:str, event:str) -> None:
+    def notify(self, entityName:str, event:EventType) -> None:
         """
         Notifies the spring of an event
 
@@ -88,7 +88,7 @@ class Spring(Actor):
         Returns:
             None
         """
-        if event == "springCollision" and entityName == self.name:
+        if event == EventType.SPRING_COLLISION and entityName == self.name:
             if self.state == "idle":
                 self.serviceLocator.soundManager.play("spring")
                 self.state = "extended"

@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import cloudStuff
-from constants.enums import ActorTypes
+from constants.enums import ActorTypes,EventType
 
 class Cloud(Actor):
     def __init__(self ,x:int ,y:int ,serviceLocator) -> None:
@@ -55,7 +55,7 @@ class Cloud(Actor):
         """
         self.sprite.draw(display)
 
-    def notify(self, entityName:str, event:str) -> None:
+    def notify(self, entityName:str, event:EventType) -> None:
         """
         Notifies the cloud of an event
 

@@ -1,7 +1,7 @@
 from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
-from constants.enums import ActorTypes,PlayerStates,PlayerOrientation
+from constants.enums import ActorTypes,PlayerStates,PlayerOrientation,EventType
 from constants.dictionaries import HEIGHT,WIDTH,PlayerStuff, physicsValues
 from spriteClass import SpriteClass
 
@@ -480,7 +480,9 @@ class Player(Actor):
                     self.hairPoints[i][2] = self.hairPoints[i-1][2] + (self.hairPoints[i][0][0]*-1,self.hairPoints[i][0][1])+ offset
             
                 
-        
+        for i in range (len(self.hairPoints)-1,-1,-1):
+            pygame.draw.circle(display, (0, 0, 0), self.hairPoints[i][2], self.hairPoints[i][3]*self.width/50+3,3) # black border around hair
+            
         for i in range (len(self.hairPoints)-1,-1,-1):
             if self.airborne == 0:
                 if self.dashCooldown > 0:
@@ -649,7 +651,7 @@ class Player(Actor):
                     up,down = self.checkCollisionY(sprite,x,y,True,False)
                     if up:
                         for obs in self.observers:
-                            obs.notify(actor.name,"touchFallingBlock")
+                            obs.notify(actor.name,EventType.FALLINGBLOCK_COLLISION)
                         fallingBlockCollision = True
 
         if fallingBlockCollision:#falling block collision
@@ -664,7 +666,7 @@ class Player(Actor):
         #notify observers of groud collision
         if self.collisions[3]:
             for obs in self.observers:
-                obs.notify(self.name,"ground")
+                obs.notify(self.name,EventType.GROUND_COLLISION)
 
         self.x = self.sprite.rect.x
         self.y = self.sprite.rect.y
@@ -813,12 +815,12 @@ class Player(Actor):
                     self.dashCooldown = DASH_COOLDOWN
                     #notify observers
                     for obs in self.observers:
-                        obs.notify(actor.name,"dashReset")
+                        obs.notify(actor.name,EventType.DASH_RESET_COLLISION)
                         
             if actor.type == ActorTypes.SPRING:
                 if self.sprite.rect.colliderect(actor.sprite.rect) :#and self.springCollsionCooldown == 0:
                     for obs in self.observers:
-                        obs.notify(actor.name,"springCollision")
+                        obs.notify(actor.name,EventType.SPRING_COLLISION)
                     self.springCollided = True
                     # self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
 
@@ -826,7 +828,7 @@ class Player(Actor):
                 if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
                     #notify observers
                     for obs in self.observers:
-                        obs.notify(actor.name,"strawberryCollected")
+                        obs.notify(actor.name,EventType.STRAWBERRY_COLLISION)
                     #self.playSound("strawberry",1)
                         
             if actor.type == ActorTypes.SPIKE :
@@ -845,7 +847,7 @@ class Player(Actor):
             if actor.type == ActorTypes.DASH_UPGRADE:
                 if actor.state == "idle" and self.sprite.rect.colliderect(actor.sprite.rect):
                     for obs in self.observers:
-                        obs.notify(actor.name,"touchDashUpgrade")
+                        obs.notify(actor.name,EventType.DASH_UPGRADE_COLLISION)
                     self.currentDashCount += 1
                     self.dashCount = self.currentDashCount
 

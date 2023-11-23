@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import fallingBlockStuff
-from constants.enums import ActorTypes
+from constants.enums import ActorTypes,EventType
 
 class FallingBlock(Actor):
     def __init__(self, x, y,serviceLocator) -> None:
@@ -52,7 +52,7 @@ class FallingBlock(Actor):
         self.sprite.draw(display)
 
     def notify(self, entityName, event):
-        if event == "touchFallingBlock" and entityName == self.name:
+        if event == EventType.FALLINGBLOCK_COLLISION and entityName == self.name:
             if self.state == "idle":
                 self.state = "falling"
                 self.spriteID = "falling1"

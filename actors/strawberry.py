@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import StawberryStuff
-from constants.enums import ActorTypes
+from constants.enums import ActorTypes,EventType
 
 
 
@@ -65,7 +65,7 @@ class Strawberry(Actor):
         if self.state != "hidden":
             self.sprite.draw(display)
 
-    def notify(self, entityName:str, event:str) -> None:
+    def notify(self, entityName:str, event:EventType) -> None:
         """
         Notifies the strawberry of an event
 
@@ -77,7 +77,7 @@ class Strawberry(Actor):
             None
             
         """
-        if event == "strawberryCollected" and entityName == self.name:
+        if event == EventType.STRAWBERRY_COLLISION and entityName == self.name:
             if self.state == "idle":
                 self.serviceLocator.soundManager.play("strawberry")
                 self.state = "collected"
