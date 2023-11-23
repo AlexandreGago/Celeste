@@ -22,6 +22,16 @@ SIZE = WIDTH/16
 
 import os
 
+levelBgColors={
+    "1": (0,0,0,255),
+    "2": (255,0,0,255),
+    "3": (0,255,0,255),
+    "4": (0,0,255,255),
+    "5": (0,0,0,255),
+    "6": (0,0,0,255),
+    "7": (0,0,0,255),
+    "debug":(0,0,0,255),
+}
 spritelocations = {
     "x": (105,28, 6,4),
     "y": (114,25, 5,7),
@@ -127,6 +137,7 @@ class Map:
         self.level = level
         self.servicelocator = servicelocator
         self.sprites, self.spawn, self.walls = self.load(level)
+        self.bgColor = levelBgColors[str(level)]
 
 
 
@@ -150,6 +161,8 @@ class Map:
         self.servicelocator.clouds = []
         
         spawn = None
+
+        self.bgColor = levelBgColors[str(level)]
         # #decode b64
         # level=base64.b64decode(levels[level])
         # #convert to string

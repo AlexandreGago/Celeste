@@ -76,31 +76,14 @@ serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
 drawTitleScreen(display,display_shake,clock,particlemanager)
 
 running = True
-display_shake.fill((0,0,0))
-display.fill((0,0,0))
+
+bgColor = map.bgColor
+display_shake.fill(bgColor)
+display.fill(bgColor)
+
 while running:
-    display.fill((0,0,0,255))
-
-    if madeline.levelComplete():
-        print("completed level")
-        level+=1
-        serviceLocator.actorList = []
-        map = Map(str(level),serviceLocator)
-        serviceLocator.map = map
-
-        for player in serviceLocator.players:
-            serviceLocator.actorList.append(player)
-            player.reset(*map.spawn)
-            print(player.x,player.y)
-
-
-        utils.addObservers(serviceLocator)
-        
-
     
-    #parse keys and send to input handler
     keys = pygame.key.get_pressed()
-
     #!Bullet time
     if keys[pygame.K_v]:
         framerate = 5
@@ -116,9 +99,31 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key==pygame.K_x:
                 keys.append(pygame.K_x)
-        if event.type == pygame.KEYDOWN:
             if event.key==pygame.K_c:
                 keys.append(pygame.K_c)
+            if event.key == pygame.K_p:
+                keys.append(pygame.K_p)
+                
+    if madeline.levelComplete() or pygame.K_p in keys:
+        print("completed level")
+        level+=1
+        serviceLocator.actorList = []
+        map = Map(str(level),serviceLocator)
+        serviceLocator.map = map
+        bgColor = map.bgColor
+
+        for player in serviceLocator.players:
+            serviceLocator.actorList.append(player)
+            player.reset(*map.spawn)
+            print(player.x,player.y)
+
+
+        utils.addObservers(serviceLocator)
+        
+    display.fill(bgColor)
+
+    
+
     #manage input
     inputHandler.handleInput(keys)  
       
