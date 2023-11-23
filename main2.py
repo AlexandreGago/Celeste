@@ -91,8 +91,10 @@ async def gameloop(mp,url, port):
     drawTitleScreen(display,display_shake,clock,particlemanager)
 
     running = True
-    display_shake.fill((0,0,0))
-    display.fill((0,0,0))
+
+    bgColor = map.bgColor
+    display_shake.fill(bgColor)
+    display.fill(bgColor)
     # uri= f"ws://{url}:{port}"
     # async with websockets.connect(uri) as websocket:
     if mp:
@@ -100,25 +102,6 @@ async def gameloop(mp,url, port):
         websocket = await websockets.connect(uri)
         
     while running:
-        display.fill((0,0,0,255))
-
-        if madeline.levelComplete():
-            print("completed level")
-            level+=1
-            serviceLocator.actorList = []
-            map = Map(str(level),serviceLocator)
-            serviceLocator.map = map
-
-            for player in serviceLocator.players:
-                serviceLocator.actorList.append(player)
-                player.reset(*map.spawn)
-                print(player.x,player.y)
-
-
-            utils.addObservers(serviceLocator)
-
-
-        #parse keys and send to input handler
         keys = pygame.key.get_pressed()
 
         #!Bullet time
@@ -142,9 +125,30 @@ async def gameloop(mp,url, port):
             if event.type == pygame.KEYDOWN:
                 if event.key==pygame.K_x:
                     keys.append(pygame.K_x)
-            if event.type == pygame.KEYDOWN:
                 if event.key==pygame.K_c:
                     keys.append(pygame.K_c)
+                if event.key == pygame.K_p:
+                    keys.append(pygame.K_p)
+
+        if madeline.levelComplete()or pygame.K_p in keys:
+            print("completed level")
+            level+=1
+            serviceLocator.actorList = []
+            map = Map(str(level),serviceLocator)
+            serviceLocator.map = map
+            bgColor = map.bgColor
+
+            for player in serviceLocator.players:
+                serviceLocator.actorList.append(player)
+                player.reset(*map.spawn)
+                print(player.x,player.y)
+
+
+            utils.addObservers(serviceLocator)
+
+
+        display.fill(bgColor)
+
         #manage input
         inputHandler.handleInput(keys)
 
@@ -182,9 +186,6 @@ async def gameloop(mp,url, port):
                 ]
                 await websocket.send(json.dumps(attributes))
                 
-
-
-            
 
 
 
