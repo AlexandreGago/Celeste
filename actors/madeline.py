@@ -12,8 +12,8 @@ import utils.utils as utils
 
 # MAX_DASHES = 2
 DASH_COOLDOWN = 1
-PLAYERWIDTH = 50
-PLAYERHEIGHT = 50
+PLAYERWIDTH = 49
+PLAYERHEIGHT = 49
 WALLGRACE = 5
 COYOTEJUMP = 10
 WALLJUMP_COOLDOWN = 10
@@ -636,6 +636,8 @@ class Player(Actor):
             self.checkCollisionX(tile,x,y,True,True)
 
         fallingBlockCollision = False # this serves to check every falling block, without this, only the firt one is detetcted
+        fallingBlockSpriteCollided = None
+        
         for actor in self.serviceLocator.actorList:
             if actor.type == ActorTypes.CLOUD:
                 sprite = actor.sprite
@@ -646,15 +648,17 @@ class Player(Actor):
 
             if actor.type == ActorTypes.FALLINGBLOCK:
                 sprite = actor.sprite
+                # print(actor.name,actor.state)
                 if self.airborne >= 0 and actor.state != "outline":
                     up,down = self.checkCollisionY(sprite,x,y,True,False)
                     if up:
                         for obs in self.observers:
                             obs.notify(actor.name,EventType.FALLINGBLOCK_COLLISION)
                         fallingBlockCollision = True
+                        fallingBlockSpriteCollided = sprite
 
         if fallingBlockCollision:#falling block collision
-            self.sprite.rect.y = sprite.rect.top - self.height
+            self.sprite.rect.y = fallingBlockSpriteCollided.rect.top - self.height
 
         #check if we are out of bounds
         if self.sprite.rect.x < 0:

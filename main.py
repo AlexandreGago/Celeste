@@ -34,7 +34,7 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 1
+level = 3
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 
@@ -86,7 +86,7 @@ while running:
     keys = pygame.key.get_pressed()
     #!Bullet time
     if keys[pygame.K_v]:
-        framerate = 5
+        framerate = 1
     else:
         framerate = FRAMERATE
     #!#####################

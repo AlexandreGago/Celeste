@@ -14,7 +14,7 @@ import json
 import base64
 levels = json.load(open("./map/maps.json", encoding="utf-8"))
 spritesheet = pygame.image.load("atlas.png")
-WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę"]
+WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę","ĕ","Ĕ"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
 POWERS = ["r","q","s", "t","u","v"]
@@ -28,8 +28,13 @@ levelBgColors={
     "3": (0,0,0,255),
     "4": (0,0,0,255),
     "5": (0,0,0,255),
-    "6": (150,0,100,255),
+    "6": (0,0,100,255),
     "7": (150,0,100,255),
+    "8": (150,0,100,255),
+    "9": (150,0,100,255),
+    "10": (150,0,100,255),
+    "11": (150,0,100,255),
+    "12": (150,0,100,255),
     "debug":(0,0,0,255),
     "new":(0,0,0,255)
 }
@@ -93,8 +98,8 @@ spritelocations = {
     "Ė":(40,40,8,8),
     "ę":(40,48,8,8),
     "Ę":(40,56,8,8),
-    "ĕ":(),
-    "Ĕ":(),
+    "ĕ":(56,16, 8,8),
+    "Ĕ":(56,24, 8,8),
 
 }
 
@@ -186,6 +191,10 @@ class Map:
                     if cell == "à":
                         image = pygame.transform.rotate(image,270)
                     if cell == "À":
+                        image = pygame.transform.rotate(image,90)
+                    if cell == "ĕ":
+                        image = pygame.transform.rotate(image,90)
+                    if cell == "Ĕ":
                         image = pygame.transform.rotate(image,90)
                     image = pygame.transform.scale(image, (SIZE, SIZE))
                     #SIZE*16=800
