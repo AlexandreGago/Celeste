@@ -99,10 +99,10 @@ class Physics():
             diff = (y + self.speed[1])-y 
             y = y + diff/2
         else:#normal gravity
-            print( self.speed[0],self.speed[1])
-            
-            if (self.speed[0] > air["maxSpeed"] and self.speed[1] >= 0) or (self.speed[0] < -air["maxSpeed"] and self.speed[1] >= 0):
-                print("here")
+            # print( self.speed[0],self.speed[1])
+            print(yInput)
+            if ((self.speed[0] > air["maxSpeed"] and self.speed[1] >= 0) or (self.speed[0] < -air["maxSpeed"] and self.speed[1] >= 0)) and  yInput == 0:
+                 pass
             else:
                 y += self.speed[1]
         return x,y
