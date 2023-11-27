@@ -35,7 +35,7 @@ class physicsValues:
         "power": 15
     }
     jump = {
-        "power": 10.5,
+        "power": 11,
     }
 
 class PlayerStuff:
