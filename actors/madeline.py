@@ -73,7 +73,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
+        self.currentDashCount = 2 #!this will increase when we get the dash upgrade
         self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []
@@ -567,7 +567,7 @@ class Player(Actor):
             #ceiling
             if rect.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"] *1.2 and down:
                 self.collisions[2] = 1
-                self.physics.speed[1] = 0
+                # self.physics.speed[1] = 0
                 self.sprite.rect.y = rect.rect.bottom
                 self.serviceLocator.display.fill((255,0,0),rect.rect)
 
@@ -593,7 +593,7 @@ class Player(Actor):
             #left
             if rect.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]*1.2 and left:
                 self.collisions[0] = 1
-                self.physics.speed[0] = 0
+                # self.physics.speed[0] = 0
                 self.sprite.rect.x = rect.rect.right
 
                 leftCollision = True
@@ -814,7 +814,7 @@ class Player(Actor):
             if actor.type == ActorTypes.DASH_RESET:                     
                 #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
                 if self.dashCount <= self.currentDashCount-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
-                    self.dashCount += 1
+                    self.dashCount = self.currentDashCount
                     self.dashCooldown = DASH_COOLDOWN
                     #notify observers
                     for obs in self.observers:
@@ -839,6 +839,7 @@ class Player(Actor):
                     self.alive = False
                     self.x = self.spawnX
                     self.y = 800
+                    self.physics.reset()
                     #self.playSound("death",1)
                     self.serviceLocator.soundManager.play("death")
             

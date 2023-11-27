@@ -29,13 +29,13 @@ class physicsValues:
     }
 
     dash = {
-        "power": 12,
+        "power": 12.5,
     }
     spring = {
         "power": 15
     }
     jump = {
-        "power": 11,
+        "power": 10.5,
     }
 
 class PlayerStuff:

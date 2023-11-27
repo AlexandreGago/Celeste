@@ -26,7 +26,7 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.DASH_RESET:
             self.spriteID = spriteID
             img = pygame.image.load(DashResetEntityStuff.spritesLocation[self.spriteID])
-            self.image = img.subsurface((0,0,16,16))
+            self.image = img.subsurface((3,3,10,10))
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         if self.type == ActorTypes.STRAWBERRY:
@@ -106,7 +106,7 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.DASH_RESET:
             #update image
             img = pygame.image.load(DashResetEntityStuff.spritesLocation[spriteID])
-            self.image = img.subsurface((0,0,16,16))
+            self.image = img.subsurface((2,2,11,11))
 
         if self.type == ActorTypes.STRAWBERRY:
             #update image

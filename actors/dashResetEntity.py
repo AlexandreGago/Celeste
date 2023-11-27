@@ -19,7 +19,7 @@ class DashResetEntity(Actor):
             None
 
         """
-        super().__init__(x,y,80,80,serviceLocator)
+        super().__init__(x,y,50,50,serviceLocator)
         self.type = ActorTypes.DASH_RESET
         self.name = id(self)
 
