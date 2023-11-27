@@ -72,6 +72,8 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
 
     #Player 1 object
     madeline = Player(*map.spawn,"Madeline",serviceLocator)
+    serviceLocator.players.append(madeline)
+    serviceLocator.actorList.append(madeline)
     
     #player 2 is a sprite that will be updated if we are in multiplayer
     if mp:
@@ -173,11 +175,8 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
 
         #manage input
         inputHandler.handleInput(keys)
-
         particlemanager.update(time)
-
         particlemanager.draw("cloud", display)#draw clouds
-
         map.draw(display) # draw the map
 
         #draw and update actors
@@ -252,13 +251,13 @@ if __name__ == "__main__":
         thread = threading.Thread(target=start_server, args=(loop,future, args.port))
         thread.start()
 
-        asyncio.run(gameloop(args.mp,args.p2ip, args.p2port))
+        asyncio.run(gameloop(args.coop,args.mp,args.p2ip, args.p2port))
 
         stop_server(loop,future)
         thread.join()
         pygame.quit()
     else:
-        asyncio.run(gameloop(args.mp,args.p2ip, args.p2port))
+        asyncio.run(gameloop(args.coop,args.mp,args.p2ip, args.p2port))
         pygame.quit()
 
     
