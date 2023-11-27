@@ -28,7 +28,13 @@ from constants.dictionaries import WIDTH, HEIGHT
 
 SCALE = 1
 FRAMERATE = 60
-
+#!--------------------
+# import socket
+# s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# s.connect(("8.8.8.8", 80))
+# print(s.getsockname()[0])
+# s.close()
+#!--------------------
 
 #this is the main game loop that runs the game and multiplayer logic
 async def gameloop(coop:bool, mp:bool,url:str, port:int):
