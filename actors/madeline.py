@@ -431,7 +431,6 @@ class Player(Actor):
             if particle.update():
                 self.particles.remove(particle)
         
-
         #advance the animationFrameCounter
         self.animationFrameCounter += 1 if self.animationFrameCounter <= 60 else -59 
         #update the sprite #! can be called in updateSprite() for optimization
@@ -663,8 +662,8 @@ class Player(Actor):
         #check if we are out of bounds
         if self.sprite.rect.x < 0:
             self.sprite.rect.x = 0
-        if self.sprite.rect.x > WIDTH - self.width:
-            self.sprite.rect.x = WIDTH - self.width
+        if self.sprite.rect.x > self.serviceLocator.map.width - self.width:
+            self.sprite.rect.x = self.serviceLocator.map.width  - self.width
 
         #notify observers of groud collision
         if self.collisions[3]:

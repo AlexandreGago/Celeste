@@ -9,16 +9,15 @@ from actors.fallingBlock import FallingBlock
 from actors.cloud import Cloud
 from actors.dashUpgrade import DashUpgrade
 from constants.enums import SpikeOrientations
-from constants.dictionaries import WIDTH
 import json
 import base64
-levels = json.load(open("./map/maps.json", encoding="utf-8"))
+levels = json.load(open("./map/newMaps.json", encoding="utf-8"))
 spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę","ĕ","Ĕ"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
 POWERS = ["r","q","s", "t","u","v"]
-SIZE = WIDTH/16
+
 
 import os
 
@@ -163,7 +162,12 @@ class Map:
         self.level = level
         self.servicelocator = servicelocator
         self.sprites, self.spawn, self.walls = self.load(level)
-        self.bgColor = levelBgColors[str(level)]
+        self.width = levels[level]["size"][0]
+        self.height = levels[level]["size"][1]
+        if str(level) in levelBgColors:
+            self.bgColor = levelBgColors[str(level)]
+        else:
+            self.bgColor = (0,0,0,255)
 
 
 
@@ -187,8 +191,15 @@ class Map:
         self.servicelocator.clouds = []
         
         spawn = None
-
-        self.bgColor = levelBgColors[str(level)]
+        if str(level) in levelBgColors:
+            self.bgColor = levelBgColors[str(level)]
+        else:
+            self.bgColor = (0,0,0,255)
+            
+        self.width = levels[level]["size"][0]
+        self.height = levels[level]["size"][1]
+        SIZE_X = self.width/(self.width/50)
+        SIZE_Y = self.height/(self.height/50)
         # #decode b64
         # level=base64.b64decode(levels[level])
         # #convert to string
@@ -197,11 +208,11 @@ class Map:
         # level=[level[i:i+16] for i in range(0, len(level), 16)]
         # print(level)
 
-        level = levels[level]
+        level = levels[level]["level"]
         for idx,row in enumerate(level):
             for idy,cell in enumerate(row):
                 if cell == "p":
-                    spawn = (idy*SIZE, idx*SIZE)
+                    spawn = (idy*SIZE_X, idx*SIZE_Y)
                 if cell in WALLS:
                     # print(cell)
                     # print(spritelocations[cell])
@@ -216,9 +227,9 @@ class Map:
                         image = pygame.transform.rotate(image,90)
                     if cell == "Ĕ":
                         image = pygame.transform.rotate(image,90)
-                    image = pygame.transform.scale(image, (SIZE, SIZE))
+                    image = pygame.transform.scale(image, (SIZE_X, SIZE_Y))
                     #SIZE*16=800
-                    tile = Tile(image, idy*SIZE, idx*SIZE)
+                    tile = Tile(image, idy*SIZE_X, idx*SIZE_Y)
                     sprites.add(tile)
                     walls.append(tile)
 
@@ -230,7 +241,7 @@ class Map:
 
                     image = spritesheet.subsurface(*spritelocations[cell])
                     image = pygame.transform.scale(image, (x, y))
-                    sprites.add(Tile(image, idy*SIZE + ((SIZE-x)/2), idx*SIZE + (SIZE-y)))
+                    sprites.add(Tile(image, idy*SIZE_X + ((SIZE_X-x)/2), idx*SIZE_Y + (SIZE_Y-y)))
                 elif cell in ENEMIES:
                     # image = spritesheet.subsurface(*spritelocations[cell])
                     # image = pygame.transform.scale(image, (SIZE, SIZE))
@@ -244,43 +255,43 @@ class Map:
                     if cell in ["ò"]:
                         orientation = SpikeOrientations.LEFT
 
-                    spike = Spike(idy*SIZE, idx*SIZE,orientation=orientation)
+                    spike = Spike(idy*SIZE_X, idx*SIZE_Y,orientation=orientation)
                     self.servicelocator.actorList.append(spike)
 
                 elif cell in POWERS:
                     if cell == "r":
-                        dr = DashResetEntity(idy*SIZE, idx*SIZE, self.servicelocator)
+                        dr = DashResetEntity(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
                         self.servicelocator.actorList.append(dr)
                     if cell == "q":
-                        s = Strawberry(idy*SIZE, idx*SIZE, self.servicelocator)
+                        s = Strawberry(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
                         self.servicelocator.actorList.append(s)
                     if cell == "s":
-                        sp = Spring(idy*SIZE, idx*SIZE, self.servicelocator)
+                        sp = Spring(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
                         self.servicelocator.actorList.append(sp)
                     if cell == "t":
-                        fb = FallingBlock(idy*SIZE, idx*SIZE, self.servicelocator)
+                        fb = FallingBlock(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
                         self.servicelocator.actorList.append(fb)
                         self.servicelocator.fallingBlocks.append(fb)
                     if cell == "u":
-                        cd = Cloud(idy*SIZE, idx*SIZE,self.servicelocator) 
+                        cd = Cloud(idy*SIZE_X, idx*SIZE_Y,self.servicelocator) 
                         self.servicelocator.actorList.append(cd)
                         self.servicelocator.clouds.append(cd)
                     if cell == "v":
-                        du = DashUpgrade(idy*SIZE, idx*SIZE)
+                        du = DashUpgrade(idy*SIZE_X, idx*SIZE_Y)
                         self.servicelocator.actorList.append(du)
 
         return sprites, spawn, walls
 
-    def draw(self, screen:pygame.display) -> None:
+    def draw(self, screen: pygame.Surface) -> None:
         """
-        Draws the map
+        Draws the map.
 
         Args:
-            screen (pygame.display): display to draw the map on
+            screen (pygame.Surface): Surface to draw the map on.
 
         Returns:
             None
-        
         """
         self.sprites.draw(screen)
+
 
