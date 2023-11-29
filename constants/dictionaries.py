@@ -29,7 +29,7 @@ class physicsValues:
     }
 
     dash = {
-        "power": 12.5,
+        "power": 12.2,
     }
     spring = {
         "power": 15
