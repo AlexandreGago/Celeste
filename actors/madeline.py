@@ -44,7 +44,7 @@ class Player(Actor):
         self.spawnX = x
         self.spawnY = y
         self.x = x
-        self.y = HEIGHT
+        self.y = serviceLocator.map.height
         
         #play type
         self.type = ActorTypes.PLAYER
@@ -53,7 +53,7 @@ class Player(Actor):
         self.physics = Physics()
         
         #call the parent constructor (Actor)
-        super().__init__(x,HEIGHT,50,50,serviceLocator)
+        super().__init__(x,serviceLocator.map.height,50,50,serviceLocator)
         self.name = name
         self.serviceLocator = serviceLocator
 
@@ -396,6 +396,7 @@ class Player(Actor):
         Returns:
             None
         """
+        print(self.x)
         #process inputs
         xInput,yInput,dashInput,jumpInput = vector # unpack the vector
         dashInput,wallJump,jumpInput = self.validateInput(dashInput,jumpInput)# validate the inputs ex: if jumpInput = 1 but we are in the air, jumpInput = 0
@@ -647,7 +648,6 @@ class Player(Actor):
 
             if actor.type == ActorTypes.FALLINGBLOCK:
                 sprite = actor.sprite
-                # print(actor.name,actor.state)
                 if self.airborne >= 0 and actor.state != "outline":
                     up,down = self.checkCollisionY(sprite,x,y,True,False)
                     if up:
@@ -837,15 +837,15 @@ class Player(Actor):
                 if self.sprite.rect.colliderect(actor.hitbox):
                     self.alive = False
                     self.x = self.spawnX
-                    self.y = 800
+                    self.y = self.serviceLocator.map.height
                     self.physics.reset()
                     #self.playSound("death",1)
                     self.serviceLocator.soundManager.play("death")
-            
-            if self.y > HEIGHT:
+            if self.y > self.serviceLocator.map.height:
+                print(self.y)
                 self.alive = False
                 self.x = self.spawnX
-                self.y = 800
+                self.y = self.serviceLocator.map.height
 
             if actor.type == ActorTypes.DASH_UPGRADE:
                 if actor.state == "idle" and self.sprite.rect.colliderect(actor.sprite.rect):
@@ -866,9 +866,9 @@ class Player(Actor):
             None
         """
         self.x = x
-        self.y = HEIGHT
+        self.y = self.serviceLocator.map.height
         self.sprite.rect.x = x
-        self.sprite.rect.y = HEIGHT
+        self.sprite.rect.y = self.serviceLocator.map.height
 
         self.spawnX = x
         self.spawnY = y
