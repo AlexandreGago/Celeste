@@ -14,7 +14,7 @@ from map.titleScreen import drawTitleScreen
 
 
 from constants.dictionaries import WIDTH, HEIGHT
-
+        
 SCALE = 1
 FRAMERATE = 60
 #Sercice discovery
@@ -34,9 +34,12 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 27
+level = "big"
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
+mapCanvas = pygame.Surface((map.width,map.height))
+camera = pygame.Rect(0, 0, WIDTH, HEIGHT)
+
 
 #player
 madeline = Player(*map.spawn,"Madeline",serviceLocator)
@@ -46,13 +49,9 @@ madeline = Player(*map.spawn,"Madeline",serviceLocator)
 serviceLocator.players.append(madeline)
 serviceLocator.actorList.append(madeline)
 
-# serviceLocator.players.append(madeline2)
-# serviceLocator.actorList.append(madeline2)
-
 #count the frames (used for animations)
 frameCount = 0
 serviceLocator.frameCount = frameCount
-
 
 particlemanager = ParticleManager()
 particlemanager.add_particles("snow", 50)
@@ -121,6 +120,7 @@ while running:
         utils.addObservers(serviceLocator)
         
     display.fill(bgColor)
+    mapCanvas.fill(bgColor)
 
     
 
@@ -129,23 +129,33 @@ while running:
       
     particlemanager.update(time)
         
-    particlemanager.draw("cloud", display)#draw clouds
 
-    map.draw(display) # draw the map
+    particlemanager.draw("snow", mapCanvas)
+    particlemanager.draw("cloud", mapCanvas)#draw clouds
+
+    map.draw(mapCanvas) # draw the map
 
     #draw and update actors
     for actor in serviceLocator.actorList:
         actor.update()
-        actor.draw(display)
+        actor.draw(mapCanvas)
 
-    particlemanager.draw("snow", display)
-    
     #keep track of current frame
     serviceLocator.frameCount += 1
     if serviceLocator.frameCount == framerate:
         serviceLocator.frameCount = 0
+        
+    #! Update the camera's position based on the player's position
+    camera.x = serviceLocator.players[0].x - WIDTH // 2
+    camera.y = serviceLocator.players[0].y - HEIGHT // 2
+
+    #! Ensure the camera stays within the bounds of the map
+    camera.x = max(0, min(camera.x, map.width - WIDTH))
+    camera.y = max(0, min(camera.y, map.height - HEIGHT))
     
+    display.blit(mapCanvas,(0 - camera.x, 0 - camera.y))
     display_shake.blit(display, next(serviceLocator.offset))
+    
     pygame.display.update()
 
     time += clock.tick(framerate)
