@@ -73,7 +73,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.currentDashCount = 2 #!this will increase when we get the dash upgrade
+        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
         self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []
@@ -396,7 +396,6 @@ class Player(Actor):
         Returns:
             None
         """
-        print(self.x)
         #process inputs
         xInput,yInput,dashInput,jumpInput = vector # unpack the vector
         dashInput,wallJump,jumpInput = self.validateInput(dashInput,jumpInput)# validate the inputs ex: if jumpInput = 1 but we are in the air, jumpInput = 0
@@ -565,7 +564,7 @@ class Player(Actor):
         upCollision,downCollision = False,False
         if self.sprite.rect.colliderect(rect):
             #ceiling
-            if rect.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"] *1.2 and down:
+            if rect.rect.bottom - self.sprite.rect.top <= physicsValues.dash["power"] *1.3 and down:
                 self.collisions[2] = 1
                 # self.physics.speed[1] = 0
                 self.sprite.rect.y = rect.rect.bottom
@@ -574,7 +573,7 @@ class Player(Actor):
                 downCollision = True
 
             #floor
-            elif rect.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]*1.2 and up:
+            elif rect.rect.top - self.sprite.rect.bottom >= - physicsValues.dash["power"]*1.3 and up:
                 self.collisions[3] = 1
                 self.physics.speed[1] = 0
                 self.dashCount = self.currentDashCount
@@ -591,7 +590,7 @@ class Player(Actor):
         leftCollision,rightCollision = False,False
         if self.sprite.rect.colliderect(rect):
             #left
-            if rect.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]*1.2 and left:
+            if rect.rect.right - self.sprite.rect.left <= physicsValues.dash["power"]*1.3 and left:
                 self.collisions[0] = 1
                 # self.physics.speed[0] = 0
                 self.sprite.rect.x = rect.rect.right
@@ -600,7 +599,7 @@ class Player(Actor):
 
                 self.serviceLocator.display.fill((255,0,0),rect.rect)
             #right
-            elif rect.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]*1.2 and right:
+            elif rect.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]*1.3 and right:
                 self.collisions[1] = 1
                 self.physics.speed[0] = 0
                 x = rect.rect.left - self.width
@@ -810,14 +809,23 @@ class Player(Actor):
         #check collisions for the rest of the actors
         self.springCollided = False
         for actor in self.serviceLocator.actorList:
-            if actor.type == ActorTypes.DASH_RESET:                     
+            if actor.type == ActorTypes.DASH_RESET:        
                 #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
                 if self.dashCount <= self.currentDashCount-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
-                    self.dashCount = self.currentDashCount
+                    self.dashCount +=1
                     self.dashCooldown = DASH_COOLDOWN
                     #notify observers
                     for obs in self.observers:
                         obs.notify(actor.name,EventType.DASH_RESET_COLLISION)
+
+            if actor.type == ActorTypes.DOUBLE_DASH_RESET:
+                if self.dashCount <= self.currentDashCount-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                    self.dashCount = self.currentDashCount if self.currentDashCount >= 2 else 2
+                    self.dashCooldown = DASH_COOLDOWN
+                    #notify observers
+                    print(self.observers)
+                    for obs in self.observers:
+                        obs.notify(actor.name,EventType.DOUBLE_DASH_RESET_COLLISION)
                         
             if actor.type == ActorTypes.SPRING:
                 if self.sprite.rect.colliderect(actor.sprite.rect) :#and self.springCollsionCooldown == 0:
