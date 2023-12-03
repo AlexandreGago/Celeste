@@ -34,7 +34,7 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = 25
+level = "big"
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 mapCanvas = pygame.Surface((map.width,map.height))
@@ -104,7 +104,6 @@ while running:
                 keys.append(pygame.K_p)
                 
     if madeline.levelComplete() or pygame.K_p in keys:
-        print("completed level")
         level+=1
         serviceLocator.actorList = []
         map = Map(str(level),serviceLocator)
@@ -114,7 +113,6 @@ while running:
         for player in serviceLocator.players:
             serviceLocator.actorList.append(player)
             player.reset(*map.spawn)
-            print(player.x,player.y)
 
 
         utils.addObservers(serviceLocator)

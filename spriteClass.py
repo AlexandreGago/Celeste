@@ -1,6 +1,6 @@
 import pygame
 from constants.enums import ActorTypes,ParticleTypes
-from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff, cloudStuff, dashUpgradeStuff,jumpParticles,fallingBlockStuff
+from constants.dictionaries import PlayerStuff,DashResetEntityStuff,StawberryStuff,SpringStuff,SpikeStuff, cloudStuff, dashUpgradeStuff,jumpParticles,fallingBlockStuff,doubleDashResetStuff
 
 
 # atlasIMG = pygame.image.load("atlas.png")
@@ -68,6 +68,11 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.DASH_UPGRADE:
             self.atlasIMG = pygame.image.load("atlas.png")
             self.image = self.atlasIMG.subsurface((48,48,8,8))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        
+        if self.type == ActorTypes.DOUBLE_DASH_RESET:
+            self.spriteID = spriteID
+            self.image = pygame.image.load(doubleDashResetStuff.spritesLocation[self.spriteID])
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         if flipVertical:
@@ -137,6 +142,10 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.DASH_UPGRADE:
             self.atlasIMG = pygame.image.load("atlas.png")
             self.image = self.atlasIMG.subsurface((48,48,8,8))
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+
+        if self.type == ActorTypes.DOUBLE_DASH_RESET:
+            self.image = pygame.image.load(doubleDashResetStuff.spritesLocation[self.spriteID])
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         if flipVertical:

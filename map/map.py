@@ -8,6 +8,7 @@ from actors.spike import Spike
 from actors.fallingBlock import FallingBlock
 from actors.cloud import Cloud
 from actors.dashUpgrade import DashUpgrade
+from actors.doubleDashReset import DoubleDashReset
 from constants.enums import SpikeOrientations
 import json
 import base64
@@ -16,7 +17,7 @@ spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę","ĕ","Ĕ"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
-POWERS = ["r","q","s", "t","u","v"]
+POWERS = ["r","q","s", "t","u","v","ŕ"]
 
 
 import os
@@ -279,6 +280,9 @@ class Map:
                     if cell == "v":
                         du = DashUpgrade(idy*SIZE_X, idx*SIZE_Y)
                         self.servicelocator.actorList.append(du)
+                    if cell == "ŕ":
+                        ddu = DoubleDashReset(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
+                        self.servicelocator.actorList.append(ddu)
 
         return sprites, spawn, walls
 

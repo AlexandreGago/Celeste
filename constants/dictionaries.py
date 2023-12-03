@@ -345,3 +345,33 @@ class dashUpgradeStuff:
     spritesLocation = {
         "idle1": "./CelesteSprites/Atlases/Gameplay/objects/dashRefill/idle00.png",
     }
+
+class doubleDashResetStuff:
+    sprites ={"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle9","idle9":"idle10","idle10":"idle11","idle11":"idle12","idle12":"idle13","idle13":"idle1",
+                "flash1":"flash2","flash2":"flash3","flash3":"flash4","flash4":"idle5","flash5":"flash1",
+                "outline1":"outline1"
+                }
+    states = ["idle","flash","outline"]
+    spritesLocation = {
+        "idle1": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle00.png",
+        "idle2": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle01.png",
+        "idle3": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle02.png",
+        "idle4": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle03.png",
+        "idle5": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle04.png",
+        "idle6": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle05.png",
+        "idle7": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle06.png",
+        "idle8": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle07.png",
+        "idle9": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle08.png",
+        "idle10": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle09.png",
+        "idle11": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle10.png",
+        "idle12": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle11.png",
+        "idle13": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/idle12.png",
+
+        "flash1": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/flash00.png",
+        "flash2": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/flash01.png",
+        "flash3": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/flash02.png",
+        "flash4": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/flash03.png",
+        "flash5": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/flash04.png",
+
+        "outline1": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/outline.png",
+    }

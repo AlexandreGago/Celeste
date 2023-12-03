@@ -11,6 +11,7 @@ class ActorTypes(Enum):
     FALLINGBLOCK = 8
     CLOUD = 9
     DASH_UPGRADE = 10
+    DOUBLE_DASH_RESET = 11
     
 class ParticleTypes(Enum):
     JUMP = 1
@@ -52,3 +53,4 @@ class EventType(Enum):
     SPIKE_COLLISION = 5
     DASH_UPGRADE_COLLISION = 6
     GROUND_COLLISION = 7
+    DOUBLE_DASH_RESET_COLLISION = 8
