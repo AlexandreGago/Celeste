@@ -126,8 +126,7 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
 
     #if we are in multiplayer, connect to the other player
     if mp:
-        uri= f"ws://{url}:{port}"
-        websocket = await websockets.connect(uri)
+
         p2level = 1
         
     while running:
@@ -215,7 +214,7 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
                     # madeline.particles,
                     level
                 ]
-                await websocket.send(json.dumps(attributes))
+                # await websocket.send(json.dumps(attributes))
                 
 
 
@@ -227,14 +226,15 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
         # print(clock.get_fps())
 
 
-def start_server(loop,future, port):
-    loop.run_until_complete(server.main(future, port))
-
+def start_server(loop, queue,port):
+    asyncio.run(server.main(queue,port))
 def stop_server(loop,future):
     loop.call_soon_threadsafe(future.set_result, None)
 
 
-if __name__ == "__main__":
+
+
+async def main(*args):
     parser = argparse.ArgumentParser(description='Game')
     parser.add_argument('--mp', type=bool, default=False, help='multiplayer')
     parser.add_argument('--coop', type=bool, default=False, help='coop')
@@ -251,20 +251,46 @@ if __name__ == "__main__":
         print("mp and coop are mutually exclusive")
         exit()
 
-    if args.mp:            
-        loop = asyncio.get_event_loop()
-        future = loop.create_future()
-        thread = threading.Thread(target=start_server, args=(loop,future, args.port))
-        thread.start()
+    if args.mp:          
+        
+        #process p2ip and determine if we are the server or client
+        import ipaddress
+        import socket
+        try:
+            ipaddress.ip_address(args.p2ip)
+        except ValueError:
+            print("p2 ip is not valid")
+            exit()
+            
+        sc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sc.connect(("8.8.8.8", 80))
+        ip = sc.getsockname()[0]
+        sc.close()
+        ip = ipaddress.ip_address(ip)
+        
+        server = ip < ipaddress.ip_address(args.p2ip)
+        
+        if server:
+            loop = asyncio.get_event_loop()
+            #create asyncio queue 
+            queue = asyncio.Queue()
 
-        asyncio.run(gameloop(args.coop,args.mp,args.p2ip, args.p2port))
+            thread = threading.Thread(target=start_server, args=(loop,queue,args.port))
+            thread.start()  
+        else:
+            uri= f"ws://{args.p2ip}:{args.p2port}"
+        await gameloop(args.coop,args.mp,args.p2ip, args.p2port)
 
-        stop_server(loop,future)
+        stop_server(loop)
         thread.join()
         pygame.quit()
     else:
-        asyncio.run(gameloop(args.coop,args.mp,args.p2ip, args.p2port))
+        await gameloop(args.coop,args.mp,args.p2ip, args.p2port)
         pygame.quit()
-
     
+if __name__ == "__main__":
+    # asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.close()
 
