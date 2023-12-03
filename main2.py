@@ -37,15 +37,14 @@ FRAMERATE = 60
 #!--------------------
 
 #this is the main game loop that runs the game and multiplayer logic
-async def gameloop(coop:bool, mp:bool,url:str, port:int):
+async def gameloop(coop:bool, mp:bool,  websocket:websockets.WebSocketClientProtocol = None, queue: asyncio.Queue = None ):
     """Summary
     This is the main game loop that runs the game and multiplayer logic
 
     Args:
-        coop (bool) : whether or not to run the game in coop mode
-        mp (bool)  : whether or not to run the game in multiplayer mode
-        url (str)  : ip address of player 2
-        port (int) : port number of player 2
+        coop (bool): True if coop is enabled
+        mp (bool): True if multiplayer is enabled
+        websocket (websockets.WebSocketClientProtocol, optional): websocket object used to communicate with the other player
     """
     #this is the service locator that is used to pass around the game objects
     serviceLocator = ServiceLocator()
@@ -126,7 +125,6 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
 
     #if we are in multiplayer, connect to the other player
     if mp:
-
         p2level = 1
         
     while running:
@@ -201,20 +199,33 @@ async def gameloop(coop:bool, mp:bool,url:str, port:int):
             serviceLocator.frameCount = 0
         # print(serviceLocator.frameCount)
         if mp:
-                hairpoints = madeline.hairPoints
-                orientation = madeline.orientation == PlayerOrientation.LEFT
-                attributes = [
-                    madeline.x,
-                    madeline.y,
-                    madeline.height,
-                    madeline.width,
-                    madeline.spriteID,
-                    orientation,
-                    # madeline.hairPoints,
-                    # madeline.particles,
-                    level
-                ]
-                # await websocket.send(json.dumps(attributes))
+            hairpoints = madeline.hairPoints
+            orientation = madeline.orientation == PlayerOrientation.LEFT
+            attributes = [
+                madeline.x,
+                madeline.y,
+                madeline.height,
+                madeline.width,
+                madeline.spriteID,
+                orientation,
+                # madeline.hairPoints,
+                # madeline.particles,
+                level
+            ]
+            #we are client
+            if websocket:
+                #client sends to server
+                await websocket.send(json.dumps(attributes))
+                #server answers with the other player's attributes
+                message = await websocket.recv()
+                if message and message != "empty":
+                    x,y,height,width,spriteID,orientation, p2level = json.loads(message)
+                    madeline2.update(x,y,height,width,spriteID,orientation,playerName="Badeline")
+            #we are server
+            else:
+                #put attributes on queue
+                await queue.put(attributes)
+
                 
 
 
@@ -233,13 +244,13 @@ def stop_server(loop,future):
 
 
 
-
+ 
 async def main(*args):
     parser = argparse.ArgumentParser(description='Game')
     parser.add_argument('--mp', type=bool, default=False, help='multiplayer')
     parser.add_argument('--coop', type=bool, default=False, help='coop')
     parser.add_argument('--port', type=int, default=8765, help='port number')
-    parser.add_argument('--p2ip', type=str, default="127.0.0.1", help='host')
+    parser.add_argument('--p2ip', type=str, default="None", help='host')
     parser.add_argument('--p2port', type=int, default=8765, help='port number')
 
     parser.add_argument('--player', type=int, default=1, help='player number')
@@ -268,8 +279,14 @@ async def main(*args):
         sc.close()
         ip = ipaddress.ip_address(ip)
         
-        server = ip < ipaddress.ip_address(args.p2ip)
-        
+        server = ip > ipaddress.ip_address(args.p2ip)
+
+        #!debug remove later
+        if args.p2ip == "127.0.0.1":
+            server = False
+        #!#####################
+        websocket = None
+        queue = None
         if server:
             loop = asyncio.get_event_loop()
             #create asyncio queue 
@@ -278,14 +295,14 @@ async def main(*args):
             thread = threading.Thread(target=start_server, args=(loop,queue,args.port))
             thread.start()  
         else:
-            uri= f"ws://{args.p2ip}:{args.p2port}"
-        await gameloop(args.coop,args.mp,args.p2ip, args.p2port)
+            websocket = await websockets.connect(f"ws://{args.p2ip}:{args.p2port}")
+        await gameloop(args.coop, args.mp, websocket, queue)
 
         stop_server(loop)
         thread.join()
         pygame.quit()
     else:
-        await gameloop(args.coop,args.mp,args.p2ip, args.p2port)
+        await gameloop(args.coop,args.mp,None, None)
         pygame.quit()
     
 if __name__ == "__main__":

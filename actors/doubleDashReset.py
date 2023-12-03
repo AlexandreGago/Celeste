@@ -72,7 +72,7 @@ class DoubleDashReset(Actor):
         
 
     def draw(self,display:pygame.display):
-        print(self.state)
+        # print(self.state)
         """
         Draws the entity
 
