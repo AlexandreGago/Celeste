@@ -289,9 +289,8 @@ async def main(*args):
         queue = None
         if server:
             loop = asyncio.get_event_loop()
-            #create asyncio queue 
-            queue = asyncio.Queue()
-
+            #create lifo queue
+            queue = asyncio.LifoQueue()
             thread = threading.Thread(target=start_server, args=(loop,queue,args.port))
             thread.start()  
         else:

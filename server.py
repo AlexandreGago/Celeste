@@ -16,14 +16,10 @@ async def process_message(websocket, message, queue):
     print(message)
     #see if queue is not empty
     if not queue.empty():
-        #send message to client
-        #empty queue and send last message
-        element = await queue.get()
-        while not queue.empty():
-            element = await queue.get()
-        await websocket.send(json.dumps(element))
+        #send the first message in queue
+        await websocket.send(json.dumps(await queue.get()))
     else:
-        #send message to client
+        #send empty message
         await websocket.send("empty")
     
 
