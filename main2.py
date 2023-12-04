@@ -96,7 +96,7 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     serviceLocator.frameCount = frameCount
 
     #particle manager manages clouds and snow
-    particlemanager = ParticleManager()
+    particlemanager = ParticleManager(map.width,map.height)
     particlemanager.add_particles("snow", 50)
     particlemanager.add_particles("cloud", 15)
     time = 0
@@ -173,6 +173,8 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
 
 
             utils.addObservers(serviceLocator)
+            particlemanager.setMapSize(map.width,map.height)
+
 
 
         display.fill(bgColor)

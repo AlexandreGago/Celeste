@@ -73,6 +73,11 @@ class Physics():
             self.speed[1] = -physicsValues.spring["power"]
         elif jumpInput:
             self.speed[1] = -jump["power"]
+            if self.speed[0] > ground["maxSpeed"]:
+                self.speed[0] = self.speed[0]*1.5
+            if self.speed[0] < -ground["maxSpeed"]:
+                self.speed[0] = self.speed[0]*1.5
+
         else:
             #if we are in the air, apply gravity
             if self.speed[1] > air["maxSpeed"]:

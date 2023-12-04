@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from constants.enums import ActorTypes,EventType
 from spriteClass import SpriteClass
-from constants.dictionaries import DashResetEntityStuff
+from constants.dictionaries import DashResetDicts
 
 class DashResetEntity(Actor):
 
@@ -55,7 +55,7 @@ class DashResetEntity(Actor):
 
         elif self.state == "refill":
             if self.animationCounter % 5 == 0:
-                self.spriteID = DashResetEntityStuff.sprites[self.spriteID]
+                self.spriteID = DashResetDicts.sprites[self.spriteID]
             if self.spriteID == "idle1":
                 self.state = "idle"
                 self.spriteID = "idle1"
@@ -65,7 +65,7 @@ class DashResetEntity(Actor):
                 
 
         elif self.animationCounter % 5 == 0:
-            self.spriteID = DashResetEntityStuff.sprites[self.spriteID]
+            self.spriteID = DashResetDicts.sprites[self.spriteID]
 
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
         self.animationCounter += 1

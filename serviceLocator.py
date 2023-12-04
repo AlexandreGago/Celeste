@@ -12,6 +12,8 @@ class ServiceLocator():
         
         self.offset = None
         self.screenshake = None
+
+        self.score = 0
     
     def getPlayers(self):
         return self.players

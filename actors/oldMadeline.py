@@ -2,7 +2,7 @@ from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
 from constants.enums import ActorTypes,PlayerStates,PlayerJumpStates,PlayerOrientation
-from constants.dictionaries import PlayerStuff
+from constants.dictionaries import PlayerDicts
 from spriteClass import SpriteClass
 from states import *
 import utils.utils as utils
@@ -146,7 +146,7 @@ class Player(Actor):
             #reduce jump power
             if self.animationFrameCounter % 10 == 0:
                 if self.spriteID == "jump1":
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
+                    self.spriteID = PlayerDicts.sprites[self.spriteID]
                 else:
                     self.spriteID = "jump1"
 
@@ -158,29 +158,29 @@ class Player(Actor):
         elif self.jumpState == PlayerJumpStates.SLOWUP:
             self.y -= Y_GRAVITY + JUMP_SPEED/2
             if self.animationFrameCounter % 10 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+                self.spriteID = PlayerDicts.sprites[self.spriteID]
                 
             self.jumpSlowDuration -= 1 if self.jumpSlowDuration > 0 else 0
             if self.jumpSlowDuration <= 0:
                 self.jumpState = PlayerJumpStates.SLOWDOWN
                 self.jumpSlowDuration = JUMP_SLOW_DURATION
-                self.spriteID = PlayerStuff.sprites["jump2"]
+                self.spriteID = PlayerDicts.sprites["jump2"]
 
         elif self.jumpState == PlayerJumpStates.SLOWDOWN:
             self.y -= Y_GRAVITY - JUMP_SPEED/2
             if self.animationFrameCounter % 15 == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+                self.spriteID = PlayerDicts.sprites[self.spriteID]
 
             self.jumpSlowDuration -= 1 if self.jumpSlowDuration > 0 else 0
             if self.jumpSlowDuration <= 0:
                 self.jumpState = PlayerJumpStates.DOWN
-                self.spriteID = PlayerStuff.sprites["jump3"]
+                self.spriteID = PlayerDicts.sprites["jump3"]
 
         #we are falling
         elif self.jumpState == PlayerJumpStates.DOWN:
             if self.animationFrameCounter % 15 == 0:
                 if self.spriteID == "jump3":
-                    self.spriteID = PlayerStuff.sprites[self.spriteID]
+                    self.spriteID = PlayerDicts.sprites[self.spriteID]
                 else:
                     self.spriteID = "jump3"
     
@@ -197,7 +197,7 @@ class Player(Actor):
             self.y -= Y_GRAVITY
 
             if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+                self.spriteID = PlayerDicts.sprites[self.spriteID]
             if self.dashFrameCounter >= DASH_DURATION:
                 if self.dashDirection[1] != 1:
                     self.dashState = "slowDown"
@@ -216,7 +216,7 @@ class Player(Actor):
             self.y -= Y_GRAVITY
 
             if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+                self.spriteID = PlayerDicts.sprites[self.spriteID]
             if self.dashFrameCounter >= DASH_DURATION + DASH_SLOW_UP_DURATION:
                 self.dashState = "slowDown"
 
@@ -228,7 +228,7 @@ class Player(Actor):
             self.y -= Y_GRAVITY
 
             if self.animationFrameCounter % ANIMATION_SPEEDS["dash"] == 0:
-                self.spriteID = PlayerStuff.sprites[self.spriteID]
+                self.spriteID = PlayerDicts.sprites[self.spriteID]
 
 
         self.dashFrameCounter += 1
@@ -236,19 +236,19 @@ class Player(Actor):
 
     def turn(self):
         if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
             
     def idle(self):
         if self.animationFrameCounter % 10 == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
 
     def walk(self):
         if self.animationFrameCounter % 10 == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
 
     def crouch(self):
         if self.animationFrameCounter % 10 == 0:
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
    
     
     def newstate(self, vector):
@@ -257,7 +257,7 @@ class Player(Actor):
         """
         xInput,yInput,dashInput,upInput = vector
 
-        newState = PlayerStuff.vectorToState[(xInput,yInput)]
+        newState = PlayerDicts.vectorToState[(xInput,yInput)]
         #reduce coyotejump counter
         self.coyoteCounter -= 1 if self.coyoteCounter > 0 else 0
         #reduce spring collision cooldown
@@ -576,9 +576,9 @@ class Player(Actor):
     #draws the hair
     def drawHair(self, display):
         #offset for the orientation of the character
-        if PlayerStuff.spritesHairOffset[self.state][self.spriteID]:
-            offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
-            offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
+        if PlayerDicts.spritesHairOffset[self.state][self.spriteID]:
+            offsetDirX = PlayerDicts.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerDicts.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
+            offsetDirY = PlayerDicts.spritesHairOffset[self.state][self.spriteID][1] + 12
         for i in range (len(points)-1,-1,-1):
             if i == 0:
                 points[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))

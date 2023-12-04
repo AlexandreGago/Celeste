@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from constants.enums import ActorTypes,EventType
 from spriteClass import SpriteClass
-from constants.dictionaries import DashResetEntityStuff
+from constants.dictionaries import DashResetDicts
 
 class DoubleDashReset(Actor):
 
@@ -55,7 +55,7 @@ class DoubleDashReset(Actor):
 
         elif self.state == "refill":
             if self.animationCounter % 5 == 0:
-                self.spriteID = DashResetEntityStuff.sprites[self.spriteID]
+                self.spriteID = DashResetDicts.sprites[self.spriteID]
             if self.spriteID == "idle1":
                 self.state = "idle"
                 self.spriteID = "idle1"
@@ -65,7 +65,7 @@ class DoubleDashReset(Actor):
                 
 
         elif self.animationCounter % 5 == 0:
-            self.spriteID = DashResetEntityStuff.sprites[self.spriteID]
+            self.spriteID = DashResetDicts.sprites[self.spriteID]
 
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
         self.animationCounter += 1
@@ -96,7 +96,7 @@ class DoubleDashReset(Actor):
             None
         """
         
-        if event == EventType.DOUBLE_DASH_RESET_COLLISION:# and entityName == self.name:
+        if event == EventType.DOUBLE_DASH_RESET_COLLISION and entityName == self.name:
             print("here")
             self.state = "outline"
             self.spriteID = "outline1"

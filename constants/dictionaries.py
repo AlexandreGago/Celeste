@@ -38,7 +38,7 @@ class physicsValues:
         "power": 10.5,
     }
 
-class PlayerStuff:
+class PlayerDicts:
     sprites = {
         "idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle1",
         "walk1":"walk2","walk2":"walk3","walk3":"walk4","walk4":"walk5","walk5":"walk6","walk6":"walk7","walk7":"walk8","walk8":"walk9","walk9":"walk10","walk10":"walk11","walk11":"walk12","walk12":"walk1",
@@ -221,7 +221,7 @@ class PlayerStuff:
         "lookup8":"./CelesteSprites/Atlases/Gameplay/characters/badeline/lookUp07.png",
     }
 
-class DashResetEntityStuff:
+class DashResetDicts:
     sprites ={"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle1",
                 "flash1":"flash2","flash2":"flash3","flash3":"flash4","flash4":"idle1",
                 "outline1":"outline1"
@@ -239,7 +239,7 @@ class DashResetEntityStuff:
         "outline1": "./CelesteSprites/Atlases/Gameplay/objects/refill/outline.png",
     }
 
-class StawberryStuff:
+class StawberryDicts:
     #get has 14 sprites
     sprites ={"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle1",
               "collected1": "collected2","collected2":"collected3","collected3":"collected4","collected4":"collected5","collected5":"collected6","collected6":"collected7","collected7":"collected8","collected8":"collected9","collected9":"collected10","collected10":"collected11","collected11":"collected12","collected12":"collected13","collected13":"collected14","collected14":"end",
@@ -272,7 +272,7 @@ class StawberryStuff:
 
 
     }
-class SpringStuff:
+class SpringDicts:
     sprites ={"idle1":"idle1",
                 "extended1":"extended2","extended2":"extended3","extended3":"extended4","extended4":"extended5","extended5":"end",
                 }
@@ -301,7 +301,7 @@ class SpringStuff:
         "extended4": (5,25),
         "extended5": (5,30),
     }
-class SpikeStuff:
+class SpikeDicts:
     sprites ={"idle1":"idle1"}
     states = ["idle"]
     spritesLocation = {
@@ -322,7 +322,7 @@ class jumpParticles:
         "jumpParticle3": (120,8, 8,8),
     }
 
-class fallingBlockStuff:
+class fallingBlockDicts:
     firstSpriteID = "idle1"
     states = ["idle","outline","falling"]
     sprites= {"idle1":"idle1","outline1":"outline1","falling1":"falling1"}
@@ -331,14 +331,14 @@ class fallingBlockStuff:
         "outline1": "./CelesteSprites/Atlases/Gameplay/objects/crumbleBlock/outline.png",
         "falling1": "./CelesteSprites/Atlases/Gameplay/objects/crumbleBlock/default.png",
     }
-class cloudStuff:
+class cloudDicts:
     firstSpriteID = "idle1"
     states = ["idle"]
     sprites= {"idle1":"idle1"}
     spritesLocation = {
         "idle1": "./CelesteSprites/Atlases/Gameplay/objects/clouds/cloud00.png",
     }
-class dashUpgradeStuff:
+class dashUpgradeDicts:
     firstSpriteID = "idle1"
     states = ["idle","hidden"]
     sprites= {"idle1":"idle1"}
@@ -346,7 +346,7 @@ class dashUpgradeStuff:
         "idle1": "./CelesteSprites/Atlases/Gameplay/objects/dashRefill/idle00.png",
     }
 
-class doubleDashResetStuff:
+class doubleDashResetDicts:
     sprites ={"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle9","idle9":"idle10","idle10":"idle11","idle11":"idle12","idle12":"idle13","idle13":"idle1",
                 "flash1":"flash2","flash2":"flash3","flash3":"flash4","flash4":"idle5","flash5":"flash1",
                 "outline1":"outline1"

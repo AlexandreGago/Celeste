@@ -1,7 +1,7 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import StawberryStuff
+from constants.dictionaries import StawberryDicts
 from constants.enums import ActorTypes,EventType
 
 
@@ -19,7 +19,7 @@ class Strawberry(Actor):
         Returns:
             None
         """
-        super().__init__(x,y,80,80,serviceLocator)
+        super().__init__(x,y,50,50,serviceLocator)
 
         self.name = id(self)
         self.type = ActorTypes.STRAWBERRY
@@ -47,7 +47,7 @@ class Strawberry(Actor):
                 self.state = "hidden"
                 return
             if self.animationCounter % 5 == 0:
-                self.spriteID = StawberryStuff.sprites[self.spriteID]
+                self.spriteID = StawberryDicts.sprites[self.spriteID]
             self.animationCounter += 1
             self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
 
@@ -83,3 +83,4 @@ class Strawberry(Actor):
                 self.state = "collected"
                 self.spriteID = "collected1"
                 self.animationCounter = 1
+                self.serviceLocator.score += 1000
