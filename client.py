@@ -9,7 +9,6 @@ async def client(queue,ip, port):
     while True:
         if not queue.empty():
             await websocket.send(json.dumps(await queue.get()))
-            print("sent stuff")
             message = await websocket.recv()
             if message == "empty":
                 pass

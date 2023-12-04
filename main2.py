@@ -114,7 +114,7 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     framerate = FRAMERATE
 
     #play bg music
-    serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
+    serviceLocator.soundManager.play("song1", loop=True, volume=0.1)
 
     #title screen until the user presses space
     drawTitleScreen(display,display_shake,clock,particlemanager)
