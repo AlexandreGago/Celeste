@@ -23,6 +23,7 @@ from map.map import Map
 from map.titleScreen import drawTitleScreen
 
 import server
+import client
 
 from constants.dictionaries import WIDTH, HEIGHT
 
@@ -37,14 +38,14 @@ FRAMERATE = 60
 #!--------------------
 
 #this is the main game loop that runs the game and multiplayer logic
-async def gameloop(coop:bool, mp:bool,  websocket:websockets.WebSocketClientProtocol = None, queue: asyncio.Queue = None ):
+async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     """Summary
     This is the main game loop that runs the game and multiplayer logic
 
     Args:
         coop (bool): True if coop is enabled
         mp (bool): True if multiplayer is enabled
-        websocket (websockets.WebSocketClientProtocol, optional): websocket object used to communicate with the other player
+        queue (asyncio.Queue, optional): queue used to pass messages between server and client
     """
     #this is the service locator that is used to pass around the game objects
     serviceLocator = ServiceLocator()
@@ -212,19 +213,8 @@ async def gameloop(coop:bool, mp:bool,  websocket:websockets.WebSocketClientProt
                 # madeline.particles,
                 level
             ]
-            #we are client
-            if websocket:
-                #client sends to server
-                await websocket.send(json.dumps(attributes))
-                #server answers with the other player's attributes
-                message = await websocket.recv()
-                if message and message != "empty":
-                    x,y,height,width,spriteID,orientation, p2level = json.loads(message)
-                    madeline2.update(x,y,height,width,spriteID,orientation,playerName="Badeline")
-            #we are server
-            else:
-                #put attributes on queue
-                await queue.put(attributes)
+ 
+            await queue.put(attributes)
 
                 
 
@@ -241,6 +231,8 @@ def start_server(loop, queue,port):
     asyncio.run(server.main(queue,port))
 def stop_server(loop,future):
     loop.call_soon_threadsafe(future.set_result, None)
+def start_client(loop, queue, ip, port):
+    asyncio.run(client.client(queue, ip,port))
 
 
 
@@ -280,22 +272,24 @@ async def main(*args):
         ip = ipaddress.ip_address(ip)
         
         server = ip > ipaddress.ip_address(args.p2ip)
+        print("ip: " + str(ip))
 
         #!debug remove later
         if args.p2ip == "127.0.0.1":
             server = False
         #!#####################
+        
         websocket = None
-        queue = None
+        # queue = None
+        queue = asyncio.LifoQueue()
+        loop = asyncio.get_event_loop()
         if server:
-            loop = asyncio.get_event_loop()
-            #create lifo queue
-            queue = asyncio.LifoQueue()
             thread = threading.Thread(target=start_server, args=(loop,queue,args.port))
             thread.start()  
         else:
-            websocket = await websockets.connect(f"ws://{args.p2ip}:{args.p2port}")
-        await gameloop(args.coop, args.mp, websocket, queue)
+            thread = threading.Thread(target=start_client, args=(loop,queue,args.p2ip, args.p2port))
+            thread.start()
+        await gameloop(args.coop, args.mp, queue)
 
         stop_server(loop)
         thread.join()
