@@ -29,6 +29,7 @@ from constants.dictionaries import WIDTH, HEIGHT
 
 SCALE = 1
 FRAMERATE = 60
+WINDOW_WIDTH, WINDOW_HEIGHT = 800,800
 #!--------------------
 # import socket
 # s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -75,6 +76,8 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     map = Map(str(level),serviceLocator)
     #add the map to the service locator
     serviceLocator.map = map
+    mapCanvas = pygame.Surface((map.width,map.height))
+    camera = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 
     #Player 1 object
     madeline = Player(*map.spawn,"Madeline",serviceLocator)
@@ -123,6 +126,7 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     bgColor = map.bgColor
     display_shake.fill(bgColor)
     display.fill(bgColor)
+    mapCanvas.fill(bgColor)
 
     #if we are in multiplayer, connect to the other player
     if mp:
@@ -178,23 +182,25 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
 
 
         display.fill(bgColor)
+        mapCanvas.fill(bgColor)
+
 
         #manage input
         inputHandler.handleInput(keys)
         particlemanager.update(time)
-        particlemanager.draw("cloud", display)#draw clouds
-        map.draw(display) # draw the map
+        particlemanager.draw("cloud", mapCanvas)#draw clouds
+        particlemanager.draw("snow", mapCanvas)
+        map.draw(mapCanvas) # draw the map
 
         #draw and update actors
         for actor in serviceLocator.actorList:
             actor.update()
-            actor.draw(display)
+            actor.draw(mapCanvas)
         
         if mp and p2level == level:
-            madeline2.draw(display)
+            madeline2.draw(mapCanvas)
         
 
-        particlemanager.draw("snow", display)
 
         #keep track of current frame
         serviceLocator.frameCount += 1
@@ -220,8 +226,15 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
 
                 
 
+        #! Update the camera's position based on the player's position
+        camera.x = serviceLocator.players[0].x - WINDOW_WIDTH // 2
+        camera.y = serviceLocator.players[0].y - WINDOW_HEIGHT // 2
 
+        #! Ensure the camera stays within the bounds of the map
+        camera.x = max(0, min(camera.x, map.width - WINDOW_WIDTH))
+        camera.y = max(0, min(camera.y, map.height - WINDOW_HEIGHT))
 
+        display.blit(mapCanvas,(0 - camera.x, 0 - camera.y))
         display_shake.blit(display, next(serviceLocator.offset))
         pygame.display.update()
 
