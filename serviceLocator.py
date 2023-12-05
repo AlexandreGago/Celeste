@@ -1,26 +1,29 @@
-class ServiceLocator():
-    def __init__(self):
-        self.inputHandler = None
-        self.players = []
-        self.frameCount = None
-        self.map = None
-        self.display = None
-        self.actorList = []
+class ServiceLocator:
+    _instance = None
 
-        self.fallingBlocks = []
-        self.clouds = []
-        
-        self.offset = None
-        self.screenshake = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ServiceLocator, cls).__new__(cls)
+            # Your initialization code here
+            cls._instance.inputHandler = None
+            cls._instance.players = []
+            cls._instance.frameCount = None
+            cls._instance.map = None
+            cls._instance.display = None
+            cls._instance.actorList = []
+            cls._instance.fallingBlocks = []
+            cls._instance.clouds = []
+            cls._instance.offset = None
+            cls._instance.screenshake = None
+            cls._instance.score = 0
+        return cls._instance
 
-        self.score = 0
-    
     def getPlayers(self):
         return self.players
-    
+
     def getInputHandler(self):
         return self.inputHandler
-    
+
     def getFrameCount(self):
         return self.frameCount
 
