@@ -54,3 +54,18 @@ class EventType(Enum):
     DASH_UPGRADE_COLLISION = 6
     GROUND_COLLISION = 7
     DOUBLE_DASH_RESET_COLLISION = 8
+
+class States(Enum):
+    IDLE = "idle"
+    WALK = "walk"
+    JUMP = "jump"
+    CROUCH = "crouch"
+    DASH = "dash"
+    TURN = "turn"
+    RESPAWN = "respawn"
+    WALLHUG = "wallhug"
+    LOOKUP = "lookup"
+    FALLING = "falling"
+
+    OUTLINE = "outline"
+    REFILL = "refill"

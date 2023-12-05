@@ -13,7 +13,7 @@ from map.map import Map
 from map.titleScreen import drawTitleScreen
 
 
-from constants.dictionaries import WIDTH, HEIGHT
+WINDOW_WIDTH, WINDOW_HEIGHT = 800, 800
         
 SCALE = 1
 FRAMERATE = 60
@@ -21,7 +21,7 @@ FRAMERATE = 60
 serviceLocator = ServiceLocator()
 
 offset = repeat((0,0))
-display_shake = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
+display_shake = pygame.display.set_mode((SCALE * WINDOW_WIDTH, SCALE * WINDOW_HEIGHT))
 display = display_shake.copy()
 serviceLocator.display = display
 
@@ -34,11 +34,11 @@ inputHandler = InputHandler(serviceLocator)
 soundManager = SoundManager()
 serviceLocator.soundManager = soundManager
 
-level = "big"
+level = 27
 map = Map(str(level),serviceLocator)
 serviceLocator.map = map
 mapCanvas = pygame.Surface((map.width,map.height))
-camera = pygame.Rect(0, 0, WIDTH, HEIGHT)
+camera = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 
 
 #player
@@ -53,7 +53,7 @@ serviceLocator.actorList.append(madeline)
 frameCount = 0
 serviceLocator.frameCount = frameCount
 
-particlemanager = ParticleManager()
+particlemanager = ParticleManager(map.width,map.height)
 particlemanager.add_particles("snow", 50)
 particlemanager.add_particles("cloud", 15)
 
@@ -73,8 +73,6 @@ framerate = FRAMERATE
 serviceLocator.soundManager.play("song1", loop=True, volume=0.03)
 
 drawTitleScreen(display,display_shake,clock,particlemanager)
-
-running = True
 
 bgColor = map.bgColor
 display_shake.fill(bgColor)
@@ -116,11 +114,11 @@ while running:
 
 
         utils.addObservers(serviceLocator)
+        particlemanager.setMapSize(map.width,map.height)
         
     display.fill(bgColor)
     mapCanvas.fill(bgColor)
 
-    
 
     #manage input
     inputHandler.handleInput(keys)  
@@ -144,12 +142,12 @@ while running:
         serviceLocator.frameCount = 0
         
     #! Update the camera's position based on the player's position
-    camera.x = serviceLocator.players[0].x - WIDTH // 2
-    camera.y = serviceLocator.players[0].y - HEIGHT // 2
+    camera.x = serviceLocator.players[0].x - WINDOW_WIDTH // 2
+    camera.y = serviceLocator.players[0].y - WINDOW_HEIGHT // 2
 
     #! Ensure the camera stays within the bounds of the map
-    camera.x = max(0, min(camera.x, map.width - WIDTH))
-    camera.y = max(0, min(camera.y, map.height - HEIGHT))
+    camera.x = max(0, min(camera.x, map.width - WINDOW_WIDTH))
+    camera.y = max(0, min(camera.y, map.height - WINDOW_HEIGHT))
     
     display.blit(mapCanvas,(0 - camera.x, 0 - camera.y))
     display_shake.blit(display, next(serviceLocator.offset))

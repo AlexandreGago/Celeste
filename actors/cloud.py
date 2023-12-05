@@ -1,8 +1,8 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import cloudStuff
-from constants.enums import ActorTypes,EventType
+from constants.dictionaries import cloudDicts
+from constants.enums import ActorTypes,EventType,States
 
 class Cloud(Actor):
     def __init__(self ,x:int ,y:int ,serviceLocator) -> None:
@@ -21,10 +21,10 @@ class Cloud(Actor):
 
         self.name = id(self)
         self.type = ActorTypes.CLOUD
-        self.state = "idle"
+        self.state = States.IDLE
         #sprite e state
-        self.state = cloudStuff.states[0]
-        self.spriteID = "idle1"
+        self.state = States.IDLE
+        self.spriteID = States.IDLE.value + "1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
         self.rect = self.sprite.rect

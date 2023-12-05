@@ -2,7 +2,7 @@ from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
 from constants.enums import ActorTypes,PlayerStates,PlayerOrientation,EventType
-from constants.dictionaries import HEIGHT,WIDTH,PlayerStuff, physicsValues
+from constants.dictionaries import PlayerDicts, physicsValues
 from spriteClass import SpriteClass
 
 from actors.spriteParticle import SpriteParticle
@@ -73,7 +73,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
+        self.currentDashCount = 2 #!this will increase when we get the dash upgrade
         self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []
@@ -164,7 +164,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0: # update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
         pass
     
     def dash(self) -> None:
@@ -179,7 +179,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
 
     def turn(self) -> None:
         """
@@ -193,7 +193,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % ANIMATION_SPEEDS["turn"] == 0:# update the spite every 2 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
             
     def idle(self) -> None:
         """
@@ -207,7 +207,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
 
     def walk(self) -> None:
         """
@@ -221,7 +221,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
 
     def crouch(self) -> None:
         """
@@ -235,7 +235,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
             
     def lookup(self) -> None:
         """
@@ -249,7 +249,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
 
     def falling(self) -> None:
         """
@@ -263,7 +263,7 @@ class Player(Actor):
             None
         """
         if self.animationFrameCounter % 10 == 0:# update the spite every 10 frames
-            self.spriteID = PlayerStuff.sprites[self.spriteID]
+            self.spriteID = PlayerDicts.sprites[self.spriteID]
     
     def updateState(self,xInput:int,yInput:int,dashInput:int,jumpInput:int) -> PlayerStates:
         """"
@@ -436,8 +436,6 @@ class Player(Actor):
         #update the sprite #! can be called in updateSprite() for optimization
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,self.orientation == PlayerOrientation.LEFT,playerName=self.name)
         
-        pygame.draw.rect(self.serviceLocator.display,(0,0,255),self.sprite.rect,1)#!debug
-
     #draws the hair
     def drawHair(self, display:pygame.display) -> None:
         """
@@ -451,9 +449,9 @@ class Player(Actor):
             None
         """
         #offset for the orientation of the character
-        if PlayerStuff.spritesHairOffset[self.state][self.spriteID]:
-            offsetDirX = PlayerStuff.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerStuff.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
-            offsetDirY = PlayerStuff.spritesHairOffset[self.state][self.spriteID][1] + 12
+        if PlayerDicts.spritesHairOffset[self.state][self.spriteID]:
+            offsetDirX = PlayerDicts.spritesHairOffset[self.state][self.spriteID][0] + 8 if self.orientation == PlayerOrientation.RIGHT else PlayerDicts.spritesHairOffset[self.state][self.spriteID][0]*-1 - 8
+            offsetDirY = PlayerDicts.spritesHairOffset[self.state][self.spriteID][1] + 12
         for i in range (len(self.hairPoints)-1,-1,-1):
             if i == 0:
                 self.hairPoints[i][2] = pygame.Vector2(int(self.x + self.width / 2 +offsetDirX), int(self.y + self.height / 2-offsetDirY))
@@ -568,7 +566,7 @@ class Player(Actor):
                 self.collisions[2] = 1
                 # self.physics.speed[1] = 0
                 self.sprite.rect.y = rect.rect.bottom
-                self.serviceLocator.display.fill((255,0,0),rect.rect)
+                # self.serviceLocator.display.fill((255,0,0),rect.rect)
 
                 downCollision = True
 
@@ -579,7 +577,7 @@ class Player(Actor):
                 self.dashCount = self.currentDashCount
                 self.coyoteJump = COYOTEJUMP
 
-                self.serviceLocator.display.fill((255,0,0),rect.rect)
+                # self.serviceLocator.display.fill((255,0,0),rect.rect)
 
                 upCollision = True
 
@@ -597,14 +595,14 @@ class Player(Actor):
 
                 leftCollision = True
 
-                self.serviceLocator.display.fill((255,0,0),rect.rect)
+                # self.serviceLocator.display.fill((255,0,0),rect.rect)
             #right
             elif rect.rect.left - self.sprite.rect.right >= - physicsValues.dash["power"]*1.3 and right:
                 self.collisions[1] = 1
                 self.physics.speed[0] = 0
                 x = rect.rect.left - self.width
                 self.sprite.rect.x = x
-                self.serviceLocator.display.fill((255,0,0),rect.rect)
+                # self.serviceLocator.display.fill((255,0,0),rect.rect)
 
                 rightCollision = True
 
@@ -725,12 +723,12 @@ class Player(Actor):
         """
         if dashInput == 1:
             return PlayerStates.DASH
-        if yInput == -1:
-            return PlayerStates.CROUCH
         if jumpInput == 1:
             return PlayerStates.JUMP
         if xInput != 0:
             return PlayerStates.WALK
+        if yInput == -1:
+            return PlayerStates.CROUCH
         if yInput == 1:
             return PlayerStates.LOOKUP
         
@@ -850,7 +848,6 @@ class Player(Actor):
                     #self.playSound("death",1)
                     self.serviceLocator.soundManager.play("death")
             if self.y > self.serviceLocator.map.height:
-                print(self.y)
                 self.alive = False
                 self.x = self.spawnX
                 self.y = self.serviceLocator.map.height

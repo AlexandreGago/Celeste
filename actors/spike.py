@@ -1,7 +1,7 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import SpikeStuff
+from constants.dictionaries import SpikeDicts
 from constants.enums import ActorTypes,SpikeOrientations
 
 

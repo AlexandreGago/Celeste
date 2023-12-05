@@ -1,7 +1,7 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import fallingBlockStuff
+from constants.dictionaries import fallingBlockDicts
 from constants.enums import ActorTypes,EventType
 
 class FallingBlock(Actor):
@@ -12,7 +12,7 @@ class FallingBlock(Actor):
         self.type = ActorTypes.FALLINGBLOCK
         self.state = "idle"
         #sprite e state
-        self.state = fallingBlockStuff.states[0]
+        self.state = fallingBlockDicts.states[0]
         self.spriteID = "idle1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)

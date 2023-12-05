@@ -1,7 +1,7 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import SpringStuff
+from constants.dictionaries import SpringDicts
 from constants.enums import ActorTypes,EventType
 
 
@@ -51,14 +51,14 @@ class Spring(Actor):
 
             
         if self.animationCounter % 5 == 0:
-            self.spriteID = SpringStuff.sprites[self.spriteID]
+            self.spriteID = SpringDicts.sprites[self.spriteID]
             
         self.animationCounter += 1
         
-        spriteX = self.x + SpringStuff.spritesOffset[self.spriteID][0]
-        spriteY = self.y + SpringStuff.spritesOffset[self.spriteID][1]
-        spriteHeight = self.height - SpringStuff.spritesOffset[self.spriteID][1]
-        spriteWidth = self.width - SpringStuff.spritesOffset[self.spriteID][0]
+        spriteX = self.x + SpringDicts.spritesOffset[self.spriteID][0]
+        spriteY = self.y + SpringDicts.spritesOffset[self.spriteID][1]
+        spriteHeight = self.height - SpringDicts.spritesOffset[self.spriteID][1]
+        spriteWidth = self.width - SpringDicts.spritesOffset[self.spriteID][0]
         
         self.sprite.update(spriteX,spriteY,spriteHeight,spriteWidth,self.spriteID)
 
