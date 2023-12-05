@@ -295,7 +295,7 @@ async def main(*args):
         thread.join()
         pygame.quit()
     else:
-        await gameloop(args.coop,args.mp,None, None)
+        await gameloop(args.coop,args.mp,None)
         pygame.quit()
     
 if __name__ == "__main__":
