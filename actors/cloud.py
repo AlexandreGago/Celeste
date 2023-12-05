@@ -61,7 +61,7 @@ class Cloud(Actor):
 
         Args:
             entityName (str): name of the entity that triggered the event
-            event (str): event triggered
+            event (EventType): event triggered
     
         Returns:
             None

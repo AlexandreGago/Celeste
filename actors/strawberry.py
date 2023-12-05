@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import StawberryDicts
-from constants.enums import ActorTypes,EventType
+from constants.enums import ActorTypes,EventType,States
 
 
 
@@ -25,7 +25,7 @@ class Strawberry(Actor):
         self.type = ActorTypes.STRAWBERRY
 
         #sprite e state
-        self.state = "idle"
+        self.state = States.IDLE
         self.spriteID = "idle1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.animationCounter = 0
@@ -42,9 +42,9 @@ class Strawberry(Actor):
             None
 
         """
-        if self.state != "hidden":
+        if self.state != States.HIDDEN:
             if self.spriteID== "collected13":
-                self.state = "hidden"
+                self.state = States.HIDDEN
                 return
             if self.animationCounter % 5 == 0:
                 self.spriteID = StawberryDicts.sprites[self.spriteID]
@@ -62,7 +62,7 @@ class Strawberry(Actor):
             None
 
         """
-        if self.state != "hidden":
+        if self.state != States.HIDDEN:
             self.sprite.draw(display)
 
     def notify(self, entityName:str, event:EventType) -> None:
@@ -71,16 +71,16 @@ class Strawberry(Actor):
 
         Args:
             entityName (str): name of the entity that triggered the event
-            event (str): name of the event
+            event (EventType): type of event
 
         Returns:
             None
             
         """
         if event == EventType.STRAWBERRY_COLLISION and entityName == self.name:
-            if self.state == "idle":
+            if self.state == States.IDLE:
                 self.serviceLocator.soundManager.play("strawberry")
-                self.state = "collected"
+                self.state = States.COLLECTED
                 self.spriteID = "collected1"
                 self.animationCounter = 1
                 self.serviceLocator.score += 1000

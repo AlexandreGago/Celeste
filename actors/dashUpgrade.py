@@ -1,12 +1,22 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.enums import ActorTypes,EventType
+from constants.enums import ActorTypes,EventType,States
 
 
 
 class DashUpgrade(Actor):
     def __init__(self, x:int, y:int) -> None:
+        """
+            Creates the dash upgrade (when the player collects it, it gains more dashes)
+
+            Args:
+                x (int): x position of the dash upgrade
+                y (int): y position of the dash upgrade
+
+            Returns:
+                None
+        """
 
         self.height = 50
         self.width = 50
@@ -18,7 +28,7 @@ class DashUpgrade(Actor):
 
 
         #sprite e state
-        self.state = "idle"
+        self.state = States.IDLE
         self.spriteID = "idle1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
@@ -27,7 +37,16 @@ class DashUpgrade(Actor):
         self.offsetDir = "down"
 
     def update(self):
-        if self.state == "idle":
+        """
+            Updates the dash upgrade's position and sprite
+
+            Args:
+                None
+
+            Returns:
+                None
+        """
+        if self.state == States.IDLE:
             if self.offsetDir == "down":
                 self.yOffset += 0.2
                 if self.yOffset >= 5:
@@ -39,9 +58,28 @@ class DashUpgrade(Actor):
             self.sprite.update(self.x,self.y+self.yOffset,self.height,self.width,self.spriteID)
 
     def draw(self, display:pygame.display) -> None:
-        if self.state != "hidden":
+        """
+            Draws the dash upgrade
+
+            Args:
+                display (pygame.display): display where the dash upgrade is drawn
+
+            Returns:
+                None
+        """
+        if self.state != States.HIDDEN:
             self.sprite.draw(display)
 
-    def notify(self, entityName, event) -> None:
-        if event == EventType.DASH_UPGRADE_COLLISION and entityName == self.name and self.state =="idle":
-            self.state = "hidden"
+    def notify(self, entityName:str, event:EventType) -> None:
+        """
+            Notifies the dash upgrade of an event
+
+            Args:
+                entityName (str): name of the entity that triggered the event
+                event (EventType): event triggered
+        
+            Returns:
+                None
+        """
+        if event == EventType.DASH_UPGRADE_COLLISION and entityName == self.name and self.state ==States.IDLE:
+            self.state =  States.HIDDEN

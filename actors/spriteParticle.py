@@ -5,7 +5,21 @@ from spriteClass import SpriteClass
 
 
 class SpriteParticle:
+    """
+    Creates a sprite for a particle
+    """
     def __init__(self,x,y,action) -> None:
+        """
+        Creates a sprite particle
+
+        Args:
+            x (int): x position of the particle
+            y (int): y position of the particle
+            action (str): action of the particle
+
+        Returns:
+            None
+        """
         self.x = x
         self.y = y
         self.action = action
@@ -24,6 +38,15 @@ class SpriteParticle:
         self.animationCounter = 1
     
     def update(self):
+        """
+        Updates the particle position and sprite
+
+        Args:
+            None
+
+        Returns:
+            bool: True if the particle is dead, False otherwise
+        """
         self.x += self.velocity[0]
         self.y += self.velocity[1]
         self.timer -= 1
@@ -41,7 +64,16 @@ class SpriteParticle:
             return True
         return False
     
-    def draw(self,display):
+    def draw(self,display:pygame.display):
+        """
+        Draws the particle
+
+        Args:
+            display (pygame.display): display where the particle is drawn
+
+        Returns:
+            None
+        """
         self.sprite.draw(display)
         
 

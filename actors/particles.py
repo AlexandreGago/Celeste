@@ -4,14 +4,37 @@ import math
 
 
 class Particle:
+    """
+    Base class for particles
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     def update(self, dt, time):
-        pass
+        raise NotImplementedError
 
     def draw(self, screen):
-        pass
+        raise NotImplementedError
 
 class SnowParticle(Particle):
     def __init__(self,pos: list[int],radius: int,speed: int,time_offset: int,wave_speed: float,height,width) -> None:
+        """
+        Class for snow particles
+        Args:
+            pos (list[int]): position of the particle
+            radius (int): radius of the particle
+            speed (int): speed of the particle
+            time_offset (int): time offset of the particle
+            wave_speed (float): wave speed of the particle
+            height (int): height of the screen
+            width (int): width of the screen
+
+        Returns:
+            None
+        """
         super().__init__()
         self.pos = pos
         self.radius = radius
@@ -22,7 +45,15 @@ class SnowParticle(Particle):
         self.height = height
 
     def update(self, time):
+        """
+        Updates the particle position
 
+        Args:
+            time (int): time
+
+        Returns:
+            None
+        """
         # make the particle go left
         self.pos[0] -= self.speed
 
@@ -37,16 +68,48 @@ class SnowParticle(Particle):
         # Change the Y value of the particle to make it move in a wave
         self.pos[1] += math.sin(0.001*(time + self.time_offset)) * self.wave_speed
 
-    def updateMapSize(self,width,height):
+    def updateMapSize(self,width:int,height:int):
+        """
+        Updates the particle map size
+
+        Args:
+            width (int): width of the map
+            height (int): height of the map
+
+        Returns:
+            None
+        """
         self.width = width
         self.height = height
 
     def draw(self, screen):
+        """
+        Draws the particle
+
+        Args:
+            screen (pygame.display): display where the particle is drawn
+
+        Returns:
+            None
+        """
         pygame.draw.circle(screen, "white", self.pos, self.radius)
 
 class CloudParticle(Particle):
     #has  width, height and speed
-    def __init__(self, pos: list[int], size: list[int], speed: int,height,width) -> None:
+    def __init__(self, pos: list[int], size: list[int], speed: int,height,width:int) -> None:
+        """
+        Class for cloud particles
+
+        Args:
+            pos (list[int]): position of the particle
+            size (list[int]): size of the particle
+            speed (int): speed of the particle
+            height (int): height of the screen
+            width (int): width of the screen
+
+        Returns:
+            None
+        """
         super().__init__()
         self.pos = pos
         self.size = size
@@ -54,11 +117,30 @@ class CloudParticle(Particle):
         self.height = height
         self.width = width
 
-    def updateMapSize(self,width,height):
+    def updateMapSize(self,width:int,height:int):
+        """
+        Updates the particle map size
+
+        Args:
+            width (int): width of the map
+            height (int): height of the map
+
+        Returns:
+            None
+        """
         self.width = width
         self.height = height
 
-    def update(self, time):
+    def update(self,time):
+        """
+        Updates the particle position
+
+        Args:
+            time (int): time
+
+        Returns:
+            None
+        """
         # make the particle go left
         self.pos[0] -= self.speed
 
@@ -66,22 +148,57 @@ class CloudParticle(Particle):
             self.pos[0] = self.width + 100
             self.pos[1] = random.randint(100, self.height - 100)
 
-    def draw(self, screen):
+    def draw(self, screen:pygame.display):
+        """
+        Draws the particle
+
+        Args:
+            screen (pygame.display): display where the particle is drawn
+
+        Returns:
+            None
+        """
         pygame.draw.rect(screen, "#1D2B53", (*self.pos, *self.size))
 
 
 
 class ParticleManager:
-    def __init__(self,width,height) -> None:
+    """
+    Class for managing particles
+    """
+    def __init__(self,width:int,height:int) -> None:
+        """
+        Create a particle manager
+
+        Args:
+            width (int): width of the screen
+            height (int): height of the screen
+
+        Returns:
+            None
+        """
         self.particles: list[Particle] = []
         self.width = width
         self.height = height
 
     def update(self, time):
+        """
+        Updates the particles
+        """
         for particle in self.particles:
             particle.update(time)
 
     def setMapSize(self,width,height):
+        """
+        Sets the map size of the particles in the particle manager
+
+        Args:
+            width (int): width of the map
+            height (int): height of the map
+
+        Returns:
+            None
+        """
         self.width = width
         self.height = height
         for particle in self.particles:
@@ -89,6 +206,16 @@ class ParticleManager:
 
 
     def add_particles(self, type: str, number: int):
+        """
+        Adds particles to the particle manager
+
+        Args:
+            type (str): type of the particle
+            number (int): number of particles to add
+
+        Returns:
+            None
+        """
         if type == "snow":   
             for _ in range(number):
                 particle = SnowParticle(
@@ -121,7 +248,17 @@ class ParticleManager:
                 )
                 self.particles.append(particle)
 
-    def draw(self, type: str, screen):
+    def draw(self, type: str, screen:pygame.display):
+        """
+        Draws the particles
+
+        Args:
+            type (str): type of the particle
+            screen (pygame.display): display where the particles are drawn
+
+        Returns:
+            None
+        """
         for particle in self.particles:
             if isinstance(particle, SnowParticle) and type == "snow":
                 particle.draw(screen)

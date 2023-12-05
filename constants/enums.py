@@ -69,3 +69,6 @@ class States(Enum):
 
     OUTLINE = "outline"
     REFILL = "refill"
+    HIDDEN = "hidden"
+    EXTENDED = "extended"
+    COLLECTED = "collected"

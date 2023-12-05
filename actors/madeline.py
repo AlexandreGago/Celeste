@@ -1,7 +1,7 @@
 from actors.actor import Actor
 import pygame
 import pygame.gfxdraw
-from constants.enums import ActorTypes,PlayerStates,PlayerOrientation,EventType
+from constants.enums import ActorTypes,PlayerStates,PlayerOrientation,EventType,States
 from constants.dictionaries import PlayerDicts, physicsValues
 from spriteClass import SpriteClass
 
@@ -645,7 +645,7 @@ class Player(Actor):
 
             if actor.type == ActorTypes.FALLINGBLOCK:
                 sprite = actor.sprite
-                if self.airborne >= 0 and actor.state != "outline":
+                if self.airborne >= 0 and actor.state != States.OUTLINE:
                     up,down = self.checkCollisionY(sprite,x,y,True,False)
                     if up:
                         for obs in self.observers:
@@ -809,7 +809,7 @@ class Player(Actor):
         for actor in self.serviceLocator.actorList:
             if actor.type == ActorTypes.DASH_RESET:        
                 #if the dash reset is on and the player ha sno dashes, after collision, reset the dash and notify the dash reset entity
-                if self.dashCount <= self.currentDashCount-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                if self.dashCount <= self.currentDashCount-1 and actor.state ==States.IDLE and self.sprite.rect.colliderect(actor.sprite.rect):
                     self.dashCount +=1
                     self.dashCooldown = DASH_COOLDOWN
                     #notify observers
@@ -817,11 +817,10 @@ class Player(Actor):
                         obs.notify(actor.name,EventType.DASH_RESET_COLLISION)
 
             if actor.type == ActorTypes.DOUBLE_DASH_RESET:
-                if self.dashCount <= self.currentDashCount-1 and actor.state =="idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                if self.dashCount <= self.currentDashCount-1 and actor.state ==States.IDLE and self.sprite.rect.colliderect(actor.sprite.rect):
                     self.dashCount = self.currentDashCount if self.currentDashCount >= 2 else 2
                     self.dashCooldown = DASH_COOLDOWN
                     #notify observers
-                    print(self.observers)
                     for obs in self.observers:
                         obs.notify(actor.name,EventType.DOUBLE_DASH_RESET_COLLISION)
                         
@@ -833,7 +832,7 @@ class Player(Actor):
                     # self.springCollsionCooldown = SPRING_COLLISION_COOLDOWN
 
             if actor.type == ActorTypes.STRAWBERRY:
-                if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == "idle":
+                if self.sprite.rect.colliderect(actor.sprite.rect) and actor.state == States.IDLE:
                     #notify observers
                     for obs in self.observers:
                         obs.notify(actor.name,EventType.STRAWBERRY_COLLISION)
@@ -853,7 +852,7 @@ class Player(Actor):
                 self.y = self.serviceLocator.map.height
 
             if actor.type == ActorTypes.DASH_UPGRADE:
-                if actor.state == "idle" and self.sprite.rect.colliderect(actor.sprite.rect):
+                if actor.state == States.IDLE and self.sprite.rect.colliderect(actor.sprite.rect):
                     for obs in self.observers:
                         obs.notify(actor.name,EventType.DASH_UPGRADE_COLLISION)
                     self.currentDashCount += 1

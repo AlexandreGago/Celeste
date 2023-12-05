@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import SpringDicts
-from constants.enums import ActorTypes,EventType
+from constants.enums import ActorTypes,EventType,States
 
 
 
@@ -24,7 +24,7 @@ class Spring(Actor):
         self.type = ActorTypes.SPRING
 
         #sprite e state
-        self.state = "idle"
+        self.state = States.IDLE
         self.spriteID = "idle1"
 
         
@@ -44,8 +44,8 @@ class Spring(Actor):
             None
 
         """
-        if self.state == "extended" and self.spriteID == "extended5":
-            self.state = "idle"
+        if self.state == States.EXTENDED and self.spriteID == "extended5":
+            self.state = States.IDLE
             self.spriteID = "idle1"
             self.animationCounter = 1
 
@@ -83,14 +83,14 @@ class Spring(Actor):
 
         Args:
             entityName (str): name of the entity that triggered the event
-            event (str): event triggered
+            event (EventType): type of event
 
         Returns:
             None
         """
         if event == EventType.SPRING_COLLISION and entityName == self.name:
-            if self.state == "idle":
+            if self.state == States.IDLE:
                 self.serviceLocator.soundManager.play("spring")
-                self.state = "extended"
+                self.state = States.EXTENDED
                 self.spriteID = "extended1"
                 self.animationCounter = 1

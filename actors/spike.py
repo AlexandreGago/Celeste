@@ -2,7 +2,7 @@ import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
 from constants.dictionaries import SpikeDicts
-from constants.enums import ActorTypes,SpikeOrientations
+from constants.enums import ActorTypes,SpikeOrientations,States
 
 
 
@@ -65,7 +65,7 @@ class Spike(Actor):
         self.type = ActorTypes.SPIKE
 
         #sprite e state
-        self.state = "idle"
+        self.state = States.IDLE
         self.spriteID = "idle1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID,rotate = rotateSprite)
@@ -84,7 +84,7 @@ class Spike(Actor):
         Returns:
             None
         """
-        if self.state != "hidden":
+        if self.state != States.HIDDEN:
             self.sprite.draw(display)
 
     def notify(self, entityName, event) -> None:

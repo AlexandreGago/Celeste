@@ -1,6 +1,6 @@
 import pygame
 from actors.actor import Actor
-from constants.enums import ActorTypes,EventType
+from constants.enums import ActorTypes,EventType,States
 from spriteClass import SpriteClass
 from constants.dictionaries import DashResetDicts
 
@@ -23,7 +23,7 @@ class DashResetEntity(Actor):
         self.type = ActorTypes.DASH_RESET
         self.name = id(self)
 
-        self.state = "idle"
+        self.state = States.IDLE
         self.animationCounter = 0
         self.disabledCounter = 0
 
@@ -43,9 +43,9 @@ class DashResetEntity(Actor):
             None
 
         """
-        if self.state == "outline":
+        if self.state == States.OUTLINE:
             if self.disabledCounter >= 300: # refill animation
-                self.state = "refill"
+                self.state = States.REFILL
                 self.spriteID = "flash1"
                 self.disabledCounter = 0
                 self.animationCounter = 0
@@ -53,11 +53,11 @@ class DashResetEntity(Actor):
             else:
                 self.disabledCounter += 1
 
-        elif self.state == "refill":
+        elif self.state == States.REFILL:
             if self.animationCounter % 5 == 0:
                 self.spriteID = DashResetDicts.sprites[self.spriteID]
             if self.spriteID == "idle1":
-                self.state = "idle"
+                self.state = States.IDLE
                 self.spriteID = "idle1"
                 self.animationCounter = 0
                 #play refresh sound
@@ -89,20 +89,20 @@ class DashResetEntity(Actor):
 
         Args:
             entityName (str): name of the entity that triggered the event
-            event (str): event triggered
+            event (EventType): event triggered
 
         Returns:
             None
         """
         if event == EventType.DASH_RESET_COLLISION and entityName == self.name:
-            self.state = "outline"
+            self.state = States.OUTLINE
             self.spriteID = "outline1"
             self.animationCounter = 1
             self.disabledCounter = 0
             self.serviceLocator.soundManager.play("dashEntityBreak")
 
-        if (event == EventType.GROUND_COLLISION or event == EventType.SPRING_COLLISION) and self.state == "outline":
-            self.state = "refill"
+        if (event == EventType.GROUND_COLLISION or event == EventType.SPRING_COLLISION) and self.state == States.OUTLINE:
+            self.state = States.REFILL
             self.spriteID = "flash1"
             self.animationCounter = 0
             self.serviceLocator.soundManager.play("dashEntityReset")      
