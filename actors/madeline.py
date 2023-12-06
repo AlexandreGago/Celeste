@@ -73,7 +73,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.currentDashCount = 2 #!this will increase when we get the dash upgrade
+        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
         self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []
@@ -151,6 +151,7 @@ class Player(Actor):
             self.spriteID = f"{self.state.value}1"
             self.animationFrameCounter = 0
             self.physics.reset()
+            self.dashCount = self.currentDashCount
 
     def jump(self) -> None:
         """
@@ -883,6 +884,7 @@ class Player(Actor):
         self.alive = False
 
         self.dashCount = self.currentDashCount
+        
         self.dashCooldown = 0
         self.wallJumpCooldown = 0
         self.wallGrace = 0

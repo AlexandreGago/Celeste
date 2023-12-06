@@ -5,28 +5,27 @@ import json
 import functools
 
 
-async def handler(websocket, path, queue):
+async def handler(websocket, path, deque):
     async for message in websocket:
-        await process_message(websocket, message, queue)
+        await process_message(websocket, message, deque)
 
+async def process_message(websocket, message, deque):
 
-async def process_message(websocket, message, queue):
-    jsonMessage = json.loads(message)
-    pygame.event.post(pygame.event.Event(pygame.USEREVENT, message=jsonMessage))
-    #see if queue is not empty
-    if not queue.empty():
-        #send the first message in queue
-        await websocket.send(json.dumps(await queue.get()))
-    else:
-        #send empty message
+    if len(deque) == 0:
         await websocket.send("empty")
-    
+        await asyncio.sleep(0)
+    else:
+        position = deque.popleft()
+        await websocket.send(json.dumps(position))
+        jsonMessage = json.loads(message)
+        pygame.event.post(pygame.event.Event(pygame.USEREVENT, message=jsonMessage))
 
-        
-
-async def main(queue, port):
+async def main(event, deque, port):
     print("starting server on port: " + str(port))
     #send queue to handler too
-    async with websockets.serve(functools.partial(handler, queue=queue), "0.0.0.0", port):
-        while True:
+    async with websockets.serve(functools.partial(handler, deque=deque), "0.0.0.0", port) as server:
+        while not event.is_set():
             await asyncio.sleep(0)
+        server.close()
+        
+    

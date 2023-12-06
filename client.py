@@ -1,26 +1,21 @@
 import asyncio
 import websockets
-import argparse
 import pygame
 import json
 
-async def client(queue,ip, port):
+async def client(event,deque,ip, port):
     websocket = await websockets.connect(f"ws://{ip}:{port}")
-    while True:
-        if not queue.empty():
-            await websocket.send(json.dumps(queue.get_nowait()))
+    while not event.is_set():        
+        if len(deque) == 0:
             await asyncio.sleep(0)
+        else:
+            position = deque.popleft()
+            await websocket.send(json.dumps(position))
             message = await websocket.recv()
             if message == "empty":
                 pass
             else:
                 jsonMessage = json.loads(message)
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT, message=jsonMessage))
-        else:
-            await asyncio.sleep(0)
-# # Run the client
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description='Websocket Client')
-#     parser.add_argument('--port', type=int, default=8765, help='port number')
-#     args = parser.parse_args()
-#     asyncio.run(client(args.port))
+    websocket.close()
+            
