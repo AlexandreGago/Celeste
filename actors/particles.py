@@ -166,6 +166,15 @@ class ParticleManager:
     """
     Class for managing particles
     """
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        """
+        Singleton implementation
+        """
+        if cls._instance is not None:
+            raise ValueError("An instance of ParticleManager already exists")
+        cls._instance = super(ParticleManager, cls).__new__(cls)
+        return cls._instance
     def __init__(self,width:int,height:int) -> None:
         """
         Create a particle manager

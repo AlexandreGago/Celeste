@@ -8,7 +8,8 @@ async def client(queue,ip, port):
     websocket = await websockets.connect(f"ws://{ip}:{port}")
     while True:
         if not queue.empty():
-            await websocket.send(json.dumps(await queue.get()))
+            await websocket.send(json.dumps(queue.get_nowait()))
+            await asyncio.sleep(0)
             message = await websocket.recv()
             if message == "empty":
                 pass

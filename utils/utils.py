@@ -49,10 +49,6 @@ def parsePressedKeys(keys):
             newkeys.append(pygame.K_a)
         if keys[pygame.K_d]:
             newkeys.append(pygame.K_d)
-        if keys[pygame.K_1]:
-            newkeys.append(pygame.K_1)
-        if keys[pygame.K_2]:
-            newkeys.append(pygame.K_2)
         
         #remove opposite directions
         if (pygame.K_RIGHT in newkeys) and (pygame.K_LEFT in newkeys):

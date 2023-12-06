@@ -13,7 +13,6 @@ async def handler(websocket, path, queue):
 async def process_message(websocket, message, queue):
     jsonMessage = json.loads(message)
     pygame.event.post(pygame.event.Event(pygame.USEREVENT, message=jsonMessage))
-    print(message)
     #see if queue is not empty
     if not queue.empty():
         #send the first message in queue

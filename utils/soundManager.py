@@ -6,14 +6,18 @@ class SoundManager:
     _instance = None
 
     def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(SoundManager, cls).__new__(cls)
-            cls._instance.mixer = pygame.mixer
-            cls._instance.mixer.init()
-            cls._instance.mixer.set_num_channels(15)
-            cls._instance.sounds = {k: cls._instance.mixer.Sound(v) for k, v in sounds.items()}
+        if cls._instance is not None:
+            raise ValueError("An instance of SoundManager already exists")
+        cls._instance = super(SoundManager, cls).__new__(cls)
         return cls._instance
 
+    
+    def __init__(self) -> None:
+        self.mixer = pygame.mixer
+        self.mixer.init()
+        self.mixer.set_num_channels(15)
+        self.sounds = {k: self.mixer.Sound(v) for k, v in sounds.items()}
+        
     def play(self, sound: str, loop: bool = False, volume: float = 0.1) -> None:
         channel = self.mixer.find_channel()
         if channel:

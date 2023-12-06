@@ -30,15 +30,88 @@ from constants.dictionaries import WIDTH, HEIGHT
 SCALE = 1
 FRAMERATE = 60
 WINDOW_WIDTH, WINDOW_HEIGHT = 800,800
-#!--------------------
-# import socket
-# s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# s.connect(("8.8.8.8", 80))
-# print(s.getsockname()[0])
-# s.close()
-#!--------------------
 
-#this is the main game loop that runs the game and multiplayer logic
+
+def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
+    """Summary
+    This is a function to initialize the game
+    """
+    #initialize level at 1
+    level = 1
+    #initialize singletons
+    serviceLocator = ServiceLocator()
+    inputHandler = InputHandler(serviceLocator)
+    soundManager = SoundManager()
+    
+    
+    #initialize clock and map
+    clock = pygame.time.Clock()
+    game_map = Map(str(level),serviceLocator)
+    
+    particlemanager = ParticleManager(game_map.width,game_map.height)
+    particlemanager.add_particles("snow", 50)
+    particlemanager.add_particles("cloud", 15)
+    
+    #camera is used on bigger levels for scrolling
+    camera = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+    mapCanvas = pygame.Surface((game_map.width,game_map.height))
+
+    #offset is used for screen shake
+    offset = repeat((0,0))
+    
+    #display is the surface that is drawn to, display_shake is the surface that is drawn to the screen
+    #display_shake will draw display with an offset to simulate screen shake
+    display_shake = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
+    display = display_shake.copy()
+
+    #add variables to serviceLocator
+    serviceLocator.soundManager = soundManager
+    serviceLocator.display = display
+    serviceLocator.offset = offset
+    serviceLocator.map = game_map
+
+    #this is initialized here because it needs the map
+    madeline = Player(*game_map.spawn,"Madeline",serviceLocator)
+    serviceLocator.players.append(madeline)
+    serviceLocator.actorList.append(madeline)
+    
+    p2level = None
+    if mp:
+        #in multiplayer badeline is only used for drawing
+        badeline = SpriteClass(0,0,50,50,ActorTypes.PLAYER,"idle1",playerName="Badeline")
+        p2level = 1
+    elif coop:
+        #here it is an actual player and is added to the list of players
+        badeline = Player(*game_map.spawn,"Badeline",serviceLocator)
+        serviceLocator.players.append(badeline)
+        serviceLocator.actorList.append(badeline)
+    else:
+        badeline = None
+        
+    
+
+ 
+    
+    utils.addObservers(serviceLocator)
+    
+    
+    return (
+        serviceLocator,
+        inputHandler,
+        camera,
+        clock,
+        display,
+        display_shake,
+        game_map,
+        mapCanvas,
+        madeline,
+        particlemanager,
+        level,
+        p2level,
+        badeline
+    )
+
+
 async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     """Summary
     This is the main game loop that runs the game and multiplayer logic
@@ -46,169 +119,122 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     Args:
         coop (bool): True if coop is enabled
         mp (bool): True if multiplayer is enabled
-        queue (asyncio.Queue, optional): queue used to pass messages between server and client
+        queue (asyncio.LifoQueue, optional): queue used to pass messages between server and client
     """
-    #this is the service locator that is used to pass around the game objects
-    serviceLocator = ServiceLocator()
 
-    #this is the offset that is used to shake the screen
-    offset = repeat((0,0))
-    serviceLocator.offset = offset
-    #this is the display that is used to shake the screen
-    display_shake = pygame.display.set_mode((SCALE * WIDTH, SCALE * HEIGHT))
-    #this is the display that is used to draw the game
-    display = display_shake.copy()
-    #actors will be drawn to display
-    serviceLocator.display = display
-    #clock is used to run the game at a constant framerate
-    clock = pygame.time.Clock()
-
-    #input handler
-    inputHandler = InputHandler(serviceLocator)
-
-    #sound manager
-    soundManager = SoundManager()
-    serviceLocator.soundManager = soundManager
-
-    #player 1 level
-    level = 1
-    #load the first map
-    map = Map(str(level),serviceLocator)
-    #add the map to the service locator
-    serviceLocator.map = map
-    mapCanvas = pygame.Surface((map.width,map.height))
-    camera = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
-
-    #Player 1 object
-    madeline = Player(*map.spawn,"Madeline",serviceLocator)
-    serviceLocator.players.append(madeline)
-    serviceLocator.actorList.append(madeline)
+    (
+        serviceLocator,
+        inputHandler,
+        camera,
+        clock,
+        display,
+        display_shake,
+        game_map,
+        mapCanvas,
+        madeline,
+        particlemanager,
+        level,
+        p2level,
+        badeline
+    ) = initialize_game(coop,mp,queue)
     
-    #player 2 is a sprite that will be updated if we are in multiplayer
-    if mp:
-        madeline2 = SpriteClass(0,0,50,50,ActorTypes.PLAYER,"idle1",playerName="Badeline")
-    
-    #if coop is true, add player 2 to the service locator
     if coop:
-        madeline2 = Player(*map.spawn,"Badeline",serviceLocator)
-        serviceLocator.players.append(madeline2)
-        serviceLocator.actorList.append(madeline2)
-
-    #count the frames (used for animations)
-    frameCount = 0
-    serviceLocator.frameCount = frameCount
-
-    #particle manager manages clouds and snow
-    particlemanager = ParticleManager(map.width,map.height)
-    particlemanager.add_particles("snow", 50)
-    particlemanager.add_particles("cloud", 15)
-    time = 0
+        madelinecomplete = False
+        badelinecomplete = False
+    else:
+        madelinecomplete = False
     
-
-    #initialize pygame
     pygame.init()
-
-    #adds the observers to the players
-    utils.addObservers(serviceLocator)
-
-    #running is used to determine if the game is running
+    #keys that can't be held down
+    no_hold_keys = [pygame.K_x,pygame.K_c,pygame.K_1,pygame.K_2,pygame.K_p]
+    time=0
     running = True
-    #framerate is used to determine the framerate of the game
-    framerate = FRAMERATE
 
-    #play bg music
+    #loop forever level song
     serviceLocator.soundManager.play("song1", loop=True, volume=0.1)
-
-    #title screen until the user presses space
     drawTitleScreen(display,display_shake,clock,particlemanager)
 
-    #clear the screen after the title screen
-    bgColor = map.bgColor
+    #clear the screen
+    bgColor = game_map.bgColor
     display_shake.fill(bgColor)
     display.fill(bgColor)
     mapCanvas.fill(bgColor)
 
-    #if we are in multiplayer, connect to the other player
-    if mp:
-        p2level = 1
-        
-    while running:
-        #get the pressed keys
-        keys = pygame.key.get_pressed()
 
-        #!Bullet time
+    while running:        
+        keys = pygame.key.get_pressed()
+        #!###############
         if keys[pygame.K_v]:
             framerate = 5
         else:
             framerate = FRAMERATE
-        #!#####################
-
-        #parse the currently pressed keys into a list
+        #!###############
         keys = utils.parsePressedKeys(keys)
-        for event in pygame.event.get():# we use the pygame.event to only allow one input per press on the jump and dash keys
+        
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                print("quit")
-
+            #custom event for multiplayer
             if event.type == pygame.USEREVENT:
                 x,y,height,width,spriteID,orientation, p2level = event.message
-                madeline2.update(x,y,height,width,spriteID,orientation,playerName="Badeline")
+                badeline.update(x,y,height,width,spriteID,orientation,playerName="Badeline")
 
-            if event.type == pygame.KEYDOWN:
-                if event.key==pygame.K_x:
-                    keys.append(pygame.K_x)
-                if event.key==pygame.K_c:
-                    keys.append(pygame.K_c)
-                if event.key == pygame.K_p:
-                    keys.append(pygame.K_p)
-
-        if madeline.levelComplete()or pygame.K_p in keys:
-            print("completed level")
+            #prevent holding down keys
+            if event.type == pygame.KEYDOWN and event.key in no_hold_keys:
+                keys.append(event.key)
+                
+        #go to next level
+        if coop:
+            madelinecomplete = madeline.levelComplete()  if not madelinecomplete else madelinecomplete
+            badelinecomplete = badeline.levelComplete() if not badelinecomplete else badelinecomplete
+            levelComplete = madelinecomplete and badelinecomplete
+        else:
+            levelComplete = madeline.levelComplete()
+            
+        if levelComplete or pygame.K_p in keys:
+            madelinecomplete = False
+            badelinecomplete = False
             level+=1
             serviceLocator.actorList = []
-            map = Map(str(level),serviceLocator)
-            serviceLocator.map = map
-            bgColor = map.bgColor
+            game_map = Map(str(level),serviceLocator)
+            serviceLocator.map = game_map
+            bgColor = game_map.bgColor
 
             for player in serviceLocator.players:
                 serviceLocator.actorList.append(player)
-                player.reset(*map.spawn)
-                print(player.x,player.y)
-
+                player.reset(*game_map.spawn)
 
             utils.addObservers(serviceLocator)
-            particlemanager.setMapSize(map.width,map.height)
+            particlemanager.setMapSize(game_map.width,game_map.height)
 
 
-
+        #reset display on every frame
         display.fill(bgColor)
         mapCanvas.fill(bgColor)
 
-
-        #manage input
+        #move players
         inputHandler.handleInput(keys)
+        #update particles
         particlemanager.update(time)
-        particlemanager.draw("cloud", mapCanvas)#draw clouds
+        particlemanager.draw("cloud", mapCanvas)
         particlemanager.draw("snow", mapCanvas)
-        map.draw(mapCanvas) # draw the map
+        
+        #update camera
+        game_map.draw(mapCanvas) 
+        camera.x = serviceLocator.players[0].x - WINDOW_WIDTH // 2
+        camera.y = serviceLocator.players[0].y - WINDOW_HEIGHT // 2  
+        camera.x = max(0, min(camera.x, game_map.width - WINDOW_WIDTH))
+        camera.y = max(0, min(camera.y, game_map.height - WINDOW_HEIGHT))
 
-        #draw and update actors
+        #update all actors
         for actor in serviceLocator.actorList:
             actor.update()
             actor.draw(mapCanvas)
         
-        if mp and p2level == level:
-            madeline2.draw(mapCanvas)
-        
-
-
-        #keep track of current frame
-        serviceLocator.frameCount += 1
-        if serviceLocator.frameCount == framerate:
-            serviceLocator.frameCount = 0
-        # print(serviceLocator.frameCount)
+        #multiplayer logic
         if mp:
-            hairpoints = madeline.hairPoints
+            #draw badeline
+            badeline.draw(mapCanvas)
             orientation = madeline.orientation == PlayerOrientation.LEFT
             attributes = [
                 madeline.x,
@@ -216,62 +242,53 @@ async def gameloop(coop:bool, mp:bool, queue: asyncio.Queue = None ):
                 madeline.height,
                 madeline.width,
                 madeline.spriteID,
-                orientation,
-                # madeline.hairPoints,
-                # madeline.particles,
+                orientation, 
                 level
             ]
- 
-            await queue.put(attributes)
+            #put attributes in queue to be sent to other player
+            if not queue.full():
+                queue.put_nowait(attributes)
+            else:
+                #replace first message in queue
+                queue.get_nowait()
+                queue.put_nowait(attributes)
 
-                
-
-        #! Update the camera's position based on the player's position
-        camera.x = serviceLocator.players[0].x - WINDOW_WIDTH // 2
-        camera.y = serviceLocator.players[0].y - WINDOW_HEIGHT // 2
-
-        #! Ensure the camera stays within the bounds of the map
-        camera.x = max(0, min(camera.x, map.width - WINDOW_WIDTH))
-        camera.y = max(0, min(camera.y, map.height - WINDOW_HEIGHT))
-
+        #put map canvas on display
         display.blit(mapCanvas,(0 - camera.x, 0 - camera.y))
+        #put display on display_shake with offset if needed
         display_shake.blit(display, next(serviceLocator.offset))
         pygame.display.update()
 
+        #wait for next frame
         time += clock.tick(framerate)
-        # print(clock.get_fps())
 
 
-def start_server(loop, queue,port):
+
+def start_server(queue,port):
     asyncio.run(server.main(queue,port))
-def stop_server(loop,future):
-    loop.call_soon_threadsafe(future.set_result, None)
-def start_client(loop, queue, ip, port):
+def start_client(queue, ip, port):
     asyncio.run(client.client(queue, ip,port))
-
 
 
  
 async def main(*args):
     parser = argparse.ArgumentParser(description='Game')
-    parser.add_argument('--mp', type=bool, default=False, help='multiplayer')
-    parser.add_argument('--coop', type=bool, default=False, help='coop')
-    parser.add_argument('--port', type=int, default=8765, help='port number')
-    parser.add_argument('--p2ip', type=str, default="None", help='host')
-    parser.add_argument('--p2port', type=int, default=8765, help='port number')
-
-    parser.add_argument('--player', type=int, default=1, help='player number')
+    # parser.add_argument('--coop', type=bool, default=False, help='coop')
+    parser.add_argument('-coop', action='store_true', help='coop')
+    parser.add_argument('-mp', action='store_true', help='mp')
+    
+    parser.add_argument('-port', type=int, default=8765, help='host port number')
+    parser.add_argument('-p2ip', type=str, default="None", help='player 2 ip')
+    parser.add_argument('-p2port', type=int, default=8765, help='player 2 port number')
 
 
     args = parser.parse_args()
-    #mp and coop are mutually exclusive
+    
     if args.mp and args.coop:
         print("mp and coop are mutually exclusive")
         exit()
 
     if args.mp:          
-        
-        #process p2ip and determine if we are the server or client
         import ipaddress
         import socket
         try:
@@ -286,27 +303,26 @@ async def main(*args):
         sc.close()
         ip = ipaddress.ip_address(ip)
         
+        #find out who is the server
         server = ip > ipaddress.ip_address(args.p2ip)
-        print("ip: " + str(ip))
-
-        #!debug remove later
+        
+        #!###############
         if args.p2ip == "127.0.0.1":
             server = False
-        #!#####################
+        #!###############
+        print("own ip: " + str(ip))        
         
-        websocket = None
-        # queue = None
-        queue = asyncio.LifoQueue()
+        queue = asyncio.LifoQueue(maxsize=1)
         loop = asyncio.get_event_loop()
         if server:
-            thread = threading.Thread(target=start_server, args=(loop,queue,args.port))
+            thread = threading.Thread(target=start_server, args=(queue,args.port))
             thread.start()  
         else:
-            thread = threading.Thread(target=start_client, args=(loop,queue,args.p2ip, args.p2port))
+            thread = threading.Thread(target=start_client, args=(queue,args.p2ip, args.p2port))
             thread.start()
+            
         await gameloop(args.coop, args.mp, queue)
 
-        stop_server(loop)
         thread.join()
         pygame.quit()
     else:
@@ -314,8 +330,11 @@ async def main(*args):
         pygame.quit()
     
 if __name__ == "__main__":
-    # asyncio.run(main())
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    loop.close()
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())
+        loop.close()
+    except Exception as e:
+        pygame.quit()
+        exit()
 
