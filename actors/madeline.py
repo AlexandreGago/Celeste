@@ -73,7 +73,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.currentDashCount = 2 #!this will increase when we get the dash upgrade
+        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
         self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []
@@ -624,7 +624,7 @@ class Player(Actor):
 
         self.sprite.rect.y = y
         for tile in self.serviceLocator.map.walls:
-            up,down = self.checkCollisionY(tile,x,y,True,True)
+            up,_ = self.checkCollisionY(tile,x,y,True,True)
             if up:
                 self.sprite.rect.y = tile.rect.top - self.height
 
@@ -640,14 +640,14 @@ class Player(Actor):
             if actor.type == ActorTypes.CLOUD:
                 sprite = actor.sprite
                 if self.airborne >= 0:
-                    up,down = self.checkCollisionY(sprite,x,y,True,False)
+                    up,_ = self.checkCollisionY(sprite,x,y,True,False)
                     if up:
                         self.sprite.rect.y = sprite.rect.top - self.height
 
             if actor.type == ActorTypes.FALLINGBLOCK:
                 sprite = actor.sprite
                 if self.airborne >= 0 and actor.state != States.OUTLINE:
-                    up,down = self.checkCollisionY(sprite,x,y,True,False)
+                    up,_ = self.checkCollisionY(sprite,x,y,True,False)
                     if up:
                         for obs in self.observers:
                             obs.notify(actor.name,EventType.FALLINGBLOCK_COLLISION)

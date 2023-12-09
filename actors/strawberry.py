@@ -42,11 +42,11 @@ class Strawberry(Actor):
             None
 
         """
-        if self.state != States.HIDDEN:
-            if self.spriteID== "collected13":
+        if self.state != States.HIDDEN:# if the strawberry is not hidden
+            if self.spriteID== "collected13": # if the animation is finished, go to hidden state
                 self.state = States.HIDDEN
                 return
-            if self.animationCounter % 5 == 0:
+            if self.animationCounter % 5 == 0:# animation every 5 frames
                 self.spriteID = StawberryDicts.sprites[self.spriteID]
             self.animationCounter += 1
             self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
@@ -62,7 +62,7 @@ class Strawberry(Actor):
             None
 
         """
-        if self.state != States.HIDDEN:
+        if self.state != States.HIDDEN:# if the strawberry is not hidden
             self.sprite.draw(display)
 
     def notify(self, entityName:str, event:EventType) -> None:
@@ -77,8 +77,8 @@ class Strawberry(Actor):
             None
             
         """
-        if event == EventType.STRAWBERRY_COLLISION and entityName == self.name:
-            if self.state == States.IDLE:
+        if event == EventType.STRAWBERRY_COLLISION and entityName == self.name:# if the strawberry collided with the player
+            if self.state == States.IDLE:# if the strawberry is idle, go to collected state and play the strawberry sound
                 self.serviceLocator.soundManager.play("strawberry")
                 self.state = States.COLLECTED
                 self.spriteID = "collected1"

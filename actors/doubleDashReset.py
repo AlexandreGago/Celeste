@@ -54,9 +54,9 @@ class DoubleDashReset(Actor):
                 self.disabledCounter += 1
 
         elif self.state == States.REFILL:
-            if self.animationCounter % 5 == 0:
+            if self.animationCounter % 5 == 0:# refill animation
                 self.spriteID = DashResetDicts.sprites[self.spriteID]
-            if self.spriteID == "idle1":
+            if self.spriteID == "idle1": # refill animation finished, go back to idle
                 self.state = States.IDLE
                 self.spriteID = "idle1"
                 self.animationCounter = 0
@@ -64,7 +64,7 @@ class DoubleDashReset(Actor):
 
                 
 
-        elif self.animationCounter % 5 == 0:
+        elif self.animationCounter % 5 == 0:# idle animation
             self.spriteID = DashResetDicts.sprites[self.spriteID]
 
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
@@ -96,15 +96,15 @@ class DoubleDashReset(Actor):
             None
         """
         
-        if event == EventType.DOUBLE_DASH_RESET_COLLISION and entityName == self.name:
+        if event == EventType.DOUBLE_DASH_RESET_COLLISION and entityName == self.name:#player collided with the double dash reset entity
             self.state = States.OUTLINE
             self.spriteID = "outline1"
             self.animationCounter = 1
             self.disabledCounter = 0
             self.serviceLocator.soundManager.play("dashEntityBreak")
 
-        if (event == EventType.GROUND_COLLISION or event == EventType.SPRING_COLLISION) and self.state == States.OUTLINE:
-            self.state = States.REFILL
+        if (event == EventType.GROUND_COLLISION or event == EventType.SPRING_COLLISION) and self.state == States.OUTLINE:#player collided with the ground or a spring while the entity was disabled
+            self.state = States.REFILL# activate the dash entity
             self.spriteID = "flash1"
             self.animationCounter = 0
             self.serviceLocator.soundManager.play("dashEntityReset")      

@@ -12,7 +12,7 @@ class SpriteClass(pygame.sprite.Sprite):
         self.width = width
 
         self.spriteID = spriteID
-        self.atlasIMG = pygame.image.load("atlas.png")
+        self.atlasIMG = pygame.image.load("atlas.png")#!Change to global
 
         self.loadImage(playerName,spriteID)
 

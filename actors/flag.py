@@ -21,7 +21,7 @@ class Flag(Actor):
 
 
     def update(self) -> None:
-        if self.animationCounter % 20 == 0:
+        if self.animationCounter % 20 == 0:# animation every 20 frames
             self.spriteID = FlagDicts.sprites[self.spriteID]
             self.animationCounter = 1
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
@@ -29,25 +29,25 @@ class Flag(Actor):
 
     def draw(self, display:pygame.display) -> None:
         self.sprite.draw(display)
-        if self.state == States.COLLECTED:
+        if self.state == States.COLLECTED:# if the flag was collected , draw "YOU WIN" on top of the screen and the score below
             #draw "YOU WIN" on top
             text_font = pygame.font.Font('freesansbold.ttf', 100 )
             text_text = text_font.render("YOU WIN", True, "black")
             text_rect = text_text.get_rect()
             text_rect.center = (self.serviceLocator.map.width/2,self.serviceLocator.map.height/8)
             
-            display.blit(text_text,text_rect)
+            display.blit(text_text,text_rect) # draw "YOU WIN" on top
             
             text_font = pygame.font.Font('freesansbold.ttf', 64 )
             text_text = text_font.render("Score: "+str(int(self.serviceLocator.score/1000))+"/30", True, "black")
             text_rect = text_text.get_rect()
             text_rect.center = (self.serviceLocator.map.width/2,self.serviceLocator.map.height/4)
             
-            display.blit(text_text,text_rect)
+            display.blit(text_text,text_rect) # draw score below
             
 
     def notify(self, entityName:str, event:EventType) -> None:
-        if event == EventType.FLAG_COLLISION and self.state == States.IDLE:
+        if event == EventType.FLAG_COLLISION and self.state == States.IDLE: # if the flag was collected , change state to collected and play the flag sound
             self.state = States.COLLECTED
             self.serviceLocator.soundManager.stop()
             self.serviceLocator.soundManager.play("flag",volume=1)

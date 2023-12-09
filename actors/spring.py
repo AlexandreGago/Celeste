@@ -26,7 +26,6 @@ class Spring(Actor):
         #sprite e state
         self.state = States.IDLE
         self.spriteID = "idle1"
-
         
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         
@@ -44,17 +43,18 @@ class Spring(Actor):
             None
 
         """
-        if self.state == States.EXTENDED and self.spriteID == "extended5":
+        if self.state == States.EXTENDED and self.spriteID == "extended5": # if the spring is extended and the animation is finished, go back to idle
             self.state = States.IDLE
             self.spriteID = "idle1"
             self.animationCounter = 1
 
             
-        if self.animationCounter % 5 == 0:
+        if self.animationCounter % 5 == 0:# animation every 5 frames
             self.spriteID = SpringDicts.sprites[self.spriteID]
             
         self.animationCounter += 1
         
+        #this is needed because the sprite is not centered
         spriteX = self.x + SpringDicts.spritesOffset[self.spriteID][0]
         spriteY = self.y + SpringDicts.spritesOffset[self.spriteID][1]
         spriteHeight = self.height - SpringDicts.spritesOffset[self.spriteID][1]
@@ -74,7 +74,6 @@ class Spring(Actor):
 
         """
         self.sprite.draw(display)
-        # pygame.draw.rect(display,(0,0,255),self.sprite.rect,1)
 
 
     def notify(self, entityName:str, event:EventType) -> None:
@@ -88,7 +87,7 @@ class Spring(Actor):
         Returns:
             None
         """
-        if event == EventType.SPRING_COLLISION and entityName == self.name:
+        if event == EventType.SPRING_COLLISION and entityName == self.name: # if the spring was collided with , change state to extended and play the spring sound
             if self.state == States.IDLE:
                 self.serviceLocator.soundManager.play("spring")
                 self.state = States.EXTENDED

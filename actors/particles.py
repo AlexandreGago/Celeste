@@ -271,19 +271,15 @@ class ParticleManager:
         for particle in self.particles:
             if isinstance(particle,CloudParticle):
                 particle.color = color
-    def draw(self, type: str, screen:pygame.display):
+    def draw(self, screen:pygame.display):
         """
         Draws the particles
 
         Args:
-            type (str): type of the particle
             screen (pygame.display): display where the particles are drawn
 
         Returns:
             None
         """
         for particle in self.particles:
-            if isinstance(particle, SnowParticle) and type == "snow":
-                particle.draw(screen)
-            elif isinstance(particle, CloudParticle) and type == "cloud":
-                particle.draw(screen)
+            particle.draw(screen)

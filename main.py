@@ -2,6 +2,7 @@ import pygame
 import asyncio
 import argparse
 import threading
+import pydoc
 from itertools import repeat
 from collections import deque
 
@@ -35,7 +36,7 @@ def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     This is a function to initialize the game
     """
     #initialize level at 1
-    level = 29
+    level = 1
     #initialize singletons
     serviceLocator = ServiceLocator()
     inputHandler = InputHandler(serviceLocator)
@@ -217,11 +218,11 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
         inputHandler.handleInput(keys)
         #update particles
         particlemanager.update(time)
-        particlemanager.draw("cloud", mapCanvas)
-        particlemanager.draw("snow", mapCanvas)
+        particlemanager.draw(mapCanvas)
+        
+        game_map.draw(mapCanvas) 
         
         #update camera
-        game_map.draw(mapCanvas) 
         camera.x = serviceLocator.players[0].x - WINDOW_WIDTH // 2
         camera.y = serviceLocator.players[0].y - WINDOW_HEIGHT // 2  
         camera.x = max(0, min(camera.x, game_map.width - WINDOW_WIDTH))
@@ -258,7 +259,7 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
 
         #wait for next frame
         time += clock.tick(framerate)
-
+        # print(clock.get_fps())
 
 
 def start_server(event,shared_deque,port):

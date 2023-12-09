@@ -55,8 +55,7 @@ class Physics():
         Returns:
             tuple[float,float]: new position
         """
-        surface = ground if collisions[3]else air #! collisions still not 100% working (flickering) so the surface isnt correct
-        #TODO : add air acceleration 
+        surface = ground if collisions[3]else air #if we are grounded, use ground physics, otherwise use air physics
         #if over the speed limit, decelerate
         if abs(self.speed[0]) > ground["maxSpeed"]:
             #get the sign of the speed to determine which way to decelerate
@@ -67,11 +66,9 @@ class Physics():
         else:
             self.speed[0] = calculateSpeed(self.speed[0], xInput * surface["maxSpeed"], surface["acceleration"])
     
-        #!COYOTE
-        #if player pressed jump and is grounded, jump
-        if springCollision:
+        if springCollision:#if we are colliding with a spring, jump with spring physics
             self.speed[1] = -physicsValues.spring["power"]
-        elif jumpInput:
+        elif jumpInput:#if we are jumping, jump with jump physics
             self.speed[1] = -jump["power"]
             if self.speed[0] > ground["maxSpeed"]:
                 self.speed[0] = self.speed[0]*1.5
@@ -92,12 +89,12 @@ class Physics():
             self.speed[0] = dash["power"] * xInput * 1.2
             self.speed[1] = dash["power"] * -yInput
 
-        elif wallJump==True:
+        elif wallJump==True:#Walljump
             self.speed[1] = -jump["power"]
             self.speed[0] = -jump["power"] * wallJumpSide
 
 
-        x += self.speed[0]
+        x += self.speed[0]#move x
 
         #if we are wallhugginf and moving down, halve the gravity
         if state == PlayerStates.WALLHUG and self.speed[1]>=0:

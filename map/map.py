@@ -173,9 +173,7 @@ class Map:
             for idy,cell in enumerate(row):
                 if cell == "p":
                     spawn = (idy*SIZE_X, idx*SIZE_Y)
-                if cell in WALLS:
-                    # print(cell)
-                    # print(spritelocations[cell])
+                if cell in WALLS:#create the walls
                     image = spritesheet.subsurface(*spritelocations[cell])
                     if cell == "á":
                         image = pygame.transform.rotate(image,90)
@@ -188,10 +186,9 @@ class Map:
                     if cell == "Ĕ":
                         image = pygame.transform.rotate(image,90)
                     image = pygame.transform.scale(image, (SIZE_X, SIZE_Y))
-                    #SIZE*16=800
                     tile = Tile(image, idy*SIZE_X, idx*SIZE_Y)
                     sprites.add(tile)
-                    walls.append(tile)
+                    walls.append(tile)#add the wall to the list of walls
 
                 elif cell in DECORATIONS:
                     #?scaling is 6x for decorations
@@ -202,10 +199,7 @@ class Map:
                     image = spritesheet.subsurface(*spritelocations[cell])
                     image = pygame.transform.scale(image, (x, y))
                     sprites.add(Tile(image, idy*SIZE_X + ((SIZE_X-x)/2), idx*SIZE_Y + (SIZE_Y-y)))
-                elif cell in ENEMIES:
-                    # image = spritesheet.subsurface(*spritelocations[cell])
-                    # image = pygame.transform.scale(image, (SIZE, SIZE))
-                    # sprites.add(Tile(image, idy*SIZE, idx*SIZE))
+                elif cell in ENEMIES: #create the spikes
                     if cell in ["o"]:
                         orientation = SpikeOrientations.UP
                     if cell in ["O"]:
@@ -216,9 +210,9 @@ class Map:
                         orientation = SpikeOrientations.LEFT
 
                     spike = Spike(idy*SIZE_X, idx*SIZE_Y,orientation=orientation)
-                    self.servicelocator.actorList.append(spike)
+                    self.servicelocator.actorList.append(spike)#add the spike to the list of actors
 
-                elif cell in POWERS:
+                elif cell in POWERS:#create the powerups/other actors
                     if cell == "r":
                         dr = DashResetEntity(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
                         self.servicelocator.actorList.append(dr)
@@ -258,6 +252,6 @@ class Map:
         Returns:
             None
         """
-        self.sprites.draw(screen)
+        self.sprites.draw(screen) #draw the sprites of the walls and decorations
 
 

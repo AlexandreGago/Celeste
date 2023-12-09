@@ -21,8 +21,6 @@ class Cloud(Actor):
         self.name = id(self)
         self.type = ActorTypes.CLOUD
         self.state = States.IDLE
-        #sprite e state
-        self.state = States.IDLE
         self.spriteID = States.IDLE.value + "1"
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)

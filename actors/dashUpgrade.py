@@ -49,11 +49,11 @@ class DashUpgrade(Actor):
                 None
         """
         if self.state == States.IDLE:
-            if self.offsetDir == "down":
+            if self.offsetDir == "down":# wiggle
                 self.yOffset += 0.2
                 if self.yOffset >= 5:
                     self.offsetDir = "up"
-            else:
+            else:# wiggle
                 self.yOffset -= 0.2
                 if self.yOffset <= -5:
                     self.offsetDir = "down"
@@ -69,7 +69,7 @@ class DashUpgrade(Actor):
             Returns:
                 None
         """
-        if self.state != States.HIDDEN:
+        if self.state != States.HIDDEN: # if not hidden, draw
             self.sprite.draw(display)
 
     def notify(self, entityName:str, event:EventType) -> None:
@@ -83,7 +83,7 @@ class DashUpgrade(Actor):
             Returns:
                 None
         """
-        if event == EventType.DASH_UPGRADE_COLLISION and entityName == self.name and self.state ==States.IDLE:
+        if event == EventType.DASH_UPGRADE_COLLISION and entityName == self.name and self.state ==States.IDLE: # if player collides with it
             self.state =  States.HIDDEN
             self.serviceLocator.soundManager.play("dashUpgrade",volume=0.5)
             

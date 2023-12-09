@@ -24,7 +24,7 @@ class Spike(Actor):
         yOffset = None
         rotateSprite = 0
         self.hitbox = None
-        if orientation == SpikeOrientations.UP:
+        if orientation == SpikeOrientations.UP:# set the hitbox and sprite position based on the orientation
             xOffset = x + 5
             yOffset = y + 30
             self.width = 40
@@ -32,7 +32,7 @@ class Spike(Actor):
             
             self.hitbox = pygame.Rect(xOffset,y+49,self.width,1)
 
-        if orientation == SpikeOrientations.LEFT:
+        if orientation == SpikeOrientations.LEFT:# set the hitbox and sprite position based on the orientation
             xOffset = x + 30
             yOffset = y + 5
             self.width = 20
@@ -41,7 +41,7 @@ class Spike(Actor):
             
             self.hitbox = pygame.Rect(x+49,yOffset,1,self.height)
 
-        if orientation == SpikeOrientations.DOWN:
+        if orientation == SpikeOrientations.DOWN:# set the hitbox and sprite position based on the orientation
             xOffset = x + 5
             yOffset = y
             self.width = 40
@@ -50,16 +50,16 @@ class Spike(Actor):
             
             self.hitbox = pygame.Rect(xOffset,y,self.width,1)
         
-        if orientation == SpikeOrientations.RIGHT:
+        if orientation == SpikeOrientations.RIGHT:# set the hitbox and sprite position based on the orientation
             xOffset = x
             yOffset = y + 5
             self.width = 20
             self.height = 40
             rotateSprite = -90
             
-            self.hitbox = pygame.Rect(x,yOffset,1,self.height)
+            self.hitbox = pygame.Rect(x,yOffset,1,self.height)# set the hitbox and sprite position based on the orientation
             
-        super().__init__(xOffset,yOffset,self.height,self.width,None)
+        super().__init__(xOffset,yOffset,self.height,self.width,None)# create the actor
 
         self.name = id(self)
         self.type = ActorTypes.SPIKE
@@ -84,8 +84,7 @@ class Spike(Actor):
         Returns:
             None
         """
-        if self.state != States.HIDDEN:
-            self.sprite.draw(display)
+        self.sprite.draw(display)
 
     def notify(self, entityName, event) -> None:
         if event == "touchSpike" and entityName == self.name:

@@ -20,9 +20,6 @@ class Actor:
         self.height = height
         self.width = width
         self.serviceLocator = serviceLocator
-
-    def move(self):
-        raise NotImplementedError()
     
     def add_observer(self,observer):
         """
@@ -40,5 +37,8 @@ class Actor:
         self.observers.remove(observer)
 
     def notify(self,entity,event):
+        raise NotImplementedError()
+    
+    def update(self):
         raise NotImplementedError()
     

@@ -40,13 +40,12 @@ def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:py
         display.fill((0,0,0))
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE:# if space is pressed, stop the loop and play the game
                     running = False
 
         #update and draw particles
         particlemanager.update(time)
-        particlemanager.draw("cloud", display)
-        particlemanager.draw("snow", display)
+        particlemanager.draw(display)
 
         # show image
         display.blit(bgImage,(25,height/4))
