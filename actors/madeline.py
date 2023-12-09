@@ -73,7 +73,7 @@ class Player(Actor):
         self.animationFrameCounter = 0
         
         #dash
-        self.currentDashCount = 1 #!this will increase when we get the dash upgrade
+        self.currentDashCount = 2 #!this will increase when we get the dash upgrade
         self.dashCount = self.currentDashCount 
         #Particles
         self.particles = []

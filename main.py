@@ -196,6 +196,8 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
                 serviceLocator.soundManager.stop()
                 serviceLocator.soundManager.play("song2", loop=True, volume=0.3)
             serviceLocator.map = game_map
+            mapCanvas = pygame.Surface((game_map.width,game_map.height))
+            
             bgColor = game_map.bgColor
 
             for player in serviceLocator.players:

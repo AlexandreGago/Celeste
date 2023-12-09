@@ -1,7 +1,6 @@
 import pygame
 from actors.actor import Actor
 from spriteClass import SpriteClass
-from constants.dictionaries import cloudDicts
 from constants.enums import ActorTypes,EventType,States
 
 class Cloud(Actor):
