@@ -338,13 +338,6 @@ class cloudDicts:
     spritesLocation = {
         "idle1": "./CelesteSprites/Atlases/Gameplay/objects/clouds/cloud00.png",
     }
-class dashUpgradeDicts:
-    firstSpriteID = "idle1"
-    states = ["idle","hidden"]
-    sprites= {"idle1":"idle1"}
-    spritesLocation = {
-        "idle1": "./CelesteSprites/Atlases/Gameplay/objects/dashRefill/idle00.png",
-    }
 
 class doubleDashResetDicts:
     sprites ={"idle1":"idle2","idle2":"idle3","idle3":"idle4","idle4":"idle5","idle5":"idle6","idle6":"idle7","idle7":"idle8","idle8":"idle9","idle9":"idle10","idle10":"idle11","idle11":"idle12","idle12":"idle13","idle13":"idle1",

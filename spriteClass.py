@@ -1,6 +1,6 @@
 import pygame
 from constants.enums import ActorTypes,ParticleTypes
-from constants.dictionaries import PlayerDicts,DashResetDicts,StawberryDicts,SpringDicts,SpikeDicts, cloudDicts, dashUpgradeDicts,jumpParticles,fallingBlockDicts,doubleDashResetDicts
+from constants.dictionaries import PlayerDicts,DashResetDicts,StawberryDicts,SpringDicts,SpikeDicts, cloudDicts,jumpParticles,fallingBlockDicts,doubleDashResetDicts
 
 
 # atlasIMG = pygame.image.load("atlas.png")
