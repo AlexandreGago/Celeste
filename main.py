@@ -35,7 +35,7 @@ def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     This is a function to initialize the game
     """
     #initialize level at 1
-    level = 22
+    level = 29
     #initialize singletons
     serviceLocator = ServiceLocator()
     inputHandler = InputHandler(serviceLocator)
@@ -47,8 +47,9 @@ def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     game_map = Map(str(level),serviceLocator)
     
     particlemanager = ParticleManager(game_map.width,game_map.height)
-    particlemanager.add_particles("snow", 50)
-    particlemanager.add_particles("cloud", 15)
+    particlemanager.add_particles("snow", game_map.snowNumber)
+    particlemanager.add_particles("cloud", game_map.cloudNumber)
+    particlemanager.setCloudColor(game_map.cloudColor)
     
     #camera is used on bigger levels for scrolling
     camera = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -144,8 +145,7 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
     running = True
 
     #loop forever level song
-    serviceLocator.soundManager.play("song1", loop=True, volume=0.1)
-    drawTitleScreen(display,display_shake,clock,particlemanager)
+    drawTitleScreen(display,display_shake,clock,particlemanager, serviceLocator.soundManager)
 
     #clear the screen
     bgColor = game_map.bgColor
@@ -154,6 +154,7 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
     mapCanvas.fill(bgColor)
 
 
+    serviceLocator.soundManager.play("song1", loop=True, volume=0.1)
     while running:        
         keys = pygame.key.get_pressed()
         #!###############
@@ -184,12 +185,16 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
         else:
             levelComplete = madeline.levelComplete()
             
-        if levelComplete or pygame.K_p in keys:
+        if (levelComplete or pygame.K_p in keys) and level < 30:
             madelinecomplete = False
             badelinecomplete = False
             level+=1
             serviceLocator.actorList = []
             game_map = Map(str(level),serviceLocator)
+            #change song for last levels
+            if level == 23:
+                serviceLocator.soundManager.stop()
+                serviceLocator.soundManager.play("song2", loop=True, volume=0.3)
             serviceLocator.map = game_map
             bgColor = game_map.bgColor
 
@@ -199,6 +204,7 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
 
             utils.addObservers(serviceLocator)
             particlemanager.setMapSize(game_map.width,game_map.height)
+            particlemanager.setCloudColor(game_map.cloudColor)
 
 
         #reset display on every frame

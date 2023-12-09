@@ -51,11 +51,12 @@ class FallingBlock(Actor):
                 self.sprite.update(self.x+self.shake,self.y,self.height,self.width,self.spriteID)
                 self.rect = self.sprite.rect
 
-            if self.animationFrameCounter == 100:
+            if self.animationFrameCounter == 30:
                 self.state = States.OUTLINE
                 self.spriteID = "outline1"
                 self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
                 self.animationFrameCounter = 0
+                self.serviceLocator.soundManager.play("fallBlockOutline")
 
         if self.state == States.OUTLINE:
             if self.animationFrameCounter == 120:
@@ -63,6 +64,8 @@ class FallingBlock(Actor):
                 self.spriteID = "idle1"
                 self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
                 self.animationFrameCounter = 0
+                self.serviceLocator.soundManager.play("fallBlockReset")
+                
 
         self.animationFrameCounter += 1
         
@@ -96,5 +99,6 @@ class FallingBlock(Actor):
                 self.spriteID = "falling1"
                 self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
                 self.animationFrameCounter = 0
+                self.serviceLocator.soundManager.play("fallBlockShake")
             if self.state == States.OUTLINE:
                 self.animationFrameCounter = 0

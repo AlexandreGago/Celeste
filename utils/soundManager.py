@@ -27,3 +27,6 @@ class SoundManager:
             else:
                 channel.play(self.sounds[sound])
 
+    def stop(self) -> None:
+        self.mixer.stop()
+

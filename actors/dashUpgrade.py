@@ -6,13 +6,14 @@ from constants.enums import ActorTypes,EventType,States
 
 
 class DashUpgrade(Actor):
-    def __init__(self, x:int, y:int) -> None:
+    def __init__(self, x:int, y:int,serviceLocator) -> None:
         """
             Creates the dash upgrade (when the player collects it, it gains more dashes)
 
             Args:
                 x (int): x position of the dash upgrade
                 y (int): y position of the dash upgrade
+                serviceLocator (ServiceLocator): ServiceLocator object
 
             Returns:
                 None
@@ -26,6 +27,7 @@ class DashUpgrade(Actor):
         self.name = id(self)
         self.type = ActorTypes.DASH_UPGRADE
 
+        self.serviceLocator = serviceLocator
 
         #sprite e state
         self.state = States.IDLE
@@ -83,3 +85,5 @@ class DashUpgrade(Actor):
         """
         if event == EventType.DASH_UPGRADE_COLLISION and entityName == self.name and self.state ==States.IDLE:
             self.state =  States.HIDDEN
+            self.serviceLocator.soundManager.play("dashUpgrade",volume=0.5)
+            

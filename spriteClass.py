@@ -1,6 +1,6 @@
 import pygame
 from constants.enums import ActorTypes,ParticleTypes
-from constants.dictionaries import PlayerDicts,DashResetDicts,StawberryDicts,SpringDicts,SpikeDicts, cloudDicts,jumpParticles,fallingBlockDicts,doubleDashResetDicts
+from constants.dictionaries import PlayerDicts,DashResetDicts,StawberryDicts,SpringDicts,SpikeDicts, cloudDicts,jumpParticles,fallingBlockDicts,doubleDashResetDicts,FlagDicts
 
 
 # atlasIMG = pygame.image.load("atlas.png")
@@ -102,6 +102,10 @@ class SpriteClass(pygame.sprite.Sprite):
 
         if self.type == ActorTypes.DOUBLE_DASH_RESET:
             self.image = pygame.image.load(doubleDashResetDicts.spritesLocation[self.spriteID])
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        
+        if self.type == ActorTypes.FLAG:
+            self.image = self.atlasIMG.subsurface(FlagDicts.spritesImageCrop[self.spriteID])
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
         
 

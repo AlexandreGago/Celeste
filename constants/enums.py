@@ -12,6 +12,7 @@ class ActorTypes(Enum):
     CLOUD = 9
     DASH_UPGRADE = 10
     DOUBLE_DASH_RESET = 11
+    FLAG = 12
     
 class ParticleTypes(Enum):
     JUMP = 1
@@ -54,6 +55,7 @@ class EventType(Enum):
     DASH_UPGRADE_COLLISION = 6
     GROUND_COLLISION = 7
     DOUBLE_DASH_RESET_COLLISION = 8
+    FLAG_COLLISION = 9
 
 class States(Enum):
     IDLE = "idle"

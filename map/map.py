@@ -9,6 +9,7 @@ from actors.fallingBlock import FallingBlock
 from actors.cloud import Cloud
 from actors.dashUpgrade import DashUpgrade
 from actors.doubleDashReset import DoubleDashReset
+from actors.flag import Flag    
 from constants.enums import SpikeOrientations
 import json
 import base64
@@ -17,47 +18,8 @@ spritesheet = pygame.image.load("atlas.png")
 WALLS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A","á","à","Á","À","ã","é","è","É","È","ẽ","Ẽ","ê","Ê","ë","Ë","ē","Ē","ė","Ė","ę","Ę","ĕ","Ĕ"]
 DECORATIONS = ["x", "y", "z"]
 ENEMIES = ["o", "O", "ó", "ò"]
-POWERS = ["r","q","s", "t","u","v","ŕ"]
+POWERS = ["r","q","s", "t","u","v","ŕ","â"]
 
-
-import os
-
-levelBgColors={
-    "1": (0,0,0,255),
-    "2": (0,0,0,255),
-    "3": (0,0,0,255),
-    "4": (0,0,0,255),
-    "5": (0,0,0,255),
-    "6": (0,0,0,255),
-    "7": (0,0,0,255),
-    "8": (0,0,0,255),
-    "9": (0,0,0,255),
-    "10": (0,0,0,255),
-    "11": (0,0,0,255),
-    "12": (0,0,0,255),
-    "13": (0,0,0,255),
-    "14": (0,0,0,255),
-    "15": (0,0,0,255),
-    "16": (0,0,0,255),
-    "17": (0,0,0,255),
-    "18": (0,0,0,255),
-    "19": (0,0,0,255),
-    "20": (0,0,0,255),
-    "21": (0,0,0,255),
-    "22": (0,0,0,255),
-    "23": (0,0,0,255),
-    "24": (0,0,0,255),
-    "25": (0,0,0,255),
-    "26": (0,0,0,255),
-    "27": (0,0,0,255),
-    "28": (0,0,0,255),
-    "29": (0,0,0,255),
-    "30": (0,0,0,255),
-    "31": (0,0,0,255),
-
-    "debug":(0,0,0,255),
-    "new":(0,0,0,255)
-}
 spritelocations = {
     "x": (105,28, 6,4),
     "y": (114,25, 5,7),
@@ -165,10 +127,10 @@ class Map:
         self.sprites, self.spawn, self.walls = self.load(level)
         self.width = levels[level]["size"][0]
         self.height = levels[level]["size"][1]
-        if str(level) in levelBgColors:
-            self.bgColor = levelBgColors[str(level)]
-        else:
-            self.bgColor = (0,0,0,255)
+        self.bgColor = levels[level]["bgcolor"]
+        self.snowNumber = levels[level]["particles"]["snow"]
+        self.cloudNumber = levels[level]["particles"]["cloud"][0]
+        self.cloudColor = levels[level]["particles"]["cloud"][1]
 
 
 
@@ -192,10 +154,7 @@ class Map:
         self.servicelocator.clouds = []
         
         spawn = None
-        if str(level) in levelBgColors:
-            self.bgColor = levelBgColors[str(level)]
-        else:
-            self.bgColor = (0,0,0,255)
+        
             
         self.width = levels[level]["size"][0]
         self.height = levels[level]["size"][1]
@@ -278,11 +237,14 @@ class Map:
                         self.servicelocator.actorList.append(cd)
                         self.servicelocator.clouds.append(cd)
                     if cell == "v":
-                        du = DashUpgrade(idy*SIZE_X, idx*SIZE_Y)
+                        du = DashUpgrade(idy*SIZE_X, idx*SIZE_Y,self.servicelocator)
                         self.servicelocator.actorList.append(du)
                     if cell == "ŕ":
                         ddu = DoubleDashReset(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
                         self.servicelocator.actorList.append(ddu)
+                    if cell == "â":
+                        fl = Flag(idy*SIZE_X, idx*SIZE_Y, self.servicelocator)
+                        self.servicelocator.actorList.append(fl)
 
         return sprites, spawn, walls
 

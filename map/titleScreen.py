@@ -1,7 +1,7 @@
 
 import pygame
 
-def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:pygame.time.Clock,particlemanager) -> None:
+def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:pygame.time.Clock,particlemanager, soundmanager) -> None:
     """
     Draw the Title Screen and holds it until a space key is pressed
 
@@ -27,11 +27,15 @@ def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:py
     text_text = text_font.render("Press Space to Start", True, "white")
     text_rect = text_text.get_rect()
     text_rect.center = (width/2,height/7*5)
+    
+    #load image and blitz it to display
+    controlsImg = pygame.image.load("./map/controls.png")
+    
     #wait for player to press space
     running = True
     animationFrameCounter = 0
     time = 0
-
+    soundmanager.play(sound = "boot")
     while running:
         display.fill((0,0,0))
         for event in pygame.event.get():
@@ -46,6 +50,8 @@ def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:py
 
         # show image
         display.blit(bgImage,(25,height/4))
+        display.blit(controlsImg,(0,0))
+        
         display_shake.blit(display, (0,0))
         
         if animationFrameCounter % 120  <60:
@@ -55,6 +61,7 @@ def drawTitleScreen(display:pygame.display,display_shake:pygame.display,clock:py
         
         #update display
         display_shake.blit(display, (0,0))
+        
         pygame.display.flip()
 
         #

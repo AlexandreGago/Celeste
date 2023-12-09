@@ -116,6 +116,7 @@ class CloudParticle(Particle):
         self.speed = speed
         self.height = height
         self.width = width
+        self.color = (29,43,83)
 
     def updateMapSize(self,width:int,height:int):
         """
@@ -158,7 +159,7 @@ class CloudParticle(Particle):
         Returns:
             None
         """
-        pygame.draw.rect(screen, "#1D2B53", (*self.pos, *self.size))
+        pygame.draw.rect(screen, self.color, (*self.pos, *self.size))
 
 
 
@@ -256,7 +257,20 @@ class ParticleManager:
                     width = self.width
                 )
                 self.particles.append(particle)
+    
+    def setCloudColor(self,color:str):
+        """
+        Sets the color of the cloud particles
 
+        Args:
+            color (tuple): color of the cloud particles (RGB)
+
+        Returns:
+            None
+        """
+        for particle in self.particles:
+            if isinstance(particle,CloudParticle):
+                particle.color = color
     def draw(self, type: str, screen:pygame.display):
         """
         Draws the particles

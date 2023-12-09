@@ -5,13 +5,20 @@ WIDTH, HEIGHT = 800, 800
 
 sounds={
     "song1":"./sounds/level.mp3",
+    "song2":"./sounds/summit.mp3",
     "death":"./sounds/madeline_death.wav",
     "strawberry":"./sounds/strawberry_red_get_1000.wav",
     "spring":"./sounds/spring.wav",
     "dash":"./sounds/dash_red_left.wav",
     "jump":"./sounds/jump.wav",
     "dashEntityReset":"./sounds/diamond_return_01.wav",
-    "dashEntityBreak":"./sounds/diamond_touch_01.wav"
+    "dashEntityBreak":"./sounds/diamond_touch_01.wav",
+    "boot":"./sounds/pico8_boot.wav",
+    "fallBlockShake":"./sounds/fallblock_shake.wav",
+    "fallBlockOutline":"./sounds/platform_disintegrate_01.wav",
+    "fallBlockReset":"./sounds/platform_unit_return_01.wav",
+    "dashUpgrade":"./sounds/secret_revealed.wav",
+    "flag":"./sounds/end.mp3"
 }
 
 class physicsValues:
@@ -368,3 +375,12 @@ class doubleDashResetDicts:
 
         "outline1": "./CelesteSprites/Atlases/Gameplay/objects/refillTwo/outline.png",
     }
+
+class FlagDicts:
+    sprites={"idle1":"idle2","idle2":"idle3","idle3":"idle1"}
+    spritesImageCrop={
+        "idle1": (48,56,8,8),
+        "idle2": (56,56,8,8),
+        "idle3": (64,56,8,8),
+    }
+    

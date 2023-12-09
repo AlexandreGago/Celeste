@@ -858,6 +858,10 @@ class Player(Actor):
                         obs.notify(actor.name,EventType.DASH_UPGRADE_COLLISION)
                     self.currentDashCount += 1
                     self.dashCount = self.currentDashCount
+            if actor.type == ActorTypes.FLAG:
+                if self.sprite.rect.colliderect(actor.sprite.rect):
+                    for obs in self.observers:
+                        obs.notify(actor.name,EventType.FLAG_COLLISION)
 
     def reset(self,x:int,y):
         """
