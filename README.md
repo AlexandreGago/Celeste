@@ -37,13 +37,21 @@ The game will figure out which player is the server and which is the client auto
 ## Patterns used
 
 ### Command (Removed)
-The command pattern was initially used to implement the controls of the game.
+The command pattern was initially used to implement the controls of the game.  
+It was used to make the controls customizable and allow 2 players to play on the same keyboard.
 However, it was later removed in favor of a simpler implementation with vectors.  
 See [inputhandler](inputHandler.py) for the implementation.
 
 ### Flyweight
+All tiles are subsurfaces of a preloaded tileset.  
+We tried to use the flyweight pattern to reduce the number of subsurfaces, however, as all tiles of the map are part of a sprite group, the tile object needed to have a `self.image` attribute.  
+Assigning `self.image = flyweight.image` duplicates the image and the flyweight pattern is not used.  
+The tentative implementation can be found [here](map/mapflyweight.py).
+
+
+
 - impolementar nas nuvens 
-- implementar nos sptiers
+
 - dar preload a todos os sprites
  
 ### Observer
@@ -110,4 +118,4 @@ We use events using the pygame.events.get() method to:
 - Make some keys be pressed only once every key press (jump,dash,skip_level).
 
 ### Network
-(...)
+(...)                            

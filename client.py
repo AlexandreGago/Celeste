@@ -17,5 +17,5 @@ async def client(event,deque,ip, port):
             else:
                 jsonMessage = json.loads(message)
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT, message=jsonMessage))
-    websocket.close()
+    await websocket.close()
             

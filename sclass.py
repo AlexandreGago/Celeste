@@ -4,6 +4,7 @@ from constants.dictionaries import PlayerDicts,DashResetDicts,StawberryDicts,Spr
 
 
 atlasIMG = pygame.image.load("atlas.png")
+
 class SpriteClass(pygame.sprite.Sprite):
     def __init__(self,x,y,height,width,type,spriteID,flipVertical=None,flipHorizontal=None,rotate=None,playerName = None):
         super().__init__()
