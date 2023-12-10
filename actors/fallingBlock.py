@@ -49,12 +49,12 @@ class FallingBlock(Actor):
                 self.sprite.update(self.x+self.shake,self.y,self.height,self.width,self.spriteID)
                 self.rect = self.sprite.rect
 
-            if self.animationFrameCounter == 30: # falling animation finished , go to outline state
+            if self.animationFrameCounter == 20: # falling animation finished , go to outline state
                 self.state = States.OUTLINE
                 self.spriteID = "outline1"
                 self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
                 self.animationFrameCounter = 0
-                self.serviceLocator.soundManager.play("fallBlockOutline")
+                self.serviceLocator.soundManager.play("fallBlockOutline", volume=0.05)
 
         if self.state == States.OUTLINE:# outline state
             if self.animationFrameCounter == 120:# outline animation finished, go to idle state

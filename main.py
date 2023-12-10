@@ -35,7 +35,7 @@ def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     This is a function to initialize the game
     """
     #initialize level at 1
-    level = 29
+    level = 1
     #initialize singletons
     serviceLocator = ServiceLocator()
     inputHandler = InputHandler(serviceLocator)
@@ -145,7 +145,7 @@ def gameloop(coop:bool, mp:bool, shared_deque: deque):
     running = True
 
     #loop forever level song
-    # drawTitleScreen(display,display_shake,clock,particlemanager, serviceLocator.soundManager)
+    drawTitleScreen(display,display_shake,clock,particlemanager, serviceLocator.soundManager)
 
     #clear the screen
     bgColor = game_map.bgColor
@@ -311,8 +311,7 @@ def main(*args):
             
             #find out who is the server
             is_server = ip > ipaddress.ip_address(args.p2ip)
-        
-        print("own ip: " + str(ip))        
+            print("own ip: " + str(ip))        
         shared_deque = deque(maxlen=1)
         try:
             loop = asyncio.get_event_loop()

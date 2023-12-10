@@ -59,7 +59,7 @@ ex:
 
 The notification of events from the player to the other actors is done in two places:
 - [checkCorrectCollisions](actors/madeline.py#L612) - Here the player notifies all actors if it hits the [ground](actors/madeline.py#L667) or collides with a [fallingBlock](actors/madeline.py#L652) (falling clock's notification events are done here because it stops the player movement)
-- [actorCollision](actors/madeline.py#L789) - Here the player notifies all actors if it collides with another actor.
+- [actorCollision](actors/madeline.py#L798) - Here the player notifies all actors if it collides with another actor.
 
 The possible events that can be notified are in [Events](constants/enums.py#L49)
 
@@ -100,8 +100,9 @@ All the bytecode is on the file [maps.json](map/maps.json)
 ### Subclass Sandbox
 Every actor class has an update and notify sandbox method. [actor.py](actors/actor.py)
 
-### Type object
-NAo sei
+### Type object (Not used)
+We didn't use Type Object as we didn't find the need to encapsulate specific properties in an object.
+It could be used for example in the actors to encapsulate some properties common to each other.
 
 ### Component
 The [Particle Manager](actors/particles.py) could be considered as a composite of particles as it has a list of particles which are updated and drawn. Each type of particle can be added with `addParticle()`.
@@ -128,7 +129,20 @@ We use events using the pygame.events.get() method to:
 ### Network
 The network is implemented using the websockets module with asyncio.
 The game will figure out which player is the server and which is the client automatically, but this can be changed using the `-server` and `-client` flags.  
-The way it works is:
-- The client finishes calculating the next position of the player so it puts it in a deque that is shared with the websocket loop in a different thread.
-- The websocket loop sends the position to the server.
-- The server answers with the position it                            
+
+The way it works on the server side is:  
+
+- The game puts the state of the player every frame in a deque that is shared with the websocket loop in a different thread. (The deque is used to replace the state every frame with the new one)
+- when it receives a message from the client it answers with the state it has on its own deque (if it has one) else it answers "empty".
+- It puts the received state in the pygame event queue.
+- In the next frame it will update the other player position with the received state.
+  
+The way it works on the client side is:
+
+- The client finishes calculating the next state of the player so it puts it in a deque that is shared with the websocket loop in a different thread.
+- the websocket loop sees that the deque is not empty so it sends the state to the server.
+- when it receives the answer(the state of the other player) from the server it puts the received state in the pygame event queue.
+- In the next frame it will update the other player position with the received state.
+
+
+The main challenge was to let asyncio and pygame run in the same terminal without one blocking the other. Eventually we found a solution that involves running the client or server code in a different loop in a different thread. Check [here](main.py#L316).
