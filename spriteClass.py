@@ -3,8 +3,20 @@ from constants.enums import ActorTypes,ParticleTypes
 from constants.dictionaries import PlayerDicts,DashResetDicts,StawberryDicts,SpringDicts,SpikeDicts, cloudDicts,jumpParticles,fallingBlockDicts,doubleDashResetDicts,FlagDicts
 
 
-atlasIMG = pygame.image.load("atlas.png")
 class SpriteClass(pygame.sprite.Sprite):
+    
+    atlasIMG = pygame.image.load("atlas.png")
+    
+    playerImages = {k: pygame.image.load(v) for k, v in PlayerDicts.spritesLocation.items()}
+    badelineImages = {k: pygame.image.load(v) for k, v in PlayerDicts.spritesLocationBadeline.items()}
+    strawberryImages = {k: pygame.image.load(v) for k, v in StawberryDicts.spritesLocation.items()}
+    dashResetImages = {k: pygame.image.load(v) for k, v in DashResetDicts.spritesLocation.items()}
+    springImages = {k: pygame.image.load(v) for k, v in SpringDicts.spritesLocation.items()}
+    spikeImages = {k: pygame.image.load(v) for k, v in SpikeDicts.spritesLocation.items()}
+    fallingBlockImages = {k: pygame.image.load(v) for k, v in fallingBlockDicts.spritesLocation.items()}
+    cloudImages = {k: pygame.image.load(v) for k, v in cloudDicts.spritesLocation.items()}
+    doubleDashResetImages = {k: pygame.image.load(v) for k, v in doubleDashResetDicts.spritesLocation.items()}
+      
     def __init__(self,x,y,height,width,type,spriteID,flipVertical=None,flipHorizontal=None,rotate=None,playerName = None):
         super().__init__()
         self.type = type
@@ -59,53 +71,49 @@ class SpriteClass(pygame.sprite.Sprite):
         if self.type == ActorTypes.PLAYER:
             #update image
             if playerName == "Badeline":
-                img = pygame.image.load(PlayerDicts.spritesLocationBadeline[self.spriteID])
+                img = self.badelineImages[spriteID]
             else:
-                img = pygame.image.load(PlayerDicts.spritesLocation[self.spriteID])
+                img = self.playerImages[spriteID]
 
             self.image = img.subsurface((9,19,12,13))
 
         if self.type == ActorTypes.DASH_RESET:
             #update image
-            img = pygame.image.load(DashResetDicts.spritesLocation[spriteID])
+            img = self.dashResetImages[spriteID]
             self.image = img.subsurface((2,2,11,11))
 
         if self.type == ActorTypes.STRAWBERRY:
             #update image
-            img = pygame.image.load(StawberryDicts.spritesLocation[spriteID])
+            img = self.strawberryImages[spriteID]
             self.image = img.subsurface((0,0,16,16))
 
         if self.type == ActorTypes.SPRING:
-            img = pygame.image.load(SpringDicts.spritesLocation[spriteID])
+            img = self.springImages[spriteID]
             self.image = img.subsurface(SpringDicts.spritesImageCrop[spriteID])
             
         if self.type == ActorTypes.SPIKE:
             # self.image = atlasIMG.subsurface((9,11, 7,5))
-            img = pygame.image.load(SpikeDicts.spritesLocation[self.spriteID])
+            img = self.spikeImages[spriteID]
             self.image = img.subsurface((1,2,7,6))
+            
         if self.type == ParticleTypes.JUMP:
-            self.image = atlasIMG.subsurface(jumpParticles.spritesImageCrop[self.spriteID])
+            self.image = self.atlasIMG.subsurface(jumpParticles.spritesImageCrop[self.spriteID])
 
         if self.type == ActorTypes.FALLINGBLOCK:
-            img = pygame.image.load(fallingBlockDicts.spritesLocation[self.spriteID])
+            img = self.fallingBlockImages[spriteID]
             self.image = img.subsurface((0,0,23,8))
             
         if self.type == ActorTypes.CLOUD:
-            self.spriteID = spriteID
-            img = pygame.image.load(cloudDicts.spritesLocation[self.spriteID])
+            img = self.cloudImages[spriteID]
             self.image = img.subsurface((6,4,32,14))
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         if self.type == ActorTypes.DASH_UPGRADE:
-            self.image = atlasIMG.subsurface((48,48,8,8))
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            self.image = self.atlasIMG.subsurface((48,48,8,8))
 
         if self.type == ActorTypes.DOUBLE_DASH_RESET:
-            self.image = pygame.image.load(doubleDashResetDicts.spritesLocation[self.spriteID])
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            self.image = self.doubleDashResetImages[spriteID]
         
         if self.type == ActorTypes.FLAG:
-            self.image = atlasIMG.subsurface(FlagDicts.spritesImageCrop[self.spriteID])
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            self.image = self.atlasIMG.subsurface(FlagDicts.spritesImageCrop[self.spriteID])
         
 

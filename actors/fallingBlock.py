@@ -100,3 +100,10 @@ class FallingBlock(Actor):
                 self.serviceLocator.soundManager.play("fallBlockShake")
             if self.state == States.OUTLINE:
                 self.animationFrameCounter = 0
+        if event == EventType.PLAYER_DEATH :
+            self.state = States.IDLE
+            self.spriteID = "idle1"
+            self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
+            self.animationFrameCounter = 0
+            self.shake = 0
+            self.shakeDir = "left"

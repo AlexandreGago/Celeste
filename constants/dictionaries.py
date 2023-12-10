@@ -63,7 +63,7 @@ class PlayerDicts:
 
     spritesHairOffset = {PlayerStates.IDLE:{"idle1":(0,5),"idle2":(0,5),"idle3":(0,5),"idle4":(0,5),"idle5":(0,0),"idle6":(0,0),"idle7":(0,0),"idle8":(0,0)},
                         PlayerStates.WALK:{"walk1":(5,5),"walk2":(5,0),"walk3":(5,0),"walk4":(5,0),"walk5":(5,10),"walk6":(5,5),"walk7":(5,0),"walk8":(5,0),"walk9":(5,0),"walk10":(5,0),"walk11":(5,10),"walk12":(5,5)},
-                        PlayerStates.TURN:{"turn1":(0,0),"turn2":(0,0),"turn3":(0,0),"turn4":(0,0),"turn5":(0,0),"turn6":(0,0),"turn7":(0,0),"turn8":(0,0)},
+                        PlayerStates.TURN:{"turn1":(-10,0),"turn2":(-6,0),"turn3":(-4,0),"turn4":(-2,0),"turn5":(2,0),"turn6":(4,-5),"turn7":(4,-5),"turn8":(6,-5)},
                         PlayerStates.CROUCH:{"crouch1":(-1,-10),"crouch2":(-1,-10),"crouch3":(-1,-10),"crouch4":(-1,-10)},
                         PlayerStates.JUMP:{"jump1":(5,10),"jump2":(5,10)},
                         PlayerStates.DASH:{"dash1":(10,0),"dash2":(10,0),"dash3":(10,0),"dash4":(10,0)},

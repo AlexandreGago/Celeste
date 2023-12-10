@@ -92,4 +92,6 @@ def addObservers(serviceLocator) -> None:
                 player.add_observer(actor)
             if actor.type == ActorTypes.FLAG:
                 player.add_observer(actor)
+            if actor.type == ActorTypes.CLOUD:
+                player.add_observer(actor)
 

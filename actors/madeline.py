@@ -283,6 +283,7 @@ class Player(Actor):
         newState = self.vectorToState(xInput,yInput,dashInput,jumpInput)
         
         #reduce the dash cooldown
+        #!this was in every state, so to reduce repetion, it is here
         if self.state != PlayerStates.DASH : # dash cooldown
             self.dashCooldown -= 1 if self.dashCooldown > 0 else 0
                         #spring collision
@@ -296,7 +297,6 @@ class Player(Actor):
         if not self.alive :
             newState = PlayerStates.RESPAWN
         #we are alive
-        #!this was in every state, so to reduce repetion, it is here
         elif xInput < 0 and self.collisions[0] and not self.collisions[3] and newState != PlayerStates.DASH: # change to wallhug
             newState = PlayerStates.WALLHUG
             self.wallGrace = WALLGRACE
@@ -305,7 +305,7 @@ class Player(Actor):
             newState =  PlayerStates.WALLHUG
             self.wallGrace = WALLGRACE
             self.wallJumpSide = -1 if self.orientation == PlayerOrientation.LEFT else 1 if self.orientation == PlayerOrientation.RIGHT else self.wallJumpSide
-        #!---
+        #!--------------------------------------------
         else:
             #if we are jumping, keep jumping unless we are dashing
             if self.state == PlayerStates.JUMP:
@@ -847,10 +847,15 @@ class Player(Actor):
                     self.physics.reset()
                     #self.playSound("death",1)
                     self.serviceLocator.soundManager.play("death")
+                    for obs in self.observers:
+                        obs.notify(actor.name,EventType.PLAYER_DEATH)
+                    
             if self.y > self.serviceLocator.map.height:
                 self.alive = False
                 self.x = self.spawnX
                 self.y = self.serviceLocator.map.height
+                for obs in self.observers:
+                    obs.notify(actor.name,EventType.PLAYER_DEATH)
 
             if actor.type == ActorTypes.DASH_UPGRADE:
                 if actor.state == States.IDLE and self.sprite.rect.colliderect(actor.sprite.rect):

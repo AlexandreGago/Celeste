@@ -56,6 +56,7 @@ class EventType(Enum):
     GROUND_COLLISION = 7
     DOUBLE_DASH_RESET_COLLISION = 8
     FLAG_COLLISION = 9
+    PLAYER_DEATH = 10
 
 class States(Enum):
     IDLE = "idle"

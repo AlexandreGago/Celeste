@@ -3,9 +3,9 @@ import websockets
 import pygame
 import json
 
-async def client(event,deque,ip, port):
+async def client(deque,ip, port):
     websocket = await websockets.connect(f"ws://{ip}:{port}")
-    while not event.is_set():        
+    while True:        
         if len(deque) == 0:
             await asyncio.sleep(0)
         else:
@@ -17,5 +17,4 @@ async def client(event,deque,ip, port):
             else:
                 jsonMessage = json.loads(message)
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT, message=jsonMessage))
-    await websocket.close()
             

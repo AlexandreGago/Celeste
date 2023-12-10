@@ -25,6 +25,8 @@ class Cloud(Actor):
         self.sprite = SpriteClass(self.x,self.y,self.height,self.width,self.type,self.spriteID)
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
         self.rect = self.sprite.rect
+        
+        self.spawn = (x,y)
 
     def update(self):
         """
@@ -63,5 +65,7 @@ class Cloud(Actor):
         Returns:
             None
         """
-        if event == "touchCloud" and entityName == self.name:
-            pass
+        # if event == EventType.PLAYER_DEATH:# if player dies, reset cloud position
+        #     self.x = self.spawn[0]
+        #     self.y = self.spawn[1]
+        pass

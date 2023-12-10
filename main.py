@@ -2,7 +2,6 @@ import pygame
 import asyncio
 import argparse
 import threading
-import pydoc
 from itertools import repeat
 from collections import deque
 
@@ -15,7 +14,7 @@ from actors.madeline import Player
 from actors.particles import ParticleManager
 from spriteClass import SpriteClass
 from constants.enums import ActorTypes,PlayerOrientation
-
+import time
 
 
 from map.map import Map
@@ -36,7 +35,7 @@ def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     This is a function to initialize the game
     """
     #initialize level at 1
-    level = 1
+    level = 29
     #initialize singletons
     serviceLocator = ServiceLocator()
     inputHandler = InputHandler(serviceLocator)
@@ -107,7 +106,7 @@ def initialize_game(coop:bool, mp:bool, queue: asyncio.Queue = None ):
     )
 
 
-async def gameloop(coop:bool, mp:bool, shared_deque: deque):
+def gameloop(coop:bool, mp:bool, shared_deque: deque):
     """Summary
     This is the main game loop that runs the game and multiplayer logic
 
@@ -146,7 +145,7 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
     running = True
 
     #loop forever level song
-    drawTitleScreen(display,display_shake,clock,particlemanager, serviceLocator.soundManager)
+    # drawTitleScreen(display,display_shake,clock,particlemanager, serviceLocator.soundManager)
 
     #clear the screen
     bgColor = game_map.bgColor
@@ -156,6 +155,7 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
 
 
     serviceLocator.soundManager.play("song1", loop=True, volume=0.1)
+
     while running:        
         keys = pygame.key.get_pressed()
         #!###############
@@ -228,11 +228,12 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
         camera.x = max(0, min(camera.x, game_map.width - WINDOW_WIDTH))
         camera.y = max(0, min(camera.y, game_map.height - WINDOW_HEIGHT))
 
+
         #update all actors
         for actor in serviceLocator.actorList:
             actor.update()
             actor.draw(mapCanvas)
-        
+
         #multiplayer logic
         if mp:
             #draw badeline
@@ -259,15 +260,15 @@ async def gameloop(coop:bool, mp:bool, shared_deque: deque):
 
         #wait for next frame
         time += clock.tick(framerate)
-        # print(clock.get_fps())
 
 
-def start_server(event,shared_deque,port):
-    asyncio.run(server.main(event,shared_deque,port))
-def start_client(event,shared_deque, ip, port):
-    asyncio.run(client.client(event,shared_deque, ip,port))
+def start_server(loop,future,shared_deque,port):
+    loop.run_until_complete(server.main(future,shared_deque,port))
+
+def start_client(loop,shared_deque, ip, port):
+    loop.run_until_complete(client.client(shared_deque,ip,port))
  
-async def main(*args):
+def main(*args):
     parser = argparse.ArgumentParser(description='Game')
     # parser.add_argument('--coop', type=bool, default=False, help='coop')
     parser.add_argument('-coop', action='store_true', help='coop')
@@ -277,66 +278,67 @@ async def main(*args):
     parser.add_argument('-p2ip', type=str, default="None", help='player 2 ip')
     parser.add_argument('-p2port', type=int, default=8765, help='player 2 port number')
 
+    #optional argument -server and -client
+    parser.add_argument('-server', action='store_true', help='server')
+    parser.add_argument('-client', action='store_true', help='client')
+
 
     args = parser.parse_args()
     
-    if args.mp and args.coop:
-        print("mp and coop are mutually exclusive")
+    if (args.mp and args.coop) or (args.server and args.client):
+        print("invalid arguments")
         exit()
 
-    if args.mp:          
-        import ipaddress
-        import socket
-        try:
-            ipaddress.ip_address(args.p2ip)
-        except ValueError:
-            print("p2 ip is not valid")
-            exit()
+    if args.mp:
+        if args.client:
+            is_server = False
+        elif args.server:
+            is_server = True
+        else:        
+            import ipaddress
+            import socket
+            try:
+                ipaddress.ip_address(args.p2ip)
+            except ValueError:
+                print("p2 ip is not valid")
+                exit()
+                
+            sc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sc.connect(("8.8.8.8", 80))
+            ip = sc.getsockname()[0]
+            sc.close()
+            ip = ipaddress.ip_address(ip)
             
-        sc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sc.connect(("8.8.8.8", 80))
-        ip = sc.getsockname()[0]
-        sc.close()
-        ip = ipaddress.ip_address(ip)
+            #find out who is the server
+            is_server = ip > ipaddress.ip_address(args.p2ip)
         
-        #find out who is the server
-        server = ip > ipaddress.ip_address(args.p2ip)
-        
-        #!###############
-        if args.p2ip == "127.0.0.1":
-            server = False
-        #!###############
         print("own ip: " + str(ip))        
-        
         shared_deque = deque(maxlen=1)
-        event = threading.Event()
         try:
-            if server:
-                thread = threading.Thread(target=start_server, args=(event,shared_deque,args.port))
-                thread.start()  
+            loop = asyncio.get_event_loop()
+            future = loop.create_future()
+            if is_server:
+                thread = threading.Thread(target=start_server, args=(loop,future,shared_deque,args.port), daemon=True)
+                thread.start()
+
             else:
-                thread = threading.Thread(target=start_client, args=(event,shared_deque,args.p2ip, args.p2port))
+                thread = threading.Thread(target=start_client, args=(loop,shared_deque,args.p2ip, args.p2port), daemon=True)
                 thread.start()
                 
-            await gameloop(args.coop, args.mp, shared_deque)
+            gameloop(args.coop, args.mp, shared_deque)
             pygame.quit()
-            event.set()
-            thread.join()
+            exit()
         except KeyboardInterrupt:
             pygame.quit()
-            event.set()
-            thread.join()
+            exit()
+            
             
     else:
-        try:
-            await gameloop(args.coop,args.mp,None)
-        except KeyboardInterrupt:
-            pass
+        gameloop(args.coop,args.mp,None)
         pygame.quit()
+        exit()
     
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    loop.close()
+    main()
 
 
