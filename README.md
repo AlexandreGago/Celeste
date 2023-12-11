@@ -1,4 +1,8 @@
 # Celeste
+
+Alexandre Gago,  98123  
+Bernardo Kaluza, 97521
+
 ## Overview
 This project was done for the "Tópicos de Programação para Jogos" course.  
 It tries to recreate the "Celeste" game in pygame.  
