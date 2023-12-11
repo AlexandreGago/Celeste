@@ -45,7 +45,7 @@ class DoubleDashReset(Actor):
         """
         if self.state == States.OUTLINE:
             if self.disabledCounter >= 300: # refill animation
-                self.state = "refill"
+                self.state = States.REFILL
                 self.spriteID = "flash1"
                 self.disabledCounter = 0
                 self.animationCounter = 0
@@ -66,6 +66,7 @@ class DoubleDashReset(Actor):
 
         elif self.animationCounter % 5 == 0:# idle animation
             self.spriteID = DashResetDicts.sprites[self.spriteID]
+        print(self.state,self.spriteID)
 
         self.sprite.update(self.x,self.y,self.height,self.width,self.spriteID)
         self.animationCounter += 1
